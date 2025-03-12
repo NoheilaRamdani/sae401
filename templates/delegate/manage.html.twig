@@ -1,0 +1,73 @@
+{# templates/delegate/manage.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des délégués{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Gestion des délégués</h1>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="mb-4">
+            <p>En tant qu'administrateur, vous pouvez désigner et changer les délégués pour chaque groupe.
+                Chaque groupe peut avoir jusqu'à 2 délégués actifs à la fois.</p>
+        </div>
+
+        {% for groupData in groupsData %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3>{{ groupData.group.name }}</h3>
+                    <p>Délégués actifs: {{ groupData.activeDelegates|length }}/2</p>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Email</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for userData in groupData.users %}
+                            <tr>
+                                <td>{{ userData.user.lastName }}</td>
+                                <td>{{ userData.user.firstName }}</td>
+                                <td>{{ userData.user.email }}</td>
+                                <td>
+                                    {% if userData.isDelegate %}
+                                        <span class="badge bg-success">Délégué</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non délégué</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('delegate_toggle', {'userId': userData.user.id, 'groupId': groupData.group.id}) }}"
+                                       class="btn btn-sm {% if userData.isDelegate %}btn-danger{% else %}btn-success{% endif %}">
+                                        {% if userData.isDelegate %}
+                                            Retirer
+                                        {% else %}
+                                            Désigner
+                                        {% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endfor %}
+
+        <a href="{{ path('app_home') }}" class="btn btn-secondary">Retour à l'accueil</a>
+    </div>
+{% endblock %}

@@ -25,4 +25,16 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
+    '@fullcalendar/core' => [
+        'version' => '6.1.15',
+    ],
+    'preact' => [
+        'version' => '10.12.1',
+    ],
+    'preact/compat' => [
+        'version' => '10.12.1',
+    ],
+    'preact/hooks' => [
+        'version' => '10.12.1',
+    ],
 ];
