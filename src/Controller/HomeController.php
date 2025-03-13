@@ -26,7 +26,8 @@ class HomeController extends AbstractController
 
         $assignments = $entityManager->getRepository(\App\Entity\Assignment::class)
             ->createQueryBuilder('a')
-            ->where('a.assignmentGroup IN (:groups)')
+            ->join('a.groups', 'g') // Changement ici : 'groups' au lieu de 'assignmentGroup'
+            ->where('g IN (:groups)')
             ->setParameter('groups', $groups)
             ->andWhere('a.dueDate >= :now')
             ->setParameter('now', new \DateTime())
@@ -51,7 +52,8 @@ class HomeController extends AbstractController
 
         $assignments = $entityManager->getRepository(\App\Entity\Assignment::class)
             ->createQueryBuilder('a')
-            ->where('a.assignmentGroup IN (:groups)')
+            ->join('a.groups', 'g') // Changement ici : 'groups' au lieu de 'assignmentGroup'
+            ->where('g IN (:groups)')
             ->setParameter('groups', $groups)
             ->getQuery()
             ->getResult();
@@ -62,19 +64,20 @@ class HomeController extends AbstractController
                 'id' => $assignment->getId(),
                 'title' => $assignment->getTitle(),
                 'start' => $assignment->getDueDate()->format('c'),
-                'submissionUrl' => $assignment->getSubmissionUrl() ?? null, // Changement de "url" à "submissionUrl"
+                'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
                 'color' => $assignment->getSubject()->getColor() ?? '#3788d8',
                 'extendedProps' => [
-//                    'createdBy' => $assignment->getCreatedBy() ? $assignment->getCreatedBy()->getFirstName() . ' ' . $assignment->getCreatedBy()->getLastName() : 'Inconnu',
+                    // 'createdBy' => $assignment->getCreatedBy() ? $assignment->getCreatedBy()->getFirstName() . ' ' . $assignment->getCreatedBy()->getLastName() : 'Inconnu',
                     'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
                     'description' => $assignment->getDescription() ?? 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                    'submissionUrl' => $assignment->getSubmissionUrl() ?? null // On ajoute aussi dans extendedProps pour l'utiliser dans le modal
+                    'submissionUrl' => $assignment->getSubmissionUrl() ?? null
                 ]
             ];
         }
 
         return $this->json($events);
     }
+
     #[Route('/api/assignments/{id}', name: 'api_assignment_details', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function getAssignmentDetails(int $id, EntityManagerInterface $entityManager): JsonResponse
@@ -89,7 +92,7 @@ class HomeController extends AbstractController
             'id' => $assignment->getId(),
             'title' => $assignment->getTitle(),
             'start' => $assignment->getDueDate()->format('c'),
-//            'createdBy' => $assignment->getCreatedBy() ? $assignment->getCreatedBy()->getFirstName() . ' ' . $assignment->getCreatedBy()->getLastName() : 'Inconnu',
+            // 'createdBy' => $assignment->getCreatedBy() ? $assignment->getCreatedBy()->getFirstName() . ' ' . $assignment->getCreatedBy()->getLastName() : 'Inconnu',
             'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
             'description' => $assignment->getDescription() ?? 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
             'submissionUrl' => $assignment->getSubmissionUrl() ?? null

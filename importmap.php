@@ -20,14 +20,17 @@ return [
         'version' => '3.2.2',
     ],
     '@symfony/stimulus-bundle' => [
-        'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
+        'version' => '2.23.0',
     ],
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
-    '@fullcalendar/core' => [
-        'version' => '6.1.15',
-    ],
+//    '@fullcalendar/core' => [
+//        'path' => './node_modules/@fullcalendar/core/index.js',
+//    ],
+//    '@fullcalendar/daygrid' => [
+//        'path' => './node_modules/@fullcalendar/daygrid/index.js',
+//    ],
     'preact' => [
         'version' => '10.12.1',
     ],

@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\AssignmentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AssignmentRepository::class)]
@@ -26,13 +28,13 @@ class Assignment
     #[ORM\JoinColumn(nullable: false)]
     private ?Subject $subject = null;
 
-    #[ORM\ManyToOne(targetEntity: Group::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Group $assignmentGroup = null;
+    #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'assignments')]
+    #[ORM\JoinTable(name: 'assignment_group')]
+    private Collection $groups;
 
-//    #[ORM\ManyToOne(targetEntity: User::class)]
-//    #[ORM\JoinColumn(nullable: false)]
-//    private ?User $createdBy = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true)] // Nullable temporairement
+    private ?User $createdBy = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $submissionType = null;
@@ -47,13 +49,15 @@ class Assignment
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(type: 'string', nullable: true)]
-    private $type; // Par exemple : 'devoir', 'examen', 'oral'
+    private ?string $type;
 
     public function __construct()
     {
         $this->createdAt = new \DateTime();
+        $this->groups = new ArrayCollection();
     }
 
+    // Getters et Setters (inchangés sauf pour createdBy)
     public function getId(): ?int
     {
         return $this->id;
@@ -103,27 +107,35 @@ class Assignment
         return $this;
     }
 
-    public function getAssignmentGroup(): ?Group
+    public function getGroups(): Collection
     {
-        return $this->assignmentGroup;
+        return $this->groups;
     }
 
-    public function setAssignmentGroup(?Group $assignmentGroup): static
+    public function addGroup(Group $group): static
     {
-        $this->assignmentGroup = $assignmentGroup;
+        if (!$this->groups->contains($group)) {
+            $this->groups->add($group);
+        }
         return $this;
     }
 
-//    public function getCreatedBy(): ?User
-//    {
-//        return $this->createdBy;
-//    }
+    public function removeGroup(Group $group): static
+    {
+        $this->groups->removeElement($group);
+        return $this;
+    }
 
-//    public function setCreatedBy(?User $createdBy): static
-//    {
-//        $this->createdBy = $createdBy;
-//        return $this;
-//    }
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): static
+    {
+        $this->createdBy = $createdBy;
+        return $this;
+    }
 
     public function getSubmissionType(): ?string
     {
@@ -168,14 +180,15 @@ class Assignment
         $this->updatedAt = $updatedAt;
         return $this;
     }
+
     public function getType(): ?string
     {
         return $this->type;
     }
+
     public function setType(?string $type): static
     {
         $this->type = $type;
         return $this;
     }
 }
-

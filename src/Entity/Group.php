@@ -30,9 +30,13 @@ class Group
     #[ORM\OneToMany(targetEntity: UserGroup::class, mappedBy: 'group')]
     private Collection $userGroups;
 
+    #[ORM\ManyToMany(targetEntity: Assignment::class, mappedBy: 'groups')]
+    private Collection $assignments; // Ajout de la relation avec Assignment
+
     public function __construct()
     {
         $this->userGroups = new ArrayCollection();
+        $this->assignments = new ArrayCollection(); // Initialisation de la collection
     }
 
     public function getId(): ?int
@@ -85,7 +89,7 @@ class Group
     }
 
     /**
-     * @return Collection|UserGroup[]
+     * @return Collection<int, UserGroup>
      */
     public function getUserGroups(): Collection
     {
@@ -112,8 +116,33 @@ class Group
     }
 
     /**
+     * @return Collection<int, Assignment>
+     */
+    public function getAssignments(): Collection
+    {
+        return $this->assignments;
+    }
+
+    public function addAssignment(Assignment $assignment): self
+    {
+        if (!$this->assignments->contains($assignment)) {
+            $this->assignments[] = $assignment;
+            $assignment->addGroup($this);
+        }
+        return $this;
+    }
+
+    public function removeAssignment(Assignment $assignment): self
+    {
+        if ($this->assignments->removeElement($assignment)) {
+            $assignment->removeGroup($this);
+        }
+        return $this;
+    }
+
+    /**
      * Méthode pour récupérer les utilisateurs via UserGroup
-     * @return Collection|User[]
+     * @return Collection<int, User>
      */
     public function getUsers(): Collection
     {
