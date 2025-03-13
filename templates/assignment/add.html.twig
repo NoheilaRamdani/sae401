@@ -3,63 +3,66 @@
 {% block title %}Ajouter un devoir{% endblock %}
 
 {% block body %}
-    <h1>Ajouter un nouveau devoir</h1>
+    <div class="container mt-5">
+        <h1 class="mb-4">Ajouter un nouveau devoir</h1>
 
-    {{ form_start(form) }}
-    <div class="form-group">
-        {{ form_label(form.title) }}
-        {{ form_widget(form.title) }}
-        {{ form_errors(form.title) }}
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+
+        <div class="mb-3">
+            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.title, {'attr': {'class': 'invalid-feedback'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.description, {'attr': {'class': 'invalid-feedback'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.dueDate, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.dueDate, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.dueDate, {'attr': {'class': 'invalid-feedback'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.subject, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.subject, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.subject, {'attr': {'class': 'invalid-feedback'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.groups, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.groups, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.groups, {'attr': {'class': 'invalid-feedback'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.submissionType, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.submissionType, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.submissionType, {'attr': {'class': 'invalid-feedback'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.submissionUrl, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.submissionUrl, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.submissionUrl, {'attr': {'class': 'invalid-feedback'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.type, {'attr': {'class': 'invalid-feedback'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.dueDates, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.dueDates, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.dueDates, {'attr': {'class': 'invalid-feedback'}}) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Ajouter le devoir</button>
+        {{ form_end(form) }}
     </div>
-
-    <div class="form-group">
-        {{ form_label(form.description) }}
-        {{ form_widget(form.description) }}
-        {{ form_errors(form.description) }}
-    </div>
-
-    <div class="form-group">
-        {{ form_label(form.dueDate) }}
-        {{ form_widget(form.dueDate) }}
-        {{ form_errors(form.dueDate) }}
-    </div>
-
-    <div class="form-group">
-        {{ form_label(form.subject) }}
-        {{ form_widget(form.subject) }}
-        {{ form_errors(form.subject) }}
-    </div>
-
-    <div class="form-group">
-        {{ form_label(form.groups) }}
-        {{ form_widget(form.groups) }}
-        {{ form_errors(form.groups) }}
-    </div>
-
-    <div class="form-group">
-        {{ form_label(form.submissionType) }}
-        {{ form_widget(form.submissionType) }}
-        {{ form_errors(form.submissionType) }}
-    </div>
-
-    <div class="form-group">
-        {{ form_label(form.submissionUrl) }}
-        {{ form_widget(form.submissionUrl) }}
-        {{ form_errors(form.submissionUrl) }}
-    </div>
-
-    <div class="form-group">
-        {{ form_label(form.type) }}
-        {{ form_widget(form.type) }}
-        {{ form_errors(form.type) }}
-    </div>
-
-    <div class="form-group">
-        {{ form_label(form.dueDates) }}
-        {{ form_widget(form.dueDates) }}
-        {{ form_errors(form.dueDates) }}
-    </div>
-
-    <button type="submit" class="btn btn-primary">Ajouter le devoir</button>
-    {{ form_end(form) }}
 {% endblock %}

@@ -41,6 +41,11 @@
                         <a class="nav-link" href="{{ path('delegate_manage') }}">Gérer les délégués</a>
                     </li>
                 {% endif %}
+                {% if is_granted('ROLE_DELEGATE') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('add_assignment') }}">Ajouter un devoir</a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </div>
