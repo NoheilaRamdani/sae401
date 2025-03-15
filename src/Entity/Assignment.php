@@ -22,7 +22,7 @@ class Assignment
     private ?string $description = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $due_date = null; // Changé de dueDate à due_date
+    private ?\DateTimeInterface $due_date = null;
 
     #[ORM\ManyToOne(targetEntity: Subject::class)]
     #[ORM\JoinColumn(name: 'subject_id', nullable: false)] // Explicitement nommé subject_id
@@ -50,6 +50,9 @@ class Assignment
 
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $type = null;
+
+    #[ORM\Column(type: 'boolean', nullable: false, options: ['default' => false])]
+    private bool $is_completed = false;
 
     public function __construct()
     {
@@ -189,6 +192,17 @@ class Assignment
     public function setType(?string $type): static
     {
         $this->type = $type;
+        return $this;
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->is_completed;
+    }
+
+    public function setIsCompleted(bool $is_completed): static
+    {
+        $this->is_completed = $is_completed;
         return $this;
     }
 }

@@ -9,23 +9,37 @@
         .container { display: flex; gap: 20px; }
         .calendar-section { flex: 2; }
         .upcoming-section { flex: 1; background-color: #f5f5f5; padding: 15px; border-radius: 5px; }
-        .event-item { padding: 10px; margin-bottom: 10px; border-left: 4px solid #3788d8; background-color: #fff; cursor: pointer; }
+        .event-item { padding: 10px; margin-bottom: 10px; background-color: #fff; cursor: pointer; display: flex; align-items: center; }
         .event-item:hover { background-color: #e9ecef; }
+        .event-item.completed { text-decoration: line-through; opacity: 0.7; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; }
         .modal-content { background-color: #fff; padding: 20px; border-radius: 5px; width: 400px; }
         .modal.show { display: flex; }
+        .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
+        .filter-form { margin-bottom: 15px; }
+        .fa-icon { margin-right: 5px; }
+        .fc-event.completed-event .fc-event-title { text-decoration: line-through; opacity: 0.7; }
+        .notification { position: fixed; bottom: 20px; right: 20px; background-color: #fd7e14; color: white; padding: 10px 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000; }
+        .suggestions-box { position: fixed; bottom: 20px; right: 20px; background-color: #007bff; color: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000; max-width: 300px; }
+        .suggestions-box.hidden { display: none; }
+        .suggestions-box h4 { margin: 0 0 10px 0; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .suggestions-box ul { list-style: none; padding: 0; margin: 0; }
+        .suggestions-box li { font-size: 12px; margin-bottom: 10px; }
+        .suggestions-box .close-btn { background: none; border: none; color: white; cursor: pointer; font-size: 14px; }
+        .show-suggestions-btn { position: fixed; bottom: 20px; right: 20px; background-color: #007bff; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; z-index: 1000; display: none; }
+        .show-suggestions-btn.visible { display: block; }
     </style>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js" crossorigin="anonymous"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                events: '/api/assignments',
+                events: '/api/assignments' + (new URLSearchParams(window.location.search).toString() ? '?' + new URLSearchParams(window.location.search).toString() : ''),
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
                     showEventDetails(info.event);
@@ -34,28 +48,112 @@
             calendar.render();
 
             document.querySelectorAll('.event-item').forEach(item => {
-                item.addEventListener('click', function() {
+                item.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('complete-checkbox')) {
+                        e.stopPropagation();
+                        return;
+                    }
                     const eventId = this.dataset.id;
                     fetch(`/api/assignments/${eventId}`)
                         .then(response => response.json())
-                        .then(data => {
-                            showEventDetails({
-                                id: data.id,
-                                title: data.title,
-                                start: new Date(data.start),
-                                extendedProps: {
-                                    createdAt: data.createdAt,
-                                    description: data.description,
-                                    submissionUrl: data.submissionUrl
+                        .then(data => showEventDetails({
+                            id: data.id,
+                            title: data.title,
+                            start: new Date(data.start),
+                            extendedProps: data
+                        }));
+                });
+
+                const checkbox = item.querySelector('.complete-checkbox');
+                if (checkbox) {
+                    checkbox.addEventListener('change', function(e) {
+                        e.stopPropagation();
+                        const eventId = this.dataset.id;
+                        fetch(`/api/assignments/${eventId}/toggle-complete`, { method: 'POST' })
+                            .then(response => response.json())
+                            .then(data => {
+                                item.classList.toggle('completed', data.isCompleted);
+                                const calendarEvent = calendar.getEventById(eventId);
+                                if (calendarEvent) {
+                                    calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
                                 }
                             });
-                        });
-                });
+                    });
+                }
             });
 
             document.getElementById('closeModal').addEventListener('click', function() {
                 document.getElementById('eventModal').classList.remove('show');
             });
+
+            document.getElementById('modalCompleted').addEventListener('change', function() {
+                const eventId = document.getElementById('eventModal').dataset.id;
+                fetch(`/api/assignments/${eventId}/toggle-complete`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        const listItem = document.querySelector(`.event-item[data-id="${eventId}"]`);
+                        if (listItem) {
+                            listItem.classList.toggle('completed', data.isCompleted);
+                            listItem.querySelector('.complete-checkbox').checked = data.isCompleted;
+                        }
+                        const calendarEvent = calendar.getEventById(eventId);
+                        if (calendarEvent) {
+                            calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
+                        }
+                    });
+            });
+
+            document.getElementById('suggestModification').addEventListener('click', function() {
+                const eventId = document.getElementById('eventModal').dataset.id;
+                const message = prompt('Entrez votre suggestion de modification :');
+                if (message) {
+                    fetch(`/api/assignments/${eventId}/suggest-modification`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: message })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Suggestion envoyée aux délégués !');
+                            } else {
+                                alert('Erreur : ' + (data.error || 'Suggestion non envoyée'));
+                            }
+                        });
+                }
+            });
+
+            const notifications = {{ notifications|json_encode|raw }};
+            notifications.forEach(notification => {
+                const div = document.createElement('div');
+                div.className = 'notification';
+                div.textContent = `Attention : "${notification.title}" dans ${notification.hoursUntilDue}h !`;
+                document.body.appendChild(div);
+                setTimeout(() => div.remove(), 5000);
+            });
+
+            // Gestion persistante de la fenêtre des suggestions avec localStorage
+            const suggestionsBox = document.querySelector('.suggestions-box');
+            const showSuggestionsBtn = document.querySelector('.show-suggestions-btn');
+            if (suggestionsBox && showSuggestionsBtn) {
+                const isHidden = localStorage.getItem('suggestionsBoxHidden') === 'true';
+                if (isHidden) {
+                    suggestionsBox.classList.add('hidden');
+                    showSuggestionsBtn.classList.add('visible');
+                }
+
+                document.getElementById('closeSuggestions').addEventListener('click', function() {
+                    suggestionsBox.classList.add('hidden');
+                    showSuggestionsBtn.classList.add('visible');
+                    localStorage.setItem('suggestionsBoxHidden', 'true');
+                });
+
+                showSuggestionsBtn.addEventListener('click', function() {
+                    suggestionsBox.classList.remove('hidden');
+                    showSuggestionsBtn.classList.remove('visible');
+                    localStorage.setItem('suggestionsBoxHidden', 'false');
+                });
+            }
         });
 
         function showEventDetails(event) {
@@ -69,6 +167,9 @@
             } else {
                 submissionUrlEl.textContent = 'Aucune URL de soumission';
             }
+            document.getElementById('modalType').textContent = event.extendedProps.type || 'Non spécifié';
+            document.getElementById('modalCompleted').checked = event.extendedProps.isCompleted;
+            document.getElementById('eventModal').dataset.id = event.id;
             document.getElementById('eventModal').classList.add('show');
         }
     </script>
@@ -77,33 +178,68 @@
 {% block body %}
     <div class="container">
         <div class="calendar-section">
-            <h2>Calendrier des devoirs</h2>
+            <h2><i class="fas fa-calendar-alt fa-icon"></i> Calendrier des devoirs</h2>
+            <form class="filter-form" method="get">
+                <label for="type"><i class="fas fa-filter fa-icon"></i> Filtrer par type :</label>
+                <select name="type" id="type" onchange="this.form.submit()">
+                    <option value="">Tous</option>
+                    <option value="devoir" {{ type_filter == 'devoir' ? 'selected' }}>Devoir</option>
+                    <option value="examen" {{ type_filter == 'examen' ? 'selected' }}>Examen</option>
+                    <option value="oral" {{ type_filter == 'oral' ? 'selected' }}>Oral</option>
+                </select>
+            </form>
             <div id="calendar"></div>
         </div>
 
         <div class="upcoming-section">
-            <h2>Prochains devoirs</h2>
-            {% if assignments|length > 0 %}
-                {% for assignment in assignments %}
-                    <div class="event-item" data-id="{{ assignment.id }}">
-                        <strong>{{ assignment.title }}</strong><br>
-                        <small>{{ assignment.dueDate|date('d/m/Y H:i') }}</small>
+            <h2><i class="fas fa-clock fa-icon"></i> Prochains devoirs</h2>
+            {% if assignments_data|length > 0 %}
+                {% for data in assignments_data %}
+                    {% set assignment = data.assignment %}
+                    <div class="event-item {{ data.isCompleted ? 'completed' }}" data-id="{{ assignment.id }}">
+                        <input type="checkbox" class="complete-checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
+                        <div class="color-dot" style="background-color: {{ data.color }}"></div>
+                        <div>
+                            <strong><i class="fas fa-book fa-icon"></i> {{ assignment.title }}</strong><br>
+                            <small><i class="fas fa-calendar-day fa-icon"></i> {{ assignment.dueDate|date('d/m/Y H:i') }}</small>
+                        </div>
                     </div>
                 {% endfor %}
             {% else %}
-                <p>Aucun devoir à venir.</p>
+                <p><i class="fas fa-exclamation-circle fa-icon"></i> Aucun devoir à venir.</p>
             {% endif %}
         </div>
     </div>
 
     <div id="eventModal" class="modal">
         <div class="modal-content">
-            <h3 id="modalTitle"></h3>
-            <p><strong>Date :</strong> <span id="modalDate"></span></p>
-            <p><strong>Date de saisie :</strong> <span id="modalCreatedAt"></span></p>
-            <p><strong>Description :</strong> <span id="modalDescription"></span></p>
-            <p><strong>URL de soumission :</strong> <span id="modalSubmissionUrl"></span></p>
-            <button id="closeModal">Fermer</button>
+            <h3><i class="fas fa-info-circle fa-icon"></i> <span id="modalTitle"></span></h3>
+            <p><strong><i class="fas fa-calendar-day fa-icon"></i> Date :</strong> <span id="modalDate"></span></p>
+            <p><strong><i class="fas fa-clock fa-icon"></i> Date de saisie :</strong> <span id="modalCreatedAt"></span></p>
+            <p><strong><i class="fas fa-tag fa-icon"></i> Type :</strong> <span id="modalType"></span></p>
+            <p><strong><i class="fas fa-file-alt fa-icon"></i> Description :</strong> <span id="modalDescription"></span></p>
+            <p><strong><i class="fas fa-link fa-icon"></i> URL de soumission :</strong> <span id="modalSubmissionUrl"></span></p>
+            <p><strong><i class="fas fa-check-circle fa-icon"></i> Effectué :</strong> <input type="checkbox" id="modalCompleted"></p>
+            <button id="suggestModification"><i class="fas fa-edit fa-icon"></i> Suggérer une modification</button>
+            <button id="closeModal"><i class="fas fa-times fa-icon"></i> Fermer</button>
         </div>
     </div>
+
+    {% if is_granted('ROLE_DELEGATE') and suggestions|length > 0 %}
+        <div class="suggestions-box">
+            <h4>
+                <span><i class="fas fa-edit fa-icon"></i> Suggestions de modifications</span>
+                <button id="closeSuggestions" class="close-btn"><i class="fas fa-times"></i></button>
+            </h4>
+            <ul>
+                {% for suggestion in suggestions %}
+                    <li>
+                        <strong>{{ suggestion.suggestedBy.userIdentifier }}</strong> pour "{{ suggestion.assignment.title }}" : {{ suggestion.message }}
+                    </li>
+                {% endfor %}
+            </ul>
+            <a href="{{ path('app_suggestions') }}" style="color: white; font-size: 12px; text-decoration: underline;">Voir l'historique complet</a>
+        </div>
+        <button class="show-suggestions-btn"><i class="fas fa-eye fa-icon"></i> Afficher les suggestions</button>
+    {% endif %}
 {% endblock %}
