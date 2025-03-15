@@ -22,10 +22,10 @@ class Assignment
     private ?string $description = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $dueDate = null;
+    private ?\DateTimeInterface $due_date = null; // Changé de dueDate à due_date
 
     #[ORM\ManyToOne(targetEntity: Subject::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'subject_id', nullable: false)] // Explicitement nommé subject_id
     private ?Subject $subject = null;
 
     #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'assignments')]
@@ -33,31 +33,31 @@ class Assignment
     private Collection $groups;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: true)] // Nullable temporairement
-    private ?User $createdBy = null;
+    #[ORM\JoinColumn(name: 'created_by_id', nullable: true)] // Explicitement nommé created_by_id
+    private ?User $created_by = null; // Changé de createdBy à created_by
 
     #[ORM\Column(length: 50, nullable: true)]
-    private ?string $submissionType = null;
+    private ?string $submission_type = null; // Changé de submissionType à submission_type
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $submissionUrl = null;
+    private ?string $submission_url = null; // Changé de submissionUrl à submission_url
 
     #[ORM\Column(type: 'datetime')]
-    private ?\DateTimeInterface $createdAt = null;
+    private ?\DateTimeInterface $created_at = null; // Changé de createdAt à created_at
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
+    private ?\DateTimeInterface $updated_at = null; // Changé de updatedAt à updated_at
 
     #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $type;
+    private ?string $type = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->created_at = new \DateTime();
         $this->groups = new ArrayCollection();
     }
 
-    // Getters et Setters (inchangés sauf pour createdBy)
+    // Getters et Setters adaptés
     public function getId(): ?int
     {
         return $this->id;
@@ -87,12 +87,12 @@ class Assignment
 
     public function getDueDate(): ?\DateTimeInterface
     {
-        return $this->dueDate;
+        return $this->due_date;
     }
 
-    public function setDueDate(?\DateTimeInterface $dueDate): static
+    public function setDueDate(?\DateTimeInterface $due_date): static
     {
-        $this->dueDate = $dueDate;
+        $this->due_date = $due_date;
         return $this;
     }
 
@@ -128,56 +128,56 @@ class Assignment
 
     public function getCreatedBy(): ?User
     {
-        return $this->createdBy;
+        return $this->created_by;
     }
 
-    public function setCreatedBy(?User $createdBy): static
+    public function setCreatedBy(?User $created_by): static
     {
-        $this->createdBy = $createdBy;
+        $this->created_by = $created_by;
         return $this;
     }
 
     public function getSubmissionType(): ?string
     {
-        return $this->submissionType;
+        return $this->submission_type;
     }
 
-    public function setSubmissionType(?string $submissionType): static
+    public function setSubmissionType(?string $submission_type): static
     {
-        $this->submissionType = $submissionType;
+        $this->submission_type = $submission_type;
         return $this;
     }
 
     public function getSubmissionUrl(): ?string
     {
-        return $this->submissionUrl;
+        return $this->submission_url;
     }
 
-    public function setSubmissionUrl(?string $submissionUrl): static
+    public function setSubmissionUrl(?string $submission_url): static
     {
-        $this->submissionUrl = $submissionUrl;
+        $this->submission_url = $submission_url;
         return $this;
     }
 
     public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->createdAt;
+        return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTimeInterface $created_at): static
     {
-        $this->createdAt = $createdAt;
+        $this->created_at = $created_at;
         return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeInterface
     {
-        return $this->updatedAt;
+        return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(?\DateTimeInterface $updated_at): static
     {
-        $this->updatedAt = $updatedAt;
+        $this->updated_at = $updated_at;
         return $this;
     }
 

@@ -21,9 +21,9 @@
         </div>
 
         <div class="mb-3">
-            {{ form_label(form.dueDate, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.dueDate, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.dueDate, {'attr': {'class': 'invalid-feedback'}}) }}
+            {{ form_label(form.due_date, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.due_date, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.due_date, {'attr': {'class': 'invalid-feedback'}}) }}
         </div>
 
         <div class="mb-3">
@@ -39,27 +39,21 @@
         </div>
 
         <div class="mb-3">
-            {{ form_label(form.submissionType, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.submissionType, {'attr': {'class': 'form-select'}}) }}
-            {{ form_errors(form.submissionType, {'attr': {'class': 'invalid-feedback'}}) }}
+            {{ form_label(form.submission_type, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.submission_type, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.submission_type, {'attr': {'class': 'invalid-feedback'}}) }}
         </div>
 
         <div class="mb-3">
-            {{ form_label(form.submissionUrl, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.submissionUrl, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.submissionUrl, {'attr': {'class': 'invalid-feedback'}}) }}
+            {{ form_label(form.submission_url, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.submission_url, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.submission_url, {'attr': {'class': 'invalid-feedback'}}) }}
         </div>
 
         <div class="mb-3">
             {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
             {{ form_errors(form.type, {'attr': {'class': 'invalid-feedback'}}) }}
-        </div>
-
-        <div class="mb-3">
-            {{ form_label(form.dueDates, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.dueDates, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.dueDates, {'attr': {'class': 'invalid-feedback'}}) }}
         </div>
 
         <button type="submit" class="btn btn-primary">Ajouter le devoir</button>

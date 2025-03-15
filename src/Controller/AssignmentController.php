@@ -24,14 +24,8 @@ class AssignmentController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $assignment->setCreatedBy($this->getUser());
-            $assignment->setCreatedAt(new \DateTime()); // Compatible avec ton entité
+            $assignment->setCreatedAt(new \DateTime());
             $assignment->setUpdatedAt(new \DateTime());
-
-            // Gérer le champ JSON dueDates si fourni
-            $dueDates = $form->get('dueDates')->getData();
-            if ($dueDates) {
-                $assignment->setDueDates(json_decode($dueDates, true));
-            }
 
             $entityManager->persist($assignment);
             $entityManager->flush();

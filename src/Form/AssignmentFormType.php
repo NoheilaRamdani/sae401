@@ -28,7 +28,7 @@ class AssignmentFormType extends AbstractType
                 'required' => false,
                 'attr' => ['placeholder' => 'Détails du devoir...'],
             ])
-            ->add('dueDate', DateTimeType::class, [
+            ->add('due_date', DateTimeType::class, [
                 'label' => 'Date limite',
                 'widget' => 'single_text',
                 'attr' => ['class' => 'datetime-picker'],
@@ -40,7 +40,7 @@ class AssignmentFormType extends AbstractType
                 'placeholder' => 'Choisir une matière',
                 'required' => true,
             ])
-            ->add('groups', EntityType::class, [ // Changement ici : 'groups' au lieu de 'group'
+            ->add('groups', EntityType::class, [
                 'class' => Group::class,
                 'choice_label' => 'name',
                 'label' => 'Groupe(s) concerné(s)',
@@ -48,7 +48,7 @@ class AssignmentFormType extends AbstractType
                 'expanded' => true,
                 'required' => true,
             ])
-            ->add('submissionType', ChoiceType::class, [
+            ->add('submission_type', ChoiceType::class, [
                 'label' => 'Mode de rendu',
                 'choices' => [
                     'Par mail' => 'email',
@@ -58,12 +58,12 @@ class AssignmentFormType extends AbstractType
                 'placeholder' => 'Choisir un mode de rendu',
                 'required' => true,
             ])
-            ->add('submissionUrl', TextType::class, [
+            ->add('submission_url', TextType::class, [
                 'label' => 'URL de soumission (optionnel)',
                 'required' => false,
                 'attr' => ['placeholder' => 'Ex. : https://vps.example.com'],
             ])
-            ->add('type', ChoiceType::class, [ // Ajout du champ type
+            ->add('type', ChoiceType::class, [
                 'label' => 'Type',
                 'choices' => [
                     'Devoir' => 'devoir',
@@ -72,12 +72,6 @@ class AssignmentFormType extends AbstractType
                 ],
                 'placeholder' => 'Choisir un type',
                 'required' => true,
-            ])
-            ->add('dueDates', TextareaType::class, [
-                'label' => 'Dates limites spécifiques (JSON)',
-                'required' => false,
-                'mapped' => false,
-                'attr' => ['placeholder' => '{"TP A": "2025-04-04 23:59:00", "TD AB": "2025-04-05 23:59:00"}'],
             ]);
     }
 
