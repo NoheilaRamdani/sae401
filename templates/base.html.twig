@@ -29,26 +29,44 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ path('app_home') }}">Home</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('app_register') }}">Register</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('app_login') }}">Login</a>
-                </li>
+                {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_register') }}">Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_login') }}">Login</a>
+                    </li>
+                {% else %}
+                    {# Si connecté, pas de Register, on garde Login pour Logout implicite ou autre #}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_logout') }}">Logout</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('ical_user_feed') }}" target="_blank">Ajouter à mon calendrier</a>
+                    </li>
+                {% endif %}
+
                 {% if is_granted('ROLE_ADMIN') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('delegate_manage') }}">Gérer les délégués</a>
                     </li>
-                {% endif %}
-                {% if is_granted('ROLE_DELEGATE') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('manage_assignments') }}">Gestion des devoirs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('add_assignment') }}">Ajouter un devoir</a>
+                    </li>
+                {% elseif is_granted('ROLE_DELEGATE') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('manage_assignments') }}">Gestion des devoirs</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('add_assignment') }}">Ajouter un devoir</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_suggestions') }}">Suggestion de modification</a>
+                        <a class="nav-link" href="{{ path('app_suggestions') }}">Suggestions de modification</a>
                     </li>
                 {% endif %}
-                <a href="{{ path('ical_user_feed') }}" target="_blank">Ajouter à mon calendrier</a>
             </ul>
         </div>
     </div>
