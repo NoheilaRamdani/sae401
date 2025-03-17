@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique des devoirs{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .assignments-history { padding: 20px; }
+        .assignment-item { padding: 10px; margin-bottom: 10px; background-color: #fff; display: flex; align-items: center; border: 1px solid #ddd; border-radius: 5px; }
+        .assignment-item.completed { text-decoration: line-through; opacity: 0.7; }
+        .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="assignments-history">
+        <h1><i class="fas fa-history"></i> Historique des devoirs</h1>
+
+        {% if assignments_data|length > 0 %}
+            {% for data in assignments_data %}
+                {% set assignment = data.assignment %}
+                <div class="assignment-item {{ data.isCompleted ? 'completed' }}" data-id="{{ assignment.id }}">
+                    <div class="color-dot" style="background-color: {{ data.color }}"></div>
+                    <div>
+                        <strong><i class="fas fa-book"></i> [{{ data.subjectCode }}] {{ assignment.title }}</strong><br>
+                        <small><i class="fas fa-calendar-day"></i> Date limite : {{ assignment.dueDate|date('d/m/Y H:i') }}</small><br>
+                        <small><i class="fas fa-clock"></i> Ajouté le : {{ assignment.createdAt|date('d/m/Y H:i') }}</small><br>
+                        <small><i class="fas fa-check-circle"></i> Statut : {{ data.isCompleted ? 'Terminé' : 'En cours' }}</small>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p><i class="fas fa-exclamation-circle"></i> Aucun devoir dans l'historique.</p>
+        {% endif %}
+
+        <a href="{{ path('app_home') }}" class="btn btn-primary mt-3"><i class="fas fa-arrow-left"></i> Retour à l'accueil</a>
+    </div>
+{% endblock %}

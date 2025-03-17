@@ -6,6 +6,7 @@ use App\Repository\AssignmentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AssignmentRepository::class)]
 class Assignment
@@ -15,40 +16,47 @@ class Assignment
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre du devoir est requis.")]
     private ?string $title = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[ORM\Column(type: 'datetime')]
+    #[Assert\NotBlank(message: "La date limite est requise.")]
     private ?\DateTimeInterface $due_date = null;
 
     #[ORM\ManyToOne(targetEntity: Subject::class)]
-    #[ORM\JoinColumn(name: 'subject_id', nullable: false)] // Explicitement nommé subject_id
+    #[ORM\JoinColumn(name: 'subject_id', nullable: false)]
+    #[Assert\NotBlank(message: "La matière est requise.")]
     private ?Subject $subject = null;
 
     #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'assignments')]
     #[ORM\JoinTable(name: 'assignment_group')]
+    #[Assert\NotBlank(message: "Au moins un groupe doit être sélectionné.")]
+    #[Assert\Count(min: 1, minMessage: "Vous devez sélectionner au moins un groupe.")]
     private Collection $groups;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'created_by_id', nullable: true)] // Explicitement nommé created_by_id
-    private ?User $created_by = null; // Changé de createdBy à created_by
+    #[ORM\JoinColumn(name: 'created_by_id', nullable: true)]
+    private ?User $created_by = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $submission_type = null; // Changé de submissionType à submission_type
+    #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "Le mode de rendu est requis.")]
+    private ?string $submission_type = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $submission_url = null; // Changé de submissionUrl à submission_url
+    private ?string $submission_url = null;
 
     #[ORM\Column(type: 'datetime')]
-    private ?\DateTimeInterface $created_at = null; // Changé de createdAt à created_at
+    private ?\DateTimeInterface $created_at = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $updated_at = null; // Changé de updatedAt à updated_at
+    private ?\DateTimeInterface $updated_at = null;
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(type: 'string')]
+    #[Assert\NotBlank(message: "Le type de devoir est requis.")]
     private ?string $type = null;
 
     #[ORM\Column(type: 'boolean', nullable: false, options: ['default' => false])]

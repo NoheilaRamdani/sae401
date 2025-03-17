@@ -8,9 +8,14 @@
         .suggestions-list { max-width: 800px; margin: 20px auto; padding: 20px; background-color: #f5f5f5; border-radius: 5px; }
         .suggestions-list h1 { font-size: 24px; margin-bottom: 20px; }
         .suggestions-list ul { list-style: none; padding: 0; }
-        .suggestions-list li { padding: 10px; background-color: #fff; margin-bottom: 10px; border-radius: 5px; }
+        .suggestions-list li { padding: 10px; background-color: #fff; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
         .suggestions-list li strong { color: #007bff; }
         .fa-icon { margin-right: 5px; }
+        .status { font-size: 14px; padding: 5px 10px; border-radius: 3px; }
+        .status.processed { color: #28a745; background-color: #d4edda; }
+        .status.pending { color: #fd7e14; background-color: #fff3cd; }
+        .toggle-btn { cursor: pointer; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; }
+        .toggle-btn:hover { background-color: #0056b3; }
     </style>
 {% endblock %}
 
@@ -20,9 +25,21 @@
         {% if suggestions|length > 0 %}
             <ul>
                 {% for suggestion in suggestions %}
-                    <li>
-                        <strong>{{ suggestion.suggestedBy.userIdentifier }}</strong> pour "{{ suggestion.assignment.title }}"
-                        le {{ suggestion.createdAt|date('d/m/Y H:i') }} : {{ suggestion.message }}
+                    <li data-suggestion-id="{{ suggestion.id }}">
+                        <span>
+                            <strong>{{ suggestion.suggestedBy.userIdentifier }}</strong> pour "{{ suggestion.assignment.title }}"
+                            le {{ suggestion.createdAt|date('d/m/Y H:i') }} : {{ suggestion.message }}
+                        </span>
+                        <span class="status {% if suggestion.isProcessed %}processed{% else %}pending{% endif %}">
+                            {% if suggestion.isProcessed %}
+                                <i class="fas fa-check fa-icon"></i> Traité
+                            {% else %}
+                                <i class="fas fa-hourglass-half fa-icon"></i> Non traité
+                            {% endif %}
+                        </span>
+                        <button class="toggle-btn" data-processed="{{ suggestion.isProcessed ? 'true' : 'false' }}">
+                            {% if suggestion.isProcessed %}Marquer comme non traité{% else %}Marquer comme traité{% endif %}
+                        </button>
                     </li>
                 {% endfor %}
             </ul>
@@ -30,4 +47,47 @@
             <p><i class="fas fa-exclamation-circle fa-icon"></i> Aucune suggestion pour le moment.</p>
         {% endif %}
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.toggle-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const suggestionId = this.closest('li').dataset.suggestionId;
+                    const isProcessed = this.dataset.processed === 'true';
+
+                    fetch(`/api/suggestions/${suggestionId}/toggle-processed`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const statusSpan = this.previousElementSibling;
+                                if (data.isProcessed) {
+                                    statusSpan.classList.remove('pending');
+                                    statusSpan.classList.add('processed');
+                                    statusSpan.innerHTML = '<i class="fas fa-check fa-icon"></i> Traité';
+                                    this.textContent = 'Marquer comme non traité';
+                                    this.dataset.processed = 'true';
+                                } else {
+                                    statusSpan.classList.remove('processed');
+                                    statusSpan.classList.add('pending');
+                                    statusSpan.innerHTML = '<i class="fas fa-hourglass-half fa-icon"></i> Non traité';
+                                    this.textContent = 'Marquer comme traité';
+                                    this.dataset.processed = 'false';
+                                }
+                            }
+                        })
+                        .catch(error => console.error('Erreur:', error));
+                });
+            });
+        });
+    </script>
 {% endblock %}

@@ -42,7 +42,15 @@
                 events: '/api/assignments' + (new URLSearchParams(window.location.search).toString() ? '?' + new URLSearchParams(window.location.search).toString() : ''),
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
-                    showEventDetails(info.event);
+                    // Récupérer les détails complets via l'API pour inclure le code
+                    fetch(`/api/assignments/${info.event.id}`)
+                        .then(response => response.json())
+                        .then(data => showEventDetails({
+                            id: data.id,
+                            title: data.title, // Utilise le titre avec le code
+                            start: new Date(data.start),
+                            extendedProps: data
+                        }));
                 }
             });
             calendar.render();
@@ -58,7 +66,7 @@
                         .then(response => response.json())
                         .then(data => showEventDetails({
                             id: data.id,
-                            title: data.title,
+                            title: data.title, // Utilise le titre avec le code
                             start: new Date(data.start),
                             extendedProps: data
                         }));
@@ -105,22 +113,7 @@
 
             document.getElementById('suggestModification').addEventListener('click', function() {
                 const eventId = document.getElementById('eventModal').dataset.id;
-                const message = prompt('Entrez votre suggestion de modification :');
-                if (message) {
-                    fetch(`/api/assignments/${eventId}/suggest-modification`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: message })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert('Suggestion envoyée aux délégués !');
-                            } else {
-                                alert('Erreur : ' + (data.error || 'Suggestion non envoyée'));
-                            }
-                        });
-                }
+                window.location.href = `/assignments/${eventId}/suggest-modification-form`;
             });
 
             const notifications = {{ notifications|json_encode|raw }};
@@ -132,7 +125,6 @@
                 setTimeout(() => div.remove(), 5000);
             });
 
-            // Gestion persistante de la fenêtre des suggestions avec localStorage
             const suggestionsBox = document.querySelector('.suggestions-box');
             const showSuggestionsBtn = document.querySelector('.show-suggestions-btn');
             if (suggestionsBox && showSuggestionsBtn) {
@@ -157,7 +149,7 @@
         });
 
         function showEventDetails(event) {
-            document.getElementById('modalTitle').textContent = event.title;
+            document.getElementById('modalTitle').textContent = event.title; // Affiche le titre avec le code
             document.getElementById('modalDate').textContent = event.start.toLocaleString();
             document.getElementById('modalCreatedAt').textContent = event.extendedProps.createdAt || 'Inconnu';
             document.getElementById('modalDescription').textContent = event.extendedProps.description || 'Aucune description';
@@ -189,6 +181,7 @@
                 </select>
             </form>
             <div id="calendar"></div>
+            <a href="{{ path('app_assignments_history') }}" class="btn btn-secondary mt-3"><i class="fas fa-history"></i> Voir l'historique des devoirs</a>
         </div>
 
         <div class="upcoming-section">
@@ -200,7 +193,7 @@
                         <input type="checkbox" class="complete-checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
                         <div class="color-dot" style="background-color: {{ data.color }}"></div>
                         <div>
-                            <strong><i class="fas fa-book fa-icon"></i> {{ assignment.title }}</strong><br>
+                            <strong><i class="fas fa-book fa-icon"></i> [{{ data.subjectCode }}] {{ assignment.title }}</strong><br>
                             <small><i class="fas fa-calendar-day fa-icon"></i> {{ assignment.dueDate|date('d/m/Y H:i') }}</small>
                         </div>
                     </div>
@@ -234,7 +227,7 @@
             <ul>
                 {% for suggestion in suggestions %}
                     <li>
-                        <strong>{{ suggestion.suggestedBy.userIdentifier }}</strong> pour "{{ suggestion.assignment.title }}" : {{ suggestion.message }}
+                        <strong>{{ suggestion.suggestedBy.userIdentifier }}</strong> pour "[{{ suggestion.assignment.subject.code }}] {{ suggestion.assignment.title }}" : {{ suggestion.message }}
                     </li>
                 {% endfor %}
             </ul>

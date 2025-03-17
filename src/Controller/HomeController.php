@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Form\SuggestionFormType;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class HomeController extends AbstractController
 {
@@ -71,6 +73,7 @@ class HomeController extends AbstractController
                 'daysUntilDue' => $daysUntilDue,
                 'color' => $color,
                 'isCompleted' => $assignment->isCompleted(),
+                'subjectCode' => $assignment->getSubject()->getCode(), // Pour "Prochains devoirs"
             ];
 
             if (!$assignment->isCompleted() && ($hoursUntilDue === 24 || $hoursUntilDue === 48)) {
@@ -81,13 +84,12 @@ class HomeController extends AbstractController
             }
         }
 
-        // Récupérer les suggestions pour les délégués
         $suggestions = [];
         if ($this->isGranted('ROLE_DELEGATE')) {
             $suggestions = $entityManager->getRepository(\App\Entity\Suggestion::class)
                 ->createQueryBuilder('s')
                 ->orderBy('s.createdAt', 'DESC')
-                ->setMaxResults(5) // 5 dernières suggestions dans la fenêtre
+                ->setMaxResults(5)
                 ->getQuery()
                 ->getResult();
         }
@@ -148,7 +150,7 @@ class HomeController extends AbstractController
 
             $events[] = [
                 'id' => $assignment->getId(),
-                'title' => $assignment->getTitle(),
+                'title' => $assignment->getTitle(), // Sans le code pour le calendrier
                 'start' => $dueDate->format('c'),
                 'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
                 'color' => $color,
@@ -190,9 +192,11 @@ class HomeController extends AbstractController
             }
         }
 
+        $titleWithCode = sprintf('[%s] %s', $assignment->getSubject()->getCode(), $assignment->getTitle()); // Ajout du code dans la popup
+
         return $this->json([
             'id' => $assignment->getId(),
-            'title' => $assignment->getTitle(),
+            'title' => $titleWithCode, // Titre avec le code pour la popup
             'start' => $assignment->getDueDate()->format('c'),
             'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
             'description' => $assignment->getDescription() ?? 'Lorem ipsum...',
@@ -343,4 +347,140 @@ class HomeController extends AbstractController
             'suggestions' => $suggestions,
         ]);
     }
+
+    #[Route('/api/suggestions/{id}/toggle-processed', name: 'api_toggle_suggestion_processed', methods: ['POST'])]
+    #[IsGranted('ROLE_DELEGATE')]
+    public function toggleSuggestionProcessed(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $suggestion = $entityManager->getRepository(\App\Entity\Suggestion::class)->find($id);
+        if (!$suggestion) {
+            throw $this->createNotFoundException('Suggestion non trouvée.');
+        }
+
+        $suggestion->setIsProcessed(!$suggestion->isProcessed());
+        $entityManager->flush();
+
+        return $this->json(['success' => true, 'isProcessed' => $suggestion->isProcessed()]);
+    }
+
+
+    #[Route('/assignments/history', name: 'app_assignments_history')]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function assignmentsHistory(EntityManagerInterface $entityManager): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
+        }
+
+        $queryBuilder = $entityManager->getRepository(\App\Entity\Assignment::class)
+            ->createQueryBuilder('a')
+            ->orderBy('a.due_date', 'DESC'); // Tri par date décroissante pour voir les plus récents en haut
+
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $groups = $user->getGroups();
+            $queryBuilder
+                ->join('a.groups', 'g')
+                ->andWhere('g IN (:groups)')
+                ->setParameter('groups', $groups);
+        }
+
+        $assignments = $queryBuilder->getQuery()->getResult();
+
+        $assignmentsData = [];
+        $now = new \DateTime();
+        foreach ($assignments as $assignment) {
+            $dueDate = $assignment->getDueDate();
+            $daysUntilDue = $now->diff($dueDate)->days * ($dueDate >= $now ? 1 : -1);
+            $color = $assignment->getSubject()->getColor() ?? '#3788d8';
+            if ($dueDate < $now) {
+                $color = '#808080'; // Gris pour les devoirs passés
+            }
+
+            $assignmentsData[] = [
+                'assignment' => $assignment,
+                'daysUntilDue' => $daysUntilDue,
+                'color' => $color,
+                'isCompleted' => $assignment->isCompleted(),
+                'subjectCode' => $assignment->getSubject()->getCode(),
+            ];
+        }
+
+        return $this->render('home/assignments_history.html.twig', [
+            'user' => $user,
+            'assignments_data' => $assignmentsData,
+        ]);
+    }
+    #[Route('/assignments/{id}/suggest-modification-form', name: 'app_suggest_modification_form', methods: ['GET', 'POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function suggestModificationForm(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $assignment = $entityManager->getRepository(\App\Entity\Assignment::class)->find($id);
+        if (!$assignment) {
+            throw $this->createNotFoundException('Devoir non trouvé.');
+        }
+
+        /** @var User $user */
+        $user = $this->getUser();
+        $groups = $user->getGroups();
+        $hasAccess = false;
+        foreach ($assignment->getGroups() as $group) {
+            if ($groups->contains($group)) {
+                $hasAccess = true;
+                break;
+            }
+        }
+        if (!$hasAccess && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce devoir.');
+        }
+
+        $form = $this->createForm(SuggestionFormType::class, null, [
+            'assignment' => $assignment,
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+
+            // Construire le message de suggestion
+            $message = "Suggestion de modification pour '{$assignment->getTitle()}':\n";
+            if ($data['title'] !== $assignment->getTitle()) {
+                $message .= "Nouveau titre : {$data['title']} (ancien : {$assignment->getTitle()})\n";
+            }
+            if ($data['description'] !== $assignment->getDescription()) {
+                $message .= "Nouvelle description : {$data['description']} (ancienne : {$assignment->getDescription()})\n";
+            }
+            if ($data['due_date'] != $assignment->getDueDate()) {
+                $message .= "Nouvelle date limite : {$data['due_date']->format('d/m/Y H:i')} (ancienne : {$assignment->getDueDate()->format('d/m/Y H:i')})\n";
+            }
+            if ($data['submission_type'] !== $assignment->getSubmissionType()) {
+                $message .= "Nouveau mode de rendu : {$data['submission_type']} (ancien : {$assignment->getSubmissionType()})\n";
+            }
+            if ($data['submission_url'] !== $assignment->getSubmissionUrl()) {
+                $message .= "Nouvelle URL de soumission : {$data['submission_url']} (ancienne : {$assignment->getSubmissionUrl()})\n";
+            }
+            if ($data['type'] !== $assignment->getType()) {
+                $message .= "Nouveau type : {$data['type']} (ancien : {$assignment->getType()})\n";
+            }
+            $message .= "Commentaire : {$data['message']}";
+
+            $suggestion = new \App\Entity\Suggestion();
+            $suggestion->setAssignment($assignment)
+                ->setSuggestedBy($user)
+                ->setMessage($message);
+
+            $entityManager->persist($suggestion);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Suggestion envoyée aux délégués !');
+            return $this->redirectToRoute('app_home');
+        }
+
+        return $this->render('home/suggest_modification_form.html.twig', [
+            'form' => $form->createView(),
+            'assignment' => $assignment,
+        ]);
+    }
+
 }

@@ -22,6 +22,7 @@ class AssignmentFormType extends AbstractType
             ->add('title', TextType::class, [
                 'label' => 'Titre du devoir',
                 'attr' => ['placeholder' => 'Ex. : Projet Symfony'],
+                'required' => true,
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
@@ -32,10 +33,13 @@ class AssignmentFormType extends AbstractType
                 'label' => 'Date limite',
                 'widget' => 'single_text',
                 'attr' => ['class' => 'datetime-picker'],
+                'required' => true,
             ])
             ->add('subject', EntityType::class, [
                 'class' => Subject::class,
-                'choice_label' => 'name',
+                'choice_label' => function (Subject $subject) {
+                    return sprintf('%s - %s', $subject->getCode(), $subject->getName());
+                }, // Affiche "WSA301D - SAE Dév"
                 'label' => 'Matière',
                 'placeholder' => 'Choisir une matière',
                 'required' => true,

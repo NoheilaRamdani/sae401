@@ -34,7 +34,12 @@
 
         <div class="mb-3">
             {{ form_label(form.groups, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.groups, {'attr': {'class': 'form-select'}}) }}
+            {% for group in form.groups %}
+                <div class="form-check">
+                    {{ form_widget(group, {'attr': {'class': 'form-check-input'}}) }}
+                    {{ form_label(group, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                </div>
+            {% endfor %}
             {{ form_errors(form.groups, {'attr': {'class': 'invalid-feedback'}}) }}
         </div>
 

@@ -44,6 +44,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('ical_user_feed') }}" target="_blank">Ajouter à mon calendrier</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_assignments_history') }}" target="_blank">Historique des rendus</a>
+                    </li>
                 {% endif %}
 
                 {% if is_granted('ROLE_ADMIN') %}
