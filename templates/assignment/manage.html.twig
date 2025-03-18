@@ -36,7 +36,7 @@
                 {% for assignment in assignments %}
                     <tr>
                         <td>{{ assignment.title }}</td>
-                        <td>{{ assignment.getDueDate()|date('d/m/Y H:i') }}</td> {# Utilisation de getDueDate() #}
+                        <td>{{ assignment.getDueDate()|date('d/m/Y H:i') }}</td> 
                         <td>{{ assignment.createdBy.userIdentifier }}</td>
                         <td>
                             <a href="{{ path('edit_assignment', {'id': assignment.id}) }}" class="btn btn-small btn-warning">

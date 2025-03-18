@@ -36,14 +36,14 @@
                         <a class="nav-link" href="{{ path('delegate_manage') }}">Gérer les délégués</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('manage_assignments') }}">Gestion des devoirs</a>
+                        <a class="nav-link" href="{{ path('manage_assignments') }}">Gérer les devoirs</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('add_assignment') }}">Ajouter un devoir</a>
                     </li>
                 {% elseif is_granted('ROLE_DELEGATE') %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('manage_assignments') }}">Gestion des devoirs</a>
+                        <a class="nav-link" href="{{ path('manage_assignments') }}">Gérer les devoirs</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('add_assignment') }}">Ajouter un devoir</a>
