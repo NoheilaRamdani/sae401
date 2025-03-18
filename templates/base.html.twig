@@ -29,25 +29,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ path('app_home') }}">Accueil</a>
                 </li>
-                {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_register') }}">S'inscrire</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_login') }}">Se connecter</a>
-                    </li>
-                {% else %}
-                    {# Si connecté, pas de Register, on garde Login pour Logout implicite ou autre #}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_logout') }}">Se déconnecter</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('ical_user_feed') }}" target="_blank">Ajouter à mon calendrier</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_assignments_history') }}" target="_blank">Historique des rendus</a>
-                    </li>
-                {% endif %}
+
 
                 {% if is_granted('ROLE_ADMIN') %}
                     <li class="nav-item">
@@ -68,6 +50,27 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('app_suggestions') }}">Suggestions de modification</a>
+                    </li>
+                {% endif %}
+
+                {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_register') }}">S'inscrire</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_login') }}">Se connecter</a>
+                    </li>
+                {% else %}
+                    {# Si connecté, pas de Register, on garde Login pour Logout implicite ou autre #}
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('ical_user_feed') }}" target="_blank">Ajouter à mon calendrier</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_assignments_history') }}" target="_blank">Historique des rendus</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_logout') }}">Se déconnecter</a>
                     </li>
                 {% endif %}
             </ul>
