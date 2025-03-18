@@ -73,7 +73,7 @@ class HomeController extends AbstractController
                 'daysUntilDue' => $daysUntilDue,
                 'color' => $color,
                 'isCompleted' => $assignment->isCompleted(),
-                'subjectCode' => $assignment->getSubject()->getCode(), // Pour "Prochains devoirs"
+                'subjectCode' => $assignment->getSubject()->getCode(),
             ];
 
             if (!$assignment->isCompleted() && ($hoursUntilDue === 24 || $hoursUntilDue === 48)) {
@@ -88,6 +88,8 @@ class HomeController extends AbstractController
         if ($this->isGranted('ROLE_DELEGATE')) {
             $suggestions = $entityManager->getRepository(\App\Entity\Suggestion::class)
                 ->createQueryBuilder('s')
+                ->where('s.isProcessed = :isProcessed')
+                ->setParameter('isProcessed', false)
                 ->orderBy('s.createdAt', 'DESC')
                 ->setMaxResults(5)
                 ->getQuery()
@@ -150,7 +152,7 @@ class HomeController extends AbstractController
 
             $events[] = [
                 'id' => $assignment->getId(),
-                'title' => $assignment->getTitle(), // Sans le code pour le calendrier
+                'title' => $assignment->getTitle(),
                 'start' => $dueDate->format('c'),
                 'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
                 'color' => $color,
@@ -192,11 +194,11 @@ class HomeController extends AbstractController
             }
         }
 
-        $titleWithCode = sprintf('[%s] %s', $assignment->getSubject()->getCode(), $assignment->getTitle()); // Ajout du code dans la popup
+        $titleWithCode = sprintf('[%s] %s', $assignment->getSubject()->getCode(), $assignment->getTitle());
 
         return $this->json([
             'id' => $assignment->getId(),
-            'title' => $titleWithCode, // Titre avec le code pour la popup
+            'title' => $titleWithCode,
             'start' => $assignment->getDueDate()->format('c'),
             'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
             'description' => $assignment->getDescription() ?? 'Lorem ipsum...',
@@ -360,9 +362,40 @@ class HomeController extends AbstractController
         $suggestion->setIsProcessed(!$suggestion->isProcessed());
         $entityManager->flush();
 
-        return $this->json(['success' => true, 'isProcessed' => $suggestion->isProcessed()]);
+        return $this->json([
+            'success' => true,
+            'isProcessed' => $suggestion->isProcessed(),
+            'id' => $suggestion->getId(),
+        ]);
     }
 
+    #[Route('/api/suggestions/pending', name: 'api_suggestions_pending', methods: ['GET'])]
+    #[IsGranted('ROLE_DELEGATE')]
+    public function getPendingSuggestions(EntityManagerInterface $entityManager): JsonResponse
+    {
+        $suggestions = $entityManager->getRepository(\App\Entity\Suggestion::class)
+            ->createQueryBuilder('s')
+            ->where('s.isProcessed = :isProcessed')
+            ->setParameter('isProcessed', false)
+            ->orderBy('s.createdAt', 'DESC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+
+        $data = array_map(function ($suggestion) {
+            return [
+                'id' => $suggestion->getId(),
+                'suggestedBy' => $suggestion->getSuggestedBy()->getUserIdentifier(),
+                'assignment' => [
+                    'title' => $suggestion->getAssignment()->getTitle(),
+                    'subjectCode' => $suggestion->getAssignment()->getSubject()->getCode(),
+                ],
+                'message' => $suggestion->getMessage(),
+            ];
+        }, $suggestions);
+
+        return $this->json($data);
+    }
 
     #[Route('/assignments/history', name: 'app_assignments_history')]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
@@ -376,7 +409,7 @@ class HomeController extends AbstractController
 
         $queryBuilder = $entityManager->getRepository(\App\Entity\Assignment::class)
             ->createQueryBuilder('a')
-            ->orderBy('a.due_date', 'DESC'); // Tri par date décroissante pour voir les plus récents en haut
+            ->orderBy('a.due_date', 'DESC');
 
         if (!$this->isGranted('ROLE_ADMIN')) {
             $groups = $user->getGroups();
@@ -395,7 +428,7 @@ class HomeController extends AbstractController
             $daysUntilDue = $now->diff($dueDate)->days * ($dueDate >= $now ? 1 : -1);
             $color = $assignment->getSubject()->getColor() ?? '#3788d8';
             if ($dueDate < $now) {
-                $color = '#808080'; // Gris pour les devoirs passés
+                $color = '#808080';
             }
 
             $assignmentsData[] = [
@@ -412,6 +445,7 @@ class HomeController extends AbstractController
             'assignments_data' => $assignmentsData,
         ]);
     }
+
     #[Route('/assignments/{id}/suggest-modification-form', name: 'app_suggest_modification_form', methods: ['GET', 'POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function suggestModificationForm(int $id, Request $request, EntityManagerInterface $entityManager): Response
@@ -443,7 +477,6 @@ class HomeController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
-            // Construire le message de suggestion
             $message = "Suggestion de modification pour '{$assignment->getTitle()}':\n";
             if ($data['title'] !== $assignment->getTitle()) {
                 $message .= "Nouveau titre : {$data['title']} (ancien : {$assignment->getTitle()})\n";
@@ -482,5 +515,4 @@ class HomeController extends AbstractController
             'assignment' => $assignment,
         ]);
     }
-
 }

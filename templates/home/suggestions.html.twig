@@ -83,6 +83,9 @@
                                     this.textContent = 'Marquer comme traité';
                                     this.dataset.processed = 'false';
                                 }
+
+                                const event = new CustomEvent('suggestionProcessed', { detail: { id: data.id } });
+                                document.dispatchEvent(event);
                             }
                         })
                         .catch(error => console.error('Erreur:', error));

@@ -7,8 +7,10 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity]
+#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -37,7 +39,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
-    #[ORM\OneToMany(targetEntity: UserGroup::class, mappedBy: 'user')]
+    #[ORM\OneToMany(targetEntity: UserGroup::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     private Collection $userGroups;
 
     public function __construct()
@@ -166,6 +168,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->userGroups->map(fn(UserGroup $userGroup) => $userGroup->getGroup());
     }
 
+    /**
+     * Ajoute un groupe à l'utilisateur via une relation UserGroup
+     */
+    public function addGroup(Group $group): self
+    {
+        // Vérifie si l'utilisateur appartient déjà à ce groupe
+        foreach ($this->userGroups as $userGroup) {
+            if ($userGroup->getGroup() === $group) {
+                return $this; // L'utilisateur est déjà dans ce groupe
+            }
+        }
+
+        // Crée une nouvelle relation UserGroup
+        $userGroup = new UserGroup();
+        $userGroup->setUser($this);
+        $userGroup->setGroup($group);
+
+        $this->addUserGroup($userGroup);
+
+        return $this;
+    }
+
     // Méthodes requises par UserInterface
     public function getUserIdentifier(): string
     {
@@ -188,30 +212,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
-    /**
-     * Ajoute un groupe à l'utilisateur via une relation UserGroup
-     */
-    public function addGroup(Group $group): self
-    {
-        // Vérifie si l'utilisateur appartient déjà à ce groupe
-        foreach ($this->userGroups as $userGroup) {
-            if ($userGroup->getGroup() === $group) {
-                return $this; // L'utilisateur est déjà dans ce groupe
-            }
-        }
 
-        // Crée une nouvelle relation UserGroup
-        $userGroup = new UserGroup();
-        $userGroup->setUser($this);
-        $userGroup->setGroup($group);
-
-        $this->addUserGroup($userGroup);
-
-        return $this;
-    }
     public function eraseCredentials(): void
     {
         // Pas de données sensibles temporaires à supprimer ici
     }
-
 }

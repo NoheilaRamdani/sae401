@@ -28,6 +28,8 @@
         .suggestions-box .close-btn { background: none; border: none; color: white; cursor: pointer; font-size: 14px; }
         .show-suggestions-btn { position: fixed; bottom: 20px; right: 20px; background-color: #007bff; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; z-index: 1000; display: none; }
         .show-suggestions-btn.visible { display: block; }
+        .suggestion-item { transition: opacity 0.5s; }
+        .suggestion-item.hidden { opacity: 0; height: 0; margin: 0; }
     </style>
 {% endblock %}
 
@@ -42,12 +44,11 @@
                 events: '/api/assignments' + (new URLSearchParams(window.location.search).toString() ? '?' + new URLSearchParams(window.location.search).toString() : ''),
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
-                    // Récupérer les détails complets via l'API pour inclure le code
                     fetch(`/api/assignments/${info.event.id}`)
                         .then(response => response.json())
                         .then(data => showEventDetails({
                             id: data.id,
-                            title: data.title, // Utilise le titre avec le code
+                            title: data.title,
                             start: new Date(data.start),
                             extendedProps: data
                         }));
@@ -66,7 +67,7 @@
                         .then(response => response.json())
                         .then(data => showEventDetails({
                             id: data.id,
-                            title: data.title, // Utilise le titre avec le code
+                            title: data.title,
                             start: new Date(data.start),
                             extendedProps: data
                         }));
@@ -145,11 +146,38 @@
                     showSuggestionsBtn.classList.remove('visible');
                     localStorage.setItem('suggestionsBoxHidden', 'false');
                 });
+
+                function updateSuggestions() {
+                    fetch('/api/suggestions/pending')
+                        .then(response => response.json())
+                        .then(data => {
+                            const suggestionsList = document.querySelector('.suggestions-box ul');
+                            if (!suggestionsList) return;
+
+                            suggestionsList.innerHTML = '';
+                            data.forEach(suggestion => {
+                                const li = document.createElement('li');
+                                li.className = 'suggestion-item';
+                                li.dataset.id = suggestion.id;
+                                li.innerHTML = `<strong>${suggestion.suggestedBy}</strong> pour "[${suggestion.assignment.subjectCode}] ${suggestion.assignment.title}" : ${suggestion.message}`;
+                                suggestionsList.appendChild(li);
+                            });
+
+                            if (data.length === 0) {
+                                suggestionsBox.classList.add('hidden');
+                                showSuggestionsBtn.classList.add('visible');
+                                localStorage.setItem('suggestionsBoxHidden', 'true');
+                            }
+                        });
+                }
+
+                updateSuggestions();
+                document.addEventListener('suggestionProcessed', updateSuggestions);
             }
         });
 
         function showEventDetails(event) {
-            document.getElementById('modalTitle').textContent = event.title; // Affiche le titre avec le code
+            document.getElementById('modalTitle').textContent = event.title;
             document.getElementById('modalDate').textContent = event.start.toLocaleString();
             document.getElementById('modalCreatedAt').textContent = event.extendedProps.createdAt || 'Inconnu';
             document.getElementById('modalDescription').textContent = event.extendedProps.description || 'Aucune description';
@@ -218,7 +246,7 @@
         </div>
     </div>
 
-    {% if is_granted('ROLE_DELEGATE') and suggestions|length > 0 %}
+    {% if is_granted('ROLE_DELEGATE') %}
         <div class="suggestions-box">
             <h4>
                 <span><i class="fas fa-edit fa-icon"></i> Suggestions de modifications</span>
@@ -226,7 +254,7 @@
             </h4>
             <ul>
                 {% for suggestion in suggestions %}
-                    <li>
+                    <li class="suggestion-item" data-id="{{ suggestion.id }}">
                         <strong>{{ suggestion.suggestedBy.userIdentifier }}</strong> pour "[{{ suggestion.assignment.subject.code }}] {{ suggestion.assignment.title }}" : {{ suggestion.message }}
                     </li>
                 {% endfor %}

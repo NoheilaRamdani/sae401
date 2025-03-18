@@ -13,8 +13,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-
 
 class RegistrationController extends AbstractController
 {
@@ -30,6 +28,15 @@ class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Vérifier si l’email existe déjà
+            $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
+            if ($existingUser) {
+                $this->addFlash('error', 'Cet email est déjà utilisé. Veuillez en choisir un autre.');
+                return $this->render('registration/register.html.twig', [
+                    'registrationForm' => $form->createView(),
+                ]);
+            }
+
             // Hash le mot de passe
             /** @var string $plainPassword */
             $plainPassword = $form->get('plainPassword')->getData();
@@ -39,19 +46,10 @@ class RegistrationController extends AbstractController
             /** @var \App\Entity\Group $group */
             $group = $form->get('group')->getData();
             if ($group) {
-                // Persister l'utilisateur d'abord pour obtenir son ID
-                $entityManager->persist($user);
-                $entityManager->flush();
-
-                // Créer une requête SQL directe
-                $conn = $entityManager->getConnection();
-                $conn->executeStatement(
-                    'INSERT INTO user_group (user_id, group_id) VALUES (?, ?)',
-                    [$user->getId(), $group->getId()]
-                );
+                $user->addGroup($group); // Ajoute le groupe, persisté via cascade
             }
 
-            // Persister l'utilisateur
+            // Persister l’utilisateur (et les UserGroup associés)
             $entityManager->persist($user);
             $entityManager->flush();
 
