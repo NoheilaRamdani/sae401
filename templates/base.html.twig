@@ -34,20 +34,20 @@
 
                 {% if is_granted('ROLE_ADMIN') %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('delegate_manage') }}">Gérer les délégués</a>
+                        <a class="nav-link" href="{{ path('delegate_manage') }}">Gestion des délégués</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('manage_assignments') }}">Gérer les devoirs</a>
+                        <a class="nav-link" href="{{ path('manage_assignments') }}">Gestion des devoirs</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('add_assignment') }}">Ajouter un devoir</a>
+                        <a class="nav-link" href="{{ path('add_assignment') }}">Ajouter une tâche</a>
                     </li>
                 {% elseif is_granted('ROLE_DELEGATE') %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('manage_assignments') }}">Gérer les devoirs</a>
+                        <a class="nav-link" href="{{ path('manage_assignments') }}">Gestion des devoirs</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('add_assignment') }}">Ajouter un devoir</a>
+                        <a class="nav-link" href="{{ path('add_assignment') }}">Ajouter une tâche</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('app_suggestions') }}">Suggestions de modification</a>
@@ -68,7 +68,7 @@
                         <a class="nav-link" href="{{ path('ical_user_feed') }}" target="_blank">Ajouter à mon calendrier</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_assignments_history') }}">Historique des rendus</a>
+                        <a class="nav-link" href="{{ path('app_assignments_history') }}">Historique des tâches</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('app_logout') }}">Se déconnecter</a>

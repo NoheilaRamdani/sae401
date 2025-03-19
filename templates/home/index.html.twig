@@ -91,10 +91,46 @@
                 }
             });
 
+            // Gestion du modal
+            function showEventDetails(event) {
+                document.getElementById('modalTitle').textContent = event.title;
+                document.getElementById('modalDate').textContent = event.start.toLocaleString();
+                document.getElementById('modalCreatedAt').textContent = event.extendedProps.createdAt || 'Inconnu';
+                document.getElementById('modalDescription').textContent = event.extendedProps.description || 'Aucune description';
+                const submissionUrlEl = document.getElementById('modalSubmissionUrl');
+                if (event.extendedProps.submissionUrl) {
+                    submissionUrlEl.innerHTML = `<a href="${event.extendedProps.submissionUrl}" target="_blank">${event.extendedProps.submissionUrl}</a>`;
+                } else {
+                    submissionUrlEl.textContent = 'Aucune URL de soumission';
+                }
+                document.getElementById('modalType').textContent = event.extendedProps.type || 'Non spécifié';
+                document.getElementById('modalCompleted').checked = event.extendedProps.isCompleted;
+                document.getElementById('eventModal').dataset.id = event.id;
+
+                // Mettre à jour le lien d'édition pour admin/délégué
+                const editAssignmentLink = document.getElementById('editAssignment');
+                if (editAssignmentLink) {
+                    editAssignmentLink.href = `/assignment/${event.id}/edit`;
+                }
+
+                document.getElementById('eventModal').classList.add('show');
+            }
+
+            // Gestion du bouton "Suggérer une modification" (pour non-admin/non-délégué)
+            const suggestModificationBtn = document.getElementById('suggestModification');
+            if (suggestModificationBtn) {
+                suggestModificationBtn.addEventListener('click', function() {
+                    const eventId = document.getElementById('eventModal').dataset.id;
+                    window.location.href = `/assignments/${eventId}/suggest-modification-form`;
+                });
+            }
+
+            // Gestion de la fermeture du modal
             document.getElementById('closeModal').addEventListener('click', function() {
                 document.getElementById('eventModal').classList.remove('show');
             });
 
+            // Gestion du checkbox "Effectué"
             document.getElementById('modalCompleted').addEventListener('change', function() {
                 const eventId = document.getElementById('eventModal').dataset.id;
                 fetch(`/api/assignments/${eventId}/toggle-complete`, { method: 'POST' })
@@ -110,11 +146,6 @@
                             calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
                         }
                     });
-            });
-
-            document.getElementById('suggestModification').addEventListener('click', function() {
-                const eventId = document.getElementById('eventModal').dataset.id;
-                window.location.href = `/assignments/${eventId}/suggest-modification-form`;
             });
 
             const notifications = {{ notifications|json_encode|raw }};
@@ -175,23 +206,6 @@
                 document.addEventListener('suggestionProcessed', updateSuggestions);
             }
         });
-
-        function showEventDetails(event) {
-            document.getElementById('modalTitle').textContent = event.title;
-            document.getElementById('modalDate').textContent = event.start.toLocaleString();
-            document.getElementById('modalCreatedAt').textContent = event.extendedProps.createdAt || 'Inconnu';
-            document.getElementById('modalDescription').textContent = event.extendedProps.description || 'Aucune description';
-            const submissionUrlEl = document.getElementById('modalSubmissionUrl');
-            if (event.extendedProps.submissionUrl) {
-                submissionUrlEl.innerHTML = `<a href="${event.extendedProps.submissionUrl}" target="_blank">${event.extendedProps.submissionUrl}</a>`;
-            } else {
-                submissionUrlEl.textContent = 'Aucune URL de soumission';
-            }
-            document.getElementById('modalType').textContent = event.extendedProps.type || 'Non spécifié';
-            document.getElementById('modalCompleted').checked = event.extendedProps.isCompleted;
-            document.getElementById('eventModal').dataset.id = event.id;
-            document.getElementById('eventModal').classList.add('show');
-        }
     </script>
 {% endblock %}
 
@@ -241,7 +255,14 @@
             <p><strong><i class="fas fa-file-alt fa-icon"></i> Description :</strong> <span id="modalDescription"></span></p>
             <p><strong><i class="fas fa-link fa-icon"></i> URL de soumission :</strong> <span id="modalSubmissionUrl"></span></p>
             <p><strong><i class="fas fa-check-circle fa-icon"></i> Effectué :</strong> <input type="checkbox" id="modalCompleted"></p>
-            <button id="suggestModification"><i class="fas fa-edit fa-icon"></i> Suggérer une modification</button>
+
+            {# Condition pour admin ou délégué #}
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_DELEGATE') %}
+                <a href="#" id="editAssignment" class="btn btn-primary"><i class="fas fa-edit fa-icon"></i> Modifier le devoir</a>
+            {% else %}
+                <button id="suggestModification"><i class="fas fa-edit fa-icon"></i> Suggérer une modification</button>
+            {% endif %}
+
             <button id="closeModal"><i class="fas fa-times fa-icon"></i> Fermer</button>
         </div>
     </div>
