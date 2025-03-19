@@ -5,6 +5,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         .container { display: flex; gap: 20px; }
         .calendar-section { flex: 2; }
@@ -30,6 +31,25 @@
         .show-suggestions-btn.visible { display: block; }
         .suggestion-item { transition: opacity 0.5s; }
         .suggestion-item.hidden { opacity: 0; height: 0; margin: 0; }
+
+        /* Personnalisation du calendrier FullCalendar */
+        .fc {
+            font-family: 'Poppins', sans-serif !important; /* Police Poppins pour tout le calendrier */
+        }
+        .fc-daygrid-day {
+            height: 80px !important; /* Hauteur fixe pour garder l’effet rectangulaire */
+            min-width: 150px !important; /* Largeur minimale pour rendre les cases plus larges */
+        }
+        .fc-daygrid-day-frame {
+            width: 100%; /* Occupe toute la largeur disponible */
+            height: 100%; /* Remplit la hauteur définie */
+        }
+        .fc-col-header-cell {
+            font-weight: 600; /* Poids de la police pour les en-têtes */
+        }
+        .fc-daygrid-event {
+            border: 1px solid #007bff !important; /* Bordure des événements conservée */
+        }
     </style>
 {% endblock %}
 
