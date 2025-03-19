@@ -4,35 +4,93 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <style>
-        .assignments-history { padding: 20px; }
-        .assignment-item { padding: 10px; margin-bottom: 10px; background-color: #fff; display: flex; align-items: center; border: 1px solid #ddd; border-radius: 5px; }
-        .assignment-item.completed { text-decoration: line-through; opacity: 0.7; }
-        .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
-    </style>
 {% endblock %}
 
 {% block body %}
-    <div class="assignments-history">
-        <h1><i class="fas fa-history"></i> Historique des devoirs</h1>
+    <h1>Historique des devoirs</h1>
 
-        {% if assignments_data|length > 0 %}
-            {% for data in assignments_data %}
-                {% set assignment = data.assignment %}
-                <div class="assignment-item {{ data.isCompleted ? 'completed' }}" data-id="{{ assignment.id }}">
-                    <div class="color-dot" style="background-color: {{ data.color }}"></div>
-                    <div>
-                        <strong><i class="fas fa-book"></i> [{{ data.subjectCode }}] {{ assignment.title }}</strong><br>
-                        <small><i class="fas fa-calendar-day"></i> Date limite : {{ assignment.dueDate|date('d/m/Y H:i') }}</small><br>
-                        <small><i class="fas fa-clock"></i> Ajouté le : {{ assignment.createdAt|date('d/m/Y H:i') }}</small><br>
-                        <small><i class="fas fa-check-circle"></i> Statut : {{ data.isCompleted ? 'Terminé' : 'En cours' }}</small>
+    <div class="mb-3">
+        <label for="subjectSelect" class="form-label">Toutes les matières</label>
+        <select id="subjectSelect" class="form-select">
+            <option value="">Sélectionner une matière</option>
+            {% if subjects is defined and subjects|length > 0 %}
+                {% for subject in subjects %}
+                    <option value="{{ subject.name }}">{{ subject.name }}</option>
+                {% endfor %}
+            {% else %}
+                <option disabled>Aucune matière disponible</option>
+            {% endif %}
+        </select>
+    </div>
+
+    {% if is_delegate_or_admin %}
+        <div class="mb-3">
+            <label for="groupSelect" class="form-label">Tous les groupes</label>
+            <select id="groupSelect" class="form-select">
+                <option value="">Sélectionner un groupe</option>
+                {% if groups is defined and groups|length > 0 %}
+                    {% for group in groups %}
+                        <option value="{{ group.name }}">{{ group.name }}</option>
+                    {% endfor %}
+                {% else %}
+                    <option disabled>Aucun groupe disponible</option>
+                {% endif %}
+            </select>
+        </div>
+    {% endif %}
+
+    <button class="btn btn-success" onclick="filterAssignments()">Filtrer</button>
+
+    <div id="assignmentsContainer">
+        {% if assignments|length > 0 %}
+            {% for assignment in assignments %}
+                <div class="card my-3 assignment" data-subject="{{ assignment.subject.name }}" data-groups="{% for group in assignment.groups %}{{ group.name }}{% if not loop.last %}, {% endif %}{% endfor %}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ assignment.title }}</h5>
+                        <p class="card-text">Date limite : {{ assignment.dueDate|date('d/m/Y H:i') }}</p>
+                        <p class="card-text">Ajouté le : {{ assignment.createdAt|date('d/m/Y H:i') }}</p>
+                        <p class="card-text">Matière : {{ assignment.subject.name }}</p>
+                        <p class="card-text">
+                            Groupes :
+                            {% if assignment.groups|length > 0 %}
+                                {% for group in assignment.groups %}
+                                    {{ group.name }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                Aucun groupe
+                            {% endif %}
+                        </p>
+                        <p class="card-text">Statut : <span class="badge {% if assignment.isCompleted %}badge-success{% else %}badge-warning{% endif %}">
+                            {{ assignment.isCompleted ? 'Terminé' : 'En cours' }}</span>
+                        </p>
                     </div>
                 </div>
             {% endfor %}
         {% else %}
-            <p><i class="fas fa-exclamation-circle"></i> Aucun devoir dans l'historique.</p>
+            <p>Aucun devoir trouvé dans l'historique.</p>
         {% endif %}
-
-        <a href="{{ path('app_home') }}" class="btn btn-primary mt-3"><i class="fas fa-arrow-left"></i> Retour à l'accueil</a>
     </div>
+
+    <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
+
+    <script>
+        function filterAssignments() {
+            let selectedSubject = document.getElementById("subjectSelect").value;
+            let selectedGroup = document.getElementById("groupSelect").value;
+
+            document.querySelectorAll(".assignment").forEach(assignment => {
+                let subject = assignment.getAttribute("data-subject");
+                let groups = assignment.getAttribute("data-groups").split(", ");
+
+                let matchesSubject = !selectedSubject || subject === selectedSubject;
+                let matchesGroup = !selectedGroup || groups.includes(selectedGroup);
+
+                if (matchesSubject && matchesGroup) {
+                    assignment.style.display = "block";
+                } else {
+                    assignment.style.display = "none";
+                }
+            });
+        }
+    </script>
 {% endblock %}
