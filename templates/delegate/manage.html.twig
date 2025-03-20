@@ -4,60 +4,68 @@
 
 {% block body %}
 
-    <h1>Gestion des délégués</h1>
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div>
-                {{ message }}
+    <main class="delegate-page">
+        <h1>Gestion des délégués</h1>
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+        <div>
+            <p>En tant qu'administrateur, vous pouvez désigner et changer les délégués pour chaque groupe.
+                Chaque groupe peut avoir jusqu'à 2 délégués actifs à la fois.</p>
+
+        </div>
+        {% for groupData in groupsData %}
+            <div class="delegate-table">
+                <div class="row-baseline">
+                    <h3>{{ groupData.group.name }}</h3>
+                    <span>-</span>
+                    <p>Délégués actifs : {{ groupData.activeDelegates|length }}/2</p>
+                </div>
+
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for userData in groupData.users %}
+                        <tr>
+                            <td>{{ userData.user.lastName }}</td>
+                            <td>{{ userData.user.firstName }}</td>
+                            <td>{{ userData.user.email }}</td>
+                            <td>
+                                {% if userData.isDelegate %}
+                                    <span>Délégué</span>
+                                {% else %}
+                                    <span>Non délégué</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a class="button" href="{{ path('delegate_toggle', {'userId': userData.user.id, 'groupId': groupData.group.id}) }}">
+                                    {% if userData.isDelegate %}
+                                        Retirer
+                                    {% else %}
+                                        Désigner
+                                    {% endif %}
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         {% endfor %}
-    {% endfor %}
-    <div>
-        <p>En tant qu'administrateur, vous pouvez désigner et changer les délégués pour chaque groupe.
-            Chaque groupe peut avoir jusqu'à 2 délégués actifs à la fois.</p>
+        <a class="button back-btn" href="{{ path('app_home') }}"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
+    </main>
 
-    </div>
-    {% for groupData in groupsData %}
-        <div>
-            <h3>{{ groupData.group.name }}</h3>
-            <p>Délégués actifs: {{ groupData.activeDelegates|length }}/2</p>
-            <table>
-                <thead>
-                <tr>
-                    <th>Nom</th>
-                    <th>Prénom</th>
-                    <th>Email</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for userData in groupData.users %}
-                    <tr>
-                        <td>{{ userData.user.lastName }}</td>
-                        <td>{{ userData.user.firstName }}</td>
-                        <td>{{ userData.user.email }}</td>
-                        <td>
-                            {% if userData.isDelegate %}
-                                <span>Délégué</span>
-                            {% else %}
-                                <span>Non délégué</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ path('delegate_toggle', {'userId': userData.user.id, 'groupId': groupData.group.id}) }}">
-                                {% if userData.isDelegate %}
-                                    Retirer
-                                {% else %}
-                                    Désigner
-                                {% endif %}
-                            </a>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endfor %}
-    <a href="{{ path('app_home') }}">Retour à l'accueil</a>
+
 {% endblock %}

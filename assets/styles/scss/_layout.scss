@@ -23,6 +23,10 @@
   @include flex-row(flex-start);
 }
 
+.row-baseline {
+  @include flex-row(flex-start, baseline);
+}
+
 .row-center {
   @include flex-row(center);
 }
@@ -53,6 +57,12 @@
 
 .tag-small {
   @include tag-small();
+}
+
+.button.back-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 4%
 }
 
 nav {
@@ -308,3 +318,52 @@ main {
     }
   }
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  thead {
+    background-color: $purplemedium;
+    color: white;
+    text-transform: uppercase;
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #ddd;
+
+      &:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      &:hover {
+        background-color: transparentize($purplemedium, 0.93);      }
+
+      td {
+        padding: 10px;
+      }
+
+      td span {
+        padding: 4px 8px;
+        border-radius: 4px;
+
+        &.delegate {
+          background-color: $purplelight;
+          color: white;
+        }
+      }
+
+    }
+  }
+}
+

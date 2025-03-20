@@ -10,9 +10,9 @@
             <div>
                 <h1>Toutes les tâches</h1>
                 <div>
-                    <label for="subjectSelect">Toutes les matières</label>
+                    <label for="subjectSelect">Sélectionner une matière</label>
                     <select id="subjectSelect">
-                        <option value="">Sélectionner une matière</option>
+                        <option value="">Toutes les matières</option>
                         {% if subjects is defined and subjects|length > 0 %}
                             {% for subject in subjects %}
                                 <option value="{{ subject.name }}">{{ subject.name }}</option>
@@ -25,9 +25,9 @@
 
                 {% if is_delegate_or_admin %}
                     <div>
-                        <label for="groupSelect">Tous les groupes</label>
+                        <label for="groupSelect">Sélectionner un groupe</label>
                         <select id="groupSelect">
-                            <option value="">Sélectionner un groupe</option>
+                            <option value="">Tous les groupes</option>
                             {% if groups is defined and groups|length > 0 %}
                                 {% for group in groups %}
                                     <option value="{{ group.name }}">{{ group.name }}</option>
@@ -42,7 +42,7 @@
             </div>
 
 
-            <a class="button" href="/"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
+            <a class="button back-btn" href="/"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
 
         </div>
 
@@ -70,7 +70,7 @@
                                     <span class="title">Groupes :</span>
                                     {% if assignment.groups|length > 0 %}
                                         {% for group in assignment.groups %}
-                                            {{ group.name }}{% if not loop.last %}, {% endif %}
+                                            {{ group.name }}{% if not loop.last %} - {% endif %}
                                         {% endfor %}
                                     {% else %}
                                         Aucun groupe

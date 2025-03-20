@@ -5,13 +5,6 @@
   padding-bottom: 45px;
 
 
-  .button {
-    position: fixed;
-    bottom: 20px;
-    left: 4%
-  }
-
-
   .filter-section {
     @include flex-column(flex-start, space-between);
     height: 100vh;

@@ -26,11 +26,11 @@
   gap: 10px;
 }
 
-.all-tasks .filter-section, .home .tasks-container, .column-start-start, .column-start, .all-tasks, nav .links, .row-spacebtwn, .row-center, .row-start {
+.all-tasks .filter-section, .home .tasks-container, .column-start-start, .column-start, .all-tasks, nav .links, .row-spacebtwn, .row-center, .row-baseline, .row-start {
   display: flex;
 }
 
-.all-tasks, nav .links, .row-spacebtwn, .row-center, .row-start {
+.all-tasks, nav .links, .row-spacebtwn, .row-center, .row-baseline, .row-start {
   flex-direction: row;
 }
 
@@ -53,6 +53,11 @@
 .row-start {
   justify-content: flex-start;
   align-items: center;
+}
+
+.row-baseline {
+  justify-content: flex-start;
+  align-items: baseline;
 }
 
 .row-center {
@@ -102,6 +107,12 @@
   background-color: #9C36B5;
   padding: 2px 8px;
   font-size: 0.8em;
+}
+
+.button.back-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 4%;
 }
 
 nav {
@@ -317,6 +328,44 @@ main .task-container .content .countdown .ontime {
   margin-top: 30px;
 }
 
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+table thead {
+  background-color: #9C36B5;
+  color: white;
+  text-transform: uppercase;
+}
+table thead th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+}
+table tbody tr {
+  border-bottom: 1px solid #ddd;
+}
+table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+table tbody tr:hover {
+  background-color: rgba(156, 54, 181, 0.07);
+}
+table tbody tr td {
+  padding: 10px;
+}
+table tbody tr td span {
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+table tbody tr td span.delegate {
+  background-color: #F0B5FF;
+  color: white;
+}
+
 .home {
   width: 100%;
   padding: 0;
@@ -385,11 +434,6 @@ main .task-container .content .countdown .ontime {
   padding-top: 45px;
   padding-bottom: 45px;
 }
-.all-tasks .button {
-  position: fixed;
-  bottom: 20px;
-  left: 4%;
-}
 .all-tasks .filter-section {
   justify-content: space-between;
   align-items: flex-start;
@@ -422,6 +466,20 @@ main .task-container .content .countdown .ontime {
   font-weight: 600;
   font-size: 0.8em;
   margin-top: 15px;
+}
+
+.delegate-page {
+  padding-top: 45px;
+  padding-bottom: 45px;
+}
+.delegate-page .row-baseline {
+  gap: 15px;
+}
+.delegate-page .delegate-table {
+  margin-top: 50px;
+}
+.delegate-page .delegate-table .button {
+  font-size: 0.8em;
 }
 
 /*# sourceMappingURL=app.css.map */
