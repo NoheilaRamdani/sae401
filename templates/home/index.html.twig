@@ -66,8 +66,10 @@
 
                 document.getElementById('modalTitle').textContent = event.title || 'Sans titre';
                 document.getElementById('modalDate').textContent = new Date(event.start).toLocaleString('fr-FR') || 'Date inconnue';
-                document.getElementById('modalCreatedAt').textContent = event.createdAt || 'Inconnu';
                 document.getElementById('modalDescription').textContent = event.description || 'Aucune description';
+                // Ajout du code et nom de la matière
+                document.getElementById('modalSubjectCode').textContent = event.subjectCode || 'Non spécifié';
+                document.getElementById('modalSubjectName').textContent = event.subjectName || 'Non spécifié';
 
                 const submissionUrlEl = document.getElementById('modalSubmissionUrl');
                 if (event.submissionUrl) {
@@ -76,21 +78,15 @@
                     submissionUrlEl.textContent = 'Aucune URL de soumission';
                 }
 
-                // Traduire "other" en "Autre" pour le mode de rendu
                 const submissionTypeDisplay = event.submissionType === 'other' ? 'Autre' : event.submissionType || 'Non spécifié';
                 document.getElementById('modalSubmissionType').textContent = submissionTypeDisplay;
-
-                console.log('Submission Type:', event.submissionType);
-                console.log('Submission Other:', event.submissionOther);
 
                 const submissionOtherContainer = document.getElementById('modalSubmissionOtherContainer');
                 if (event.submissionType === 'other' && event.submissionOther) {
                     document.getElementById('modalSubmissionOther').textContent = event.submissionOther;
                     submissionOtherContainer.style.display = 'block';
-                    console.log('Affichage du conteneur submission_other');
                 } else {
                     submissionOtherContainer.style.display = 'none';
-                    console.log('Masquage du conteneur submission_other');
                 }
 
                 document.getElementById('modalCourseLocation').textContent = event.courseLocation || 'Non spécifié';
@@ -98,14 +94,11 @@
                 document.getElementById('modalCompleted').checked = event.isCompleted || false;
                 document.getElementById('eventModal').dataset.id = event.id;
 
-
-                // Mise à jour dynamique du lien "Modifier le devoir"
                 const editAssignmentLink = document.getElementById('editAssignment');
                 if (editAssignmentLink) {
                     editAssignmentLink.href = `/assignments/${event.id}/edit`;
                 }
 
-                // Afficher la modale
                 document.getElementById('eventModal').style.display = 'block';
             }
 
@@ -197,8 +190,11 @@
 {% endblock %}
 
 {% block body %}
-    <div>
-        <h2>Calendrier des devoirs</h2>
+
+    <main class="home">
+        <h1>Calendrier des tâches</h1>
+
+    <div class="calendar-container">
         <form method="get">
             <label for="type">Filtrer par type :</label>
             <select name="type" id="type" onchange="this.form.submit()">
@@ -209,36 +205,95 @@
             </select>
         </form>
         <div id="calendar"></div>
-        <a href="{{ path('app_assignments_history') }}">Voir l'historique des devoirs</a>
     </div>
-    <div>
-        <h2>A venir</h2>
-        {% if assignments_data|length > 0 %}
-            {% for data in assignments_data %}
-                {% set assignment = data.assignment %}
-                {% set now = "now"|date('U') %}
-                {% set dueDate = assignment.dueDate|date('U') %}
-                {% set daysUntilDue = (dueDate - now) / (60 * 60 * 24) %}
-                {% set daysUntilDue = daysUntilDue|round(0, 'floor') %}
-                <div data-id="{{ assignment.id }}" class="event-item">
-                    <input type="checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
-                    <div>
-                        <strong>{{ assignment.type|capitalize }} - [{{ data.subjectCode }}] {{ assignment.subject.name }} - {{ assignment.title }}</strong><br>
-                        <small>{{ assignment.dueDate|date('d/m/Y H:i') }} {{ daysUntilDue >= 0 ? daysUntilDue ~ ' jour' ~ (daysUntilDue > 1 ? 's' : '') ~ ' ' : 'Expiré' }}</small>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p>Aucun devoir à venir.</p>
-        {% endif %}
-    </div>
-    <div id="eventModal" style="display: none;">
-        <div>
+        <div  class="tasks-container">
+            <div  class="main-content column-start-start">
+                <h2><i class="fa-solid fa-calendar"></i> A venir</h2>
+
+
+
+                {% if assignments_data|length > 0 %}
+                    {% for data in assignments_data %}
+                        {% set assignment = data.assignment %}
+                        {% set now = "now"|date('U') %}
+                        {% set dueDate = assignment.dueDate|date('U') %}
+                        {% set daysUntilDue = (dueDate - now) / (60 * 60 * 24) %}
+                        {% set daysUntilDue = daysUntilDue|round(0, 'floor') %}
+
+
+                        <div data-id="{{ assignment.id }}" class="event-item task-container column-start">
+                            <span class="color"></span>
+                            <div class="top row-start">
+                                <p class="date">{{ assignment.dueDate|date('d/m/Y - H:i') }}</p>
+                                <p class="tag-small">{{ assignment.type|capitalize }}</p>
+                            </div>
+                            <div class="content row-spacebtwn">
+                                <div class="task row-start">
+                                    <input type="checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
+                                    <div class="details column-start">
+                                        <p class="name">
+                                            {{ assignment.title }}
+                                        </p>
+                                        <p class="subject">[{{ data.subjectCode }}] - {{ assignment.subject.name }}</p>
+                                    </div>
+                                </div>
+                                <div class="countdown row-start">
+                                    <i class="fa-solid fa-clock ontime"></i>
+                                    <p>{{ daysUntilDue >= 0 ? daysUntilDue ~ ' jour' ~ (daysUntilDue > 1 ? 's' : '') ~ ' ' : 'Expiré' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    {% endfor %}
+                {% else %}
+                    <p>Aucun devoir à venir.</p>
+                {% endif %}
+
+
+
+            </div>
+            <a class="button-grey" href="{{ path('app_assignments_history') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historique des
+                tâches</a>
+
+        </div>
+    </main>
+
+
+
+
+
+
+    <div id="eventModal" class="modal-container" style="display: none;">
+        <div class="modal">
+            <button id="closeModal"><i class="fa-solid fa-xmark"></i></button>
             <h3><span id="modalTitle"></span></h3>
-            <p><strong>Date :</strong> <span id="modalDate"></span></p>
-            <p><strong>Date de saisie :</strong> <span id="modalCreatedAt"></span></p>
-            <p><strong>Type :</strong> <span id="modalType"></span></p>
-            <p><strong>Description :</strong> <span id="modalDescription"></span></p>
+
+            <ul>
+                <li id="modalType" class="tag"></li>
+                <li class="title"><i class="fa-solid fa-bookmark"></i> Matière</li>
+                <li><span id="modalSubjectCode"></span> - <span id="modalSubjectName"></span></li>
+                <li class="title"><i class="fa-solid fa-calendar-day"></i> Date</li>
+                <li id="modalDate">14/04/2025 - 06:00</li>
+                <li class="title">
+                    <i class="fa-solid fa-file-lines"></i> Description
+                </li>
+                <li id="modalDescription">
+                </li>
+
+                <li class="plateformes">
+            <span class="title"
+            ><i class="fa-solid fa-layer-group"></i> Consignes et rendu</span
+            >
+                    <ul>
+                        <li>- <span>Sujet</span> : Moodle</li>
+                        <li>- <span>Rendu</span> : Moodle</li>
+                    </ul>
+                </li>
+
+            </ul>
+
+
             <p><strong>Mode de rendu :</strong> <span id="modalSubmissionType"></span></p>
             <p id="modalSubmissionOtherContainer" style="display: none;">
                 <strong>Précision :</strong> <span id="modalSubmissionOther"></span>
@@ -251,7 +306,6 @@
             {% else %}
                 <button id="suggestModification">Suggérer une modification</button>
             {% endif %}
-            <button id="closeModal">Fermer</button>
         </div>
     </div>
     {% if is_granted('ROLE_DELEGATE') %}
