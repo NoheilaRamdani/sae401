@@ -109,10 +109,26 @@
   font-size: 0.8em;
 }
 
-.button.back-btn {
+.back-to-top {
   position: fixed;
   bottom: 20px;
-  left: 4%;
+  right: 20px;
+  background-color: rgba(255, 255, 255, 0);
+  color: #373737;
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease-in-out;
+}
+.back-to-top:hover {
+  color: #4D3677;
+}
+.back-to-top.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-10px);
 }
 
 nav {
@@ -441,6 +457,11 @@ table tbody tr td span.delegate {
   top: 0;
   position: sticky;
   padding-bottom: 25px;
+}
+.all-tasks .filter-section .button.back-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 4%;
 }
 .all-tasks #assignmentsContainer {
   height: 100%;

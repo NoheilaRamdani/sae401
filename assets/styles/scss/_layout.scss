@@ -59,11 +59,31 @@
   @include tag-small();
 }
 
-.button.back-btn {
+
+.back-to-top {
   position: fixed;
   bottom: 20px;
-  left: 4%
+  right: 20px;
+  background-color: rgba(255, 255, 255, 0);
+  color: $maincolor;
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease-in-out;
+
+  &:hover {
+    color: $purpledark;
+  }
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-10px);
+  }
 }
+
 
 nav {
   height: 50px;

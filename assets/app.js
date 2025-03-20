@@ -1,6 +1,7 @@
 // assets/app.js
 console.log('AssetMapper test');
 
+// HIDING NAV SEPARATOR WITH ACTIVE
 document.addEventListener("DOMContentLoaded", function () {
     const activeItem = document.querySelector(".links li.active");
 
@@ -19,4 +20,20 @@ document.addEventListener("DOMContentLoaded", function () {
             prevSeparator.style.visibility = "hidden";
         }
     }
+
+
+// BACK TO TOP BUTTON
+    const backToTopButton = document.getElementById("backToTop");
+
+    window.addEventListener("scroll", function () {
+        if (window.scrollY > 180) {
+            backToTopButton.classList.add("show");
+        } else {
+            backToTopButton.classList.remove("show");
+        }
+    });
+
+    backToTopButton.addEventListener("click", function () {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
 });
