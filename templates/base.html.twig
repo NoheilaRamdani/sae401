@@ -30,7 +30,7 @@
 <nav class="row-spacebtwn">
     <ul class="links">
         <li class="row-center">
-            <a class="row-center" href="{{ path('app_home') }}"><i class="fa-solid fa-house"></i> Calendrier</a></a>
+            <a class="row-center" href="{{ path('app_home') }}"><i class="fa-solid fa-calendar-days"></i> Calendrier</a></a>
         </li>
         <li class="row-center separator"></li>
         {% if is_granted('ROLE_ADMIN') %}
@@ -68,18 +68,17 @@
             <li class="row-center">
                 <a class="row-center" href="{{ path('app_login') }}">Se connecter</a>
             </li>
-            <li class="row-center separator"></li>
         {% else %}
             {# <li class="row-center">
                 <a class="row-center" href="{{ path('ical_user_feed') }}" target="_blank">Ajouter à mon calendrier</a>
             </li>
             <li class="row-center separator"></li> #}
             <li class="row-center">
-                <a class="row-center" href="{{ path('app_assignments_history') }}">Historique des tâches</a>
+                <a class="row-center" href="{{ path('app_assignments_history') }}"><i class="fa-solid fa-clock-rotate-left"></i> Toutes les tâches</a>
             </li>
             <li class="row-center separator"></li>
             <li class="row-center">
-                <a class="row-center" href="{{ path('app_logout') }}">Se déconnecter</a>
+                <a class="row-center" href="{{ path('app_logout') }}">Déconnexion <i class="fa-solid fa-arrow-right-from-bracket"></i></a>
             </li>
         {% endif %}
     </ul>
