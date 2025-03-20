@@ -212,7 +212,7 @@ class AssignmentController extends AbstractController
                 ? $entityManager->getRepository('App\Entity\Group')->findAll()
                 : $user->getGroups();
 
-            return $this->render('home/assignments_history.html.twig', [
+            return $this->render('assignment/assignments_history.html.twig', [
                 'assignments' => $assignments ?? [],
                 'subjects' => $subjects ?? [],
                 'groups' => $groups ?? [],
@@ -226,3 +226,4 @@ class AssignmentController extends AbstractController
         }
     }
 }
+ 

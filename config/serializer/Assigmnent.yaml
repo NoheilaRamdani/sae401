@@ -1,0 +1,12 @@
+App\Entity\Assignment:
+    attributes:
+        id: { groups: ['assignment:read'] }
+        title: { groups: ['assignment:read'] }
+        start: { groups: ['assignment:read'] }
+        createdAt: { groups: ['assignment:read'] }
+        description: { groups: ['assignment:read'] }
+        submission_type: { groups: ['assignment:read'], serialized_name: 'submissionType' }
+        submission_other: { groups: ['assignment:read'], serialized_name: 'submissionOther' }
+        submission_url: { groups: ['assignment:read'], serialized_name: 'submissionUrl' }
+        isCompleted: { groups: ['assignment:read'] }
+        type: { groups: ['assignment:read'] }

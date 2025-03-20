@@ -39,7 +39,7 @@ class AssignmentFormType extends AbstractType
                 'class' => Subject::class,
                 'choice_label' => function (Subject $subject) {
                     return sprintf('%s - %s', $subject->getCode(), $subject->getName());
-                }, // Affiche "WSA301D - SAE Dév"
+                },
                 'label' => 'Matière',
                 'placeholder' => 'Choisir une matière',
                 'required' => true,
@@ -58,14 +58,25 @@ class AssignmentFormType extends AbstractType
                     'Par mail' => 'email',
                     'Moodle' => 'moodle',
                     'VPS' => 'vps',
+                    'Autre' => 'other',
                 ],
                 'placeholder' => 'Choisir un mode de rendu',
                 'required' => true,
             ])
+            ->add('submission_other', TextType::class, [
+                'label' => 'Préciser le mode de rendu',
+                'required' => false,
+                'attr' => ['placeholder' => 'Ex. : Lien Figma, Discord...'],
+            ])
             ->add('submission_url', TextType::class, [
-                'label' => 'URL de soumission (optionnel)',
+                'label' => 'URL de rendu (optionnel)',
                 'required' => false,
                 'attr' => ['placeholder' => 'Ex. : https://vps.example.com'],
+            ])
+            ->add('course_location', TextType::class, [
+                'label' => 'Où trouver le cours (optionnel)',
+                'required' => false,
+                'attr' => ['placeholder' => 'Ex. : Moodle, Drive, salle 12...'],
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Type',

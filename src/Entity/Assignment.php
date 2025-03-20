@@ -48,6 +48,11 @@ class Assignment
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $submission_url = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $submission_other = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $course_location = null;
 
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $created_at = null;
@@ -206,6 +211,27 @@ class Assignment
     public function isCompleted(): bool
     {
         return $this->is_completed;
+    }
+    public function getSubmissionOther(): ?string
+    {
+        return $this->submission_other;
+    }
+
+    public function setSubmissionOther(?string $submission_other): static
+    {
+        $this->submission_other = $submission_other;
+        return $this;
+    }
+
+    public function getCourseLocation(): ?string
+    {
+        return $this->course_location;
+    }
+
+    public function setCourseLocation(?string $course_location): static
+    {
+        $this->course_location = $course_location;
+        return $this;
     }
 
     public function setIsCompleted(bool $is_completed): static

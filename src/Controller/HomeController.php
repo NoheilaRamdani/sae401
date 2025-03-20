@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Assignment;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -201,13 +202,15 @@ class HomeController extends AbstractController
             'title' => $titleWithCode,
             'start' => $assignment->getDueDate()->format('c'),
             'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
-            'description' => $assignment->getDescription() ?? 'Lorem ipsum...',
+            'description' => $assignment->getDescription() ?? 'Aucune description',
+            'submissionType' => $assignment->getSubmissionType(),
+            'submissionOther' => $assignment->getSubmissionOther(),
             'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
+            'courseLocation' => $assignment->getCourseLocation() ?? 'Non spécifié',
             'isCompleted' => $assignment->isCompleted(),
             'type' => $assignment->getType(),
         ]);
     }
-
     #[Route('/api/assignments/{id}/toggle-complete', name: 'api_toggle_complete', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function toggleComplete(int $id, EntityManagerInterface $entityManager): JsonResponse

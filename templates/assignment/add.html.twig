@@ -2,8 +2,6 @@
 
 {% block title %}Ajouter un devoir{% endblock %}
 
-{% block stylesheets %}{% endblock %}
-
 {% block body %}
     <div>
         <h1>Ajouter un nouveau devoir</h1>
@@ -51,10 +49,22 @@
             {{ form_errors(form.submission_type) }}
         </div>
 
+        <div id="submission_other_container" style="display: none;">
+            {{ form_label(form.submission_other) }}
+            {{ form_widget(form.submission_other) }}
+            {{ form_errors(form.submission_other) }}
+        </div>
+
         <div>
             {{ form_label(form.submission_url) }}
             {{ form_widget(form.submission_url) }}
             {{ form_errors(form.submission_url) }}
+        </div>
+
+        <div>
+            {{ form_label(form.course_location) }}
+            {{ form_widget(form.course_location) }}
+            {{ form_errors(form.course_location) }}
         </div>
 
         <div>
@@ -67,4 +77,41 @@
 
         {{ form_end(form) }}
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const submissionTypeSelect = document.querySelector('#assignment_form_submission_type'); // ID corrigé
+            const submissionOtherContainer = document.querySelector('#submission_other_container');
+            const submissionOtherInput = document.querySelector('#assignment_form_submission_other'); // ID corrigé
+
+            // Vérifie si les éléments existent
+            if (!submissionTypeSelect) {
+                console.error("Erreur : l'élément #assignment_form_submission_type n'a pas été trouvé !");
+                return;
+            }
+            if (!submissionOtherContainer) {
+                console.error("Erreur : l'élément #submission_other_container n'a pas été trouvé !");
+                return;
+            }
+            if (!submissionOtherInput) {
+                console.error("Erreur : l'élément #assignment_form_submission_other n'a pas été trouvé !");
+                return;
+            }
+
+            function toggleSubmissionOther() {
+                console.log("Valeur actuelle de submission_type :", submissionTypeSelect.value);
+                if (submissionTypeSelect.value === 'other') {
+                    submissionOtherContainer.style.display = 'block';
+                    submissionOtherInput.required = true;
+                } else {
+                    submissionOtherContainer.style.display = 'none';
+                    submissionOtherInput.required = false;
+                    submissionOtherInput.value = '';
+                }
+            }
+
+            toggleSubmissionOther(); // Vérifie l'état initial
+            submissionTypeSelect.addEventListener('change', toggleSubmissionOther); // Écoute les changements
+        });
+    </script>
 {% endblock %}

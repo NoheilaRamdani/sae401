@@ -19,12 +19,11 @@
                     info.jsEvent.preventDefault();
                     fetch(`/api/assignments/${info.event.id}`)
                         .then(response => response.json())
-                        .then(data => showEventDetails({
-                            id: data.id,
-                            title: data.title,
-                            start: new Date(data.start),
-                            extendedProps: data
-                        }));
+                        .then(data => {
+                            console.log('ID cliqué:', info.event.id);
+                            console.log('Data from API:', data);
+                            showEventDetails(data);
+                        });
                 }
             });
             calendar.render();
@@ -38,12 +37,11 @@
                     const eventId = this.dataset.id;
                     fetch(`/api/assignments/${eventId}`)
                         .then(response => response.json())
-                        .then(data => showEventDetails({
-                            id: data.id,
-                            title: data.title,
-                            start: new Date(data.start),
-                            extendedProps: data
-                        }));
+                        .then(data => {
+                            console.log('ID cliqué:', eventId);
+                            console.log('Data from API:', data);
+                            showEventDetails(data);
+                        });
                 });
 
                 const checkbox = item.querySelector('input[type="checkbox"]');
@@ -64,19 +62,41 @@
             });
 
             function showEventDetails(event) {
-                document.getElementById('modalTitle').textContent = event.title;
-                document.getElementById('modalDate').textContent = event.start.toLocaleString();
-                document.getElementById('modalCreatedAt').textContent = event.extendedProps.createdAt || 'Inconnu';
-                document.getElementById('modalDescription').textContent = event.extendedProps.description || 'Aucune description';
+                console.log('Event passé à showEventDetails:', event);
+
+                document.getElementById('modalTitle').textContent = event.title || 'Sans titre';
+                document.getElementById('modalDate').textContent = new Date(event.start).toLocaleString('fr-FR') || 'Date inconnue';
+                document.getElementById('modalCreatedAt').textContent = event.createdAt || 'Inconnu';
+                document.getElementById('modalDescription').textContent = event.description || 'Aucune description';
+
                 const submissionUrlEl = document.getElementById('modalSubmissionUrl');
-                if (event.extendedProps.submissionUrl) {
-                    submissionUrlEl.innerHTML = `<a href="${event.extendedProps.submissionUrl}" target="_blank">${event.extendedProps.submissionUrl}</a>`;
+                if (event.submissionUrl) {
+                    submissionUrlEl.innerHTML = `<a href="${event.submissionUrl}" target="_blank">${event.submissionUrl}</a>`;
                 } else {
                     submissionUrlEl.textContent = 'Aucune URL de soumission';
                 }
-                document.getElementById('modalType').textContent = event.extendedProps.type || 'Non spécifié';
-                document.getElementById('modalCompleted').checked = event.extendedProps.isCompleted;
+
+                document.getElementById('modalSubmissionType').textContent = event.submissionType || 'Non spécifié';
+                console.log('Submission Type:', event.submissionType);
+                console.log('Submission Other:', event.submissionOther);
+
+                const submissionOtherContainer = document.getElementById('modalSubmissionOtherContainer');
+                if (event.submissionType === 'other' && event.submissionOther) {
+                    document.getElementById('modalSubmissionOther').textContent = event.submissionOther;
+                    submissionOtherContainer.style.display = 'block';
+                    console.log('Affichage du conteneur submission_other');
+                } else {
+                    submissionOtherContainer.style.display = 'none';
+                    console.log('Masquage du conteneur submission_other');
+                }
+
+                document.getElementById('modalCourseLocation').textContent = event.courseLocation || 'Non spécifié';
+                document.getElementById('modalType').textContent = event.type || 'Non spécifié';
+                document.getElementById('modalCompleted').checked = event.isCompleted || false;
                 document.getElementById('eventModal').dataset.id = event.id;
+
+                // Afficher la modale
+                document.getElementById('eventModal').style.display = 'block';
             }
 
             const suggestModificationBtn = document.getElementById('suggestModification');
@@ -198,14 +218,19 @@
             <p>Aucun devoir à venir.</p>
         {% endif %}
     </div>
-    <div id="eventModal">
+    <div id="eventModal" style="display: none;">
         <div>
             <h3><span id="modalTitle"></span></h3>
             <p><strong>Date :</strong> <span id="modalDate"></span></p>
             <p><strong>Date de saisie :</strong> <span id="modalCreatedAt"></span></p>
             <p><strong>Type :</strong> <span id="modalType"></span></p>
             <p><strong>Description :</strong> <span id="modalDescription"></span></p>
+            <p><strong>Mode de rendu :</strong> <span id="modalSubmissionType"></span></p>
+            <p id="modalSubmissionOtherContainer" style="display: none;">
+                <strong>Précision :</strong> <span id="modalSubmissionOther"></span>
+            </p>
             <p><strong>URL de soumission :</strong> <span id="modalSubmissionUrl"></span></p>
+            <p><strong>Où trouver le cours :</strong> <span id="modalCourseLocation"></span></p>
             <p><strong>Effectué :</strong> <input type="checkbox" id="modalCompleted"></p>
             {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_DELEGATE') %}
                 <a href="#" id="editAssignment">Modifier le devoir</a>
