@@ -98,6 +98,13 @@
                 document.getElementById('modalCompleted').checked = event.isCompleted || false;
                 document.getElementById('eventModal').dataset.id = event.id;
 
+
+                // Mise à jour dynamique du lien "Modifier le devoir"
+                const editAssignmentLink = document.getElementById('editAssignment');
+                if (editAssignmentLink) {
+                    editAssignmentLink.href = `/assignments/${event.id}/edit`;
+                }
+
                 // Afficher la modale
                 document.getElementById('eventModal').style.display = 'block';
             }
@@ -240,7 +247,7 @@
             <p><strong>Où trouver le cours :</strong> <span id="modalCourseLocation"></span></p>
             <p><strong>Effectué :</strong> <input type="checkbox" id="modalCompleted"></p>
             {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_DELEGATE') %}
-                <a href="#" id="editAssignment">Modifier le devoir</a>
+                <a href="" id="editAssignment">Modifier le devoir</a> {# L'URL sera définie dynamiquement via JS #}
             {% else %}
                 <button id="suggestModification">Suggérer une modification</button>
             {% endif %}

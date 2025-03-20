@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Form\SuggestionFormType;
+use App\Form\AssignmentFormType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class HomeController extends AbstractController
@@ -171,16 +172,18 @@ class HomeController extends AbstractController
         return $this->json($events);
     }
 
-    #[Route('/api/assignments/{id}', name: 'api_assignment_details', methods: ['GET'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function getAssignmentDetails(int $id, EntityManagerInterface $entityManager): JsonResponse
+    #[Route('/assignments/{id}/edit', name: 'app_edit_assignment', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')] // Ou ajoutez ROLE_DELEGATE si nécessaire
+    public function editAssignment(int $id, Request $request, EntityManagerInterface $entityManager): Response
     {
-        $assignment = $entityManager->getRepository(\App\Entity\Assignment::class)->find($id);
+        $assignment = $entityManager->getRepository(Assignment::class)->find($id);
         if (!$assignment) {
             throw $this->createNotFoundException('Devoir non trouvé.');
         }
 
+        // Vérification des permissions (similaire à getAssignmentDetails)
         if (!$this->isGranted('ROLE_ADMIN')) {
+            /** @var User $user */
             $user = $this->getUser();
             $groups = $user->getGroups();
             $hasAccess = false;
@@ -195,20 +198,19 @@ class HomeController extends AbstractController
             }
         }
 
-        $titleWithCode = sprintf('[%s] %s', $assignment->getSubject()->getCode(), $assignment->getTitle());
+        // Créez le formulaire avec AssignmentFormType
+        $form = $this->createForm(AssignmentFormType::class, $assignment);
+        $form->handleRequest($request);
 
-        return $this->json([
-            'id' => $assignment->getId(),
-            'title' => $titleWithCode,
-            'start' => $assignment->getDueDate()->format('c'),
-            'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
-            'description' => $assignment->getDescription() ?? 'Aucune description',
-            'submissionType' => $assignment->getSubmissionType(),
-            'submissionOther' => $assignment->getSubmissionOther(),
-            'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
-            'courseLocation' => $assignment->getCourseLocation() ?? 'Non spécifié',
-            'isCompleted' => $assignment->isCompleted(),
-            'type' => $assignment->getType(),
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Devoir modifié avec succès !');
+            return $this->redirectToRoute('app_home');
+        }
+
+        return $this->render('assignment/edit.html.twig', [
+            'form' => $form->createView(),
+            'assignment' => $assignment,
         ]);
     }
     #[Route('/api/assignments/{id}/toggle-complete', name: 'api_toggle_complete', methods: ['POST'])]
