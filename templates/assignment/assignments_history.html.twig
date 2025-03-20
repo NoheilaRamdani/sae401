@@ -1,63 +1,98 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Toutes les tâches{% endblock %}
+{% block title %}Tâches{% endblock %}
 {% block body %}
-    <h1>Historique des devoirs</h1>
-    <div>
-        <label for="subjectSelect">Toutes les matières</label>
-        <select id="subjectSelect">
-            <option value="">Sélectionner une matière</option>
-            {% if subjects is defined and subjects|length > 0 %}
-                {% for subject in subjects %}
-                    <option value="{{ subject.name }}">{{ subject.name }}</option>
-                {% endfor %}
-            {% else %}
-                <option disabled>Aucune matière disponible</option>
-            {% endif %}
-        </select>
-    </div>
-    {% if is_delegate_or_admin %}
-        <div>
-            <label for="groupSelect">Tous les groupes</label>
-            <select id="groupSelect">
-                <option value="">Sélectionner un groupe</option>
-                {% if groups is defined and groups|length > 0 %}
-                    {% for group in groups %}
-                        <option value="{{ group.name }}">{{ group.name }}</option>
-                    {% endfor %}
-                {% else %}
-                    <option disabled>Aucun groupe disponible</option>
-                {% endif %}
-            </select>
-        </div>
-    {% endif %}
-    <button onclick="filterAssignments()">Filtrer</button>
-    <div id="assignmentsContainer">
-        {% if assignments|length > 0 %}
-            {% for assignment in assignments %}
+
+    <main class="all-tasks">
+
+        <div class="filter-section">
+
+            <div>
+                <h1>Toutes les tâches</h1>
                 <div>
-                    <h5>{{ assignment.title }}</h5>
-                    <p>Date limite : {{ assignment.dueDate|date('d/m/Y H:i') }}</p>
-                    <p>Ajouté le : {{ assignment.createdAt|date('d/m/Y H:i') }}</p>
-                    <p>Matière : {{ assignment.subject.name }}</p>
-                    <p>
-                        Groupes :
-                        {% if assignment.groups|length > 0 %}
-                            {% for group in assignment.groups %}
-                                {{ group.name }}{% if not loop.last %}, {% endif %}
+                    <label for="subjectSelect">Toutes les matières</label>
+                    <select id="subjectSelect">
+                        <option value="">Sélectionner une matière</option>
+                        {% if subjects is defined and subjects|length > 0 %}
+                            {% for subject in subjects %}
+                                <option value="{{ subject.name }}">{{ subject.name }}</option>
                             {% endfor %}
                         {% else %}
-                            Aucun groupe
+                            <option disabled>Aucune matière disponible</option>
                         {% endif %}
-                    </p>
-                    <p>Statut : {{ assignment.isCompleted ? 'Terminé' : 'En cours' }}</p>
+                    </select>
                 </div>
-            {% endfor %}
-        {% else %}
-            <p>Aucune tâche trouvée.</p>
-        {% endif %}
-    </div>
-    <a href="/">Retour à l'accueil</a>
+
+                {% if is_delegate_or_admin %}
+                    <div>
+                        <label for="groupSelect">Tous les groupes</label>
+                        <select id="groupSelect">
+                            <option value="">Sélectionner un groupe</option>
+                            {% if groups is defined and groups|length > 0 %}
+                                {% for group in groups %}
+                                    <option value="{{ group.name }}">{{ group.name }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option disabled>Aucun groupe disponible</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                {% endif %}
+                <button onclick="filterAssignments()">Filtrer</button>
+            </div>
+
+
+            <a class="button" href="/"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
+
+        </div>
+
+
+        <div id="assignmentsContainer" class="column-start">
+            {% if assignments|length > 0 %}
+                {% for assignment in assignments %}
+                    <div class="task-container column-start">
+                        <span class="color"></span>
+                        <div class="top row-start">
+                            <p class="date">{{ assignment.dueDate|date('d/m/Y - H:i') }}</p>
+                            <p class="tag-small">{{ assignment.type|capitalize }}</p>
+                        </div>
+                        <div class="content row-spacebtwn">
+                            <div class="task column-start-start">
+                                <div class="details row-start">
+                                    <p class="name">
+                                        {{ assignment.title }}
+                                    </p>
+                                    <p class="subject">| {{ assignment.subject.name }}</p>
+                                </div>
+                                <p class="description">{{ assignment.description }}</p>
+
+                                <p class="groupes">
+                                    <span class="title">Groupes :</span>
+                                    {% if assignment.groups|length > 0 %}
+                                        {% for group in assignment.groups %}
+                                            {{ group.name }}{% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        Aucun groupe
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <p class="status row-start">
+                                <span>{{ assignment.isCompleted ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-notch"></i>' }}</span>
+                                {{ assignment.isCompleted ? 'Terminé' : 'En cours' }}
+                            </p>
+                        </div>
+
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Aucune tâche trouvée.</p>
+            {% endif %}
+        </div>
+    </main>
+
+
+
     <script>
         function filterAssignments() {
             let selectedSubject = document.getElementById("subjectSelect").value;

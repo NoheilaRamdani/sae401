@@ -151,6 +151,86 @@ main {
     font-size: 1em;
     font-weight: 400;
   }
+
+  .task-container {
+    width: 100%;
+    background-color: white;
+    border-radius: 18px;
+    position: relative;
+    padding: 22px 40px;
+    gap: 12px;
+    box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.15);
+
+    .color {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: red;
+      width: 15px;
+      height: 100%;
+      border-top-left-radius: 18px;
+      border-bottom-left-radius: 18px;
+    }
+
+    .top {
+      gap: 15px;
+      .date {
+        color: $lightgrey;
+        font-weight: 500;
+      }
+    }
+
+    .content {
+      gap: 20px;
+      flex-wrap: nowrap;
+      width: 100%;
+
+      .task {
+        gap: 15px;
+        width: 60%;
+        input {
+          width: fit-content;
+          &[type="checkbox"] {
+            transform: scale(1.5);
+          }
+        }
+        .details {
+          width: 100%;
+
+          .name {
+            font-weight: 700;
+            font-size: 0.95em;
+          }
+
+          .subject {
+            font-size: 0.75em;
+          }
+          .name,
+          .subject {
+            white-space: nowrap; // Empêche le retour à la ligne
+            overflow: hidden; // Cache le texte dépassant le conteneur
+            text-overflow: ellipsis; // Ajoute "..." à la fin du texte tronqué
+            max-width: 100%;
+          }
+        }
+      }
+
+      .countdown {
+        flex-shrink: 0;
+        width: fit-content;
+        gap: 10px;
+
+        p {
+          font-weight: 600;
+          font-size: 0.85em;
+        }
+
+        .ontime {
+          font-size: 1.3em;
+        }
+      }
+    }
+  }
 }
 
 .modal-container {
@@ -163,6 +243,7 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 100;
 
   .modal {
     width: 800px;

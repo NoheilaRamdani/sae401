@@ -5,14 +5,19 @@
   text-align: center;
   border: none;
   transition: all 0.1s ease-in-out;
-  gap: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-@mixin btn-variant(
+
+@mixin status(
   $bg-color: $purpledark,
+  $font-size: 1rem,
+  $gap: 15px,
   $color: #ffffff,
-  $width: fit-content,
-  $font-size: 1rem
+  $width: fit-content
 ) {
   @extend %btn-base;
 
@@ -25,6 +30,30 @@
   font-size: $font-size;
   // font-size: calc(0.85em + 0.4vw);
   width: $width;
+  gap: $gap;
+  cursor: pointer;
+
+  &:hover {
+    background-color: darken($bg-color, 10%);
+  }
+}
+
+@mixin btn-variant(
+  $bg-color: $purpledark,
+  $font-size: 1rem,
+  $gap: 15px,
+  $color: #ffffff,
+  $width: fit-content
+) {
+  @extend %btn-base;
+
+  padding: 10px 20px;
+  background-color: $bg-color;
+  color: $color;
+  font-size: $font-size;
+  // font-size: calc(0.85em + 0.4vw);
+  width: $width;
+  gap: $gap;
   cursor: pointer;
 
   &:hover {
@@ -35,23 +64,25 @@
 %tag-base {
   @extend %btn-base;
 
-  background-color: $purplemedium;
   color: #ffffff;
   width: fit-content;
+  gap: 10px;
 }
 
-@mixin tag() {
+@mixin tag($bg-color: $purplemedium, $font-size: 0.9em, $padding : 3px 10px) {
   @extend %tag-base;
 
-  padding: 3px 10px;
-  font-size: 0.9em;
+  background-color: $bg-color;
+  padding: $padding;
+  font-size: $font-size;
 }
 
-@mixin tag-small() {
+@mixin tag-small($bg-color: $purplemedium, $font-size: 0.8em, $padding : 2px 8px) {
   @extend %tag-base;
 
-  padding: 2px 8px;
-  font-size: 0.8em;
+  background-color: $bg-color;
+  padding: $padding;
+  font-size: $font-size;
 }
 
 // MIXINS FLEXBOX //

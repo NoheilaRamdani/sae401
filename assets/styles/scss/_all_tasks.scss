@@ -1,0 +1,58 @@
+.all-tasks {
+  min-height: 100vh;
+  @include flex-row(flex-start, flex-start);
+  padding-top: 45px;
+  padding-bottom: 45px;
+
+
+  .button {
+    position: fixed;
+    bottom: 20px;
+    left: 4%
+  }
+
+
+  .filter-section {
+    @include flex-column(flex-start, space-between);
+    height: 100vh;
+    top: 0;
+    position: sticky;
+    padding-bottom: 25px;
+  }
+
+  #assignmentsContainer {
+    height: 100%;
+    width: 70%;
+    gap: 15px;
+
+
+    .task-container {
+      .status {
+        @include tag($purplelight, 0.9em, 10px 20px);
+        color: $purpledark;
+      }
+
+      .details {
+        gap: 5px;
+      }
+
+      .description {
+        font-size: 0.9em;
+      }
+
+      .groupes {
+        font-size: 0.79em;
+        .title {
+          font-weight: 600;
+          font-size: 0.8em;
+          margin-top: 15px;
+        }
+      }
+    }
+
+  }
+}
+
+
+
+
