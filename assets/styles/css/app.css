@@ -123,14 +123,22 @@ nav .links li:not(.separator) {
   padding: 0 2%;
 }
 nav .links li .row-center {
-  gap: 10px;
+  gap: 8px;
   color: #4D3677;
   height: 100%;
   width: 100%;
-  padding: 0px 25px;
   flex-shrink: 0;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+nav .links li .row-center .icon {
+  height: 14px;
+}
+nav .links li .row-center .icon path {
+  fill: #4D3677;
 }
 nav .links li.separator {
+  transform: scaleX(0.6);
   width: 2px;
   background-color: #F0B5FF;
   height: 30px;
@@ -142,6 +150,9 @@ nav .links li.active {
 }
 nav .links li.active .row-center {
   color: white;
+}
+nav .links li.active .row-center .icon path {
+  fill: white;
 }
 nav .links li.active + .separator {
   opacity: 0;

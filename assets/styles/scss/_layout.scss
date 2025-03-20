@@ -1,0 +1,154 @@
+// Utilisation dans des boutons spécifiques
+//   .btn-primary {
+//     @include btn-variant(200px, 18px, #007bff, #fff);
+//   }
+
+//   .btn-secondary {
+//     @include btn-variant(150px, 16px, #6c757d, #fff);
+//   }
+
+.ontime {
+  color: $ontime;
+}
+
+.soon {
+  color: $soon;
+}
+
+.urgent {
+  color: $urgent;
+}
+
+.row-start {
+  @include flex-row(flex-start);
+}
+
+.row-center {
+  @include flex-row(center);
+}
+
+.row-spacebtwn {
+  @include flex-row(space-between);
+}
+
+.column-start {
+  @include flex-column(flex-start);
+}
+
+.column-start-start {
+  @include flex-column(flex-start, flex-start);
+}
+
+.main-color {
+  color: $maincolor;
+}
+
+.button {
+  @include btn-variant();
+}
+
+.tag {
+  @include tag();
+}
+
+.tag-small {
+  @include tag-small();
+}
+
+nav {
+  height: 60px;
+  padding: 0 4%;
+  width: 100%;
+  gap: 10%;
+
+  .logo {
+    height: 60px;
+  }
+
+  .links {
+    @include flex-row(flex-end);
+    width: 100%;
+    height: 100%;
+    font-weight: 600;
+
+    li {
+      &:not(.separator) {
+        height: 100%;
+        padding: 0 2%;
+      }
+
+      .row-center {
+        gap: 8px;
+        color: $purpledark;
+        height: 100%;
+        width: 100%;
+        flex-shrink: 0;
+        font-size: 0.8rem;
+        white-space: nowrap;
+
+        .icon {
+          height: 14px;
+
+          path {
+            fill: $purpledark;
+          }
+        }
+      }
+
+      &.separator {
+        transform: scaleX(0.6);
+        width: 2px;
+        background-color: $purplelight;
+        height: 30px;
+      }
+
+      &.active {
+        background-color: $purpledark;
+        border-bottom-left-radius: 18px;
+        border-bottom-right-radius: 18px;
+
+        .row-center {
+          color: white;
+
+          .icon path {
+            fill: white;
+          }
+        }
+
+        // Cacher le séparateur APRÈS
+        & + .separator {
+          opacity: 0;
+          visibility: hidden;
+        }
+      }
+    }
+  }
+}
+
+main {
+  padding: 0 4%;
+  width: 100%;
+
+  h1 {
+    color: $titlecolor;
+    font-size: 2.3em;
+    font-weight: 700;
+  }
+
+  h2,
+  h3 {
+    font-size: 1.7em;
+    font-weight: 700;
+  }
+
+  h2,
+  h3,
+  p {
+    color: $maincolor;
+  }
+
+  p {
+    font-size: 1em;
+    font-weight: 400;
+  }
+}

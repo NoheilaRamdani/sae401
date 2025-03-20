@@ -1,0 +1,87 @@
+// MIXINS BUTTON ET TAGS //
+%btn-base {
+  font-weight: 600;
+  border-radius: 9px;
+  text-align: center;
+  border: none;
+  transition: all 0.1s ease-in-out;
+  gap: 15px;
+}
+
+@mixin btn-variant(
+  $bg-color: $purpledark,
+  $color: #ffffff,
+  $width: fit-content,
+  $font-size: 1rem
+) {
+  @extend %btn-base;
+
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $bg-color;
+  color: $color;
+  font-size: $font-size;
+  // font-size: calc(0.85em + 0.4vw);
+  width: $width;
+  cursor: pointer;
+
+  &:hover {
+    background-color: darken($bg-color, 10%);
+  }
+}
+
+%tag-base {
+  @extend %btn-base;
+
+  background-color: $purplemedium;
+  color: #ffffff;
+  width: fit-content;
+}
+
+@mixin tag() {
+  @extend %tag-base;
+
+  padding: 3px 10px;
+  font-size: 0.9em;
+}
+
+@mixin tag-small() {
+  @extend %tag-base;
+
+  padding: 2px 8px;
+  font-size: 0.8em;
+}
+
+// MIXINS FLEXBOX //
+
+%flex-base {
+  display: flex;
+}
+
+%flex-row {
+  @extend %flex-base;
+  flex-direction: row;
+}
+
+%flex-column {
+  @extend %flex-base;
+  flex-direction: column;
+}
+
+// Mixin pour un flex-row avec params
+@mixin flex-row($justify-content, $align-items: center) {
+  @extend %flex-row;
+
+  justify-content: $justify-content;
+  align-items: $align-items;
+}
+
+// Mixin pour un flex-column avec params
+@mixin flex-column($align-items, $justify-content: center) {
+  @extend %flex-column;
+
+  justify-content: $justify-content;
+  align-items: $align-items;
+}
