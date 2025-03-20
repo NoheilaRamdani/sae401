@@ -4,13 +4,10 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/fr.js" crossorigin="anonymous"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
@@ -34,7 +31,7 @@
 
             document.querySelectorAll('.event-item').forEach(item => {
                 item.addEventListener('click', function(e) {
-                    if (e.target.classList.contains('complete-checkbox')) {
+                    if (e.target.tagName === 'INPUT') {
                         e.stopPropagation();
                         return;
                     }
@@ -49,7 +46,7 @@
                         }));
                 });
 
-                const checkbox = item.querySelector('.complete-checkbox');
+                const checkbox = item.querySelector('input[type="checkbox"]');
                 if (checkbox) {
                     checkbox.addEventListener('change', function(e) {
                         e.stopPropagation();
@@ -57,7 +54,6 @@
                         fetch(`/api/assignments/${eventId}/toggle-complete`, { method: 'POST' })
                             .then(response => response.json())
                             .then(data => {
-                                item.classList.toggle('completed', data.isCompleted);
                                 const calendarEvent = calendar.getEventById(eventId);
                                 if (calendarEvent) {
                                     calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
@@ -66,6 +62,30 @@
                     });
                 }
             });
+
+            function showEventDetails(event) {
+                document.getElementById('modalTitle').textContent = event.title;
+                document.getElementById('modalDate').textContent = event.start.toLocaleString();
+                document.getElementById('modalCreatedAt').textContent = event.extendedProps.createdAt || 'Inconnu';
+                document.getElementById('modalDescription').textContent = event.extendedProps.description || 'Aucune description';
+                const submissionUrlEl = document.getElementById('modalSubmissionUrl');
+                if (event.extendedProps.submissionUrl) {
+                    submissionUrlEl.innerHTML = `<a href="${event.extendedProps.submissionUrl}" target="_blank">${event.extendedProps.submissionUrl}</a>`;
+                } else {
+                    submissionUrlEl.textContent = 'Aucune URL de soumission';
+                }
+                document.getElementById('modalType').textContent = event.extendedProps.type || 'Non spécifié';
+                document.getElementById('modalCompleted').checked = event.extendedProps.isCompleted;
+                document.getElementById('eventModal').dataset.id = event.id;
+            }
+
+            const suggestModificationBtn = document.getElementById('suggestModification');
+            if (suggestModificationBtn) {
+                suggestModificationBtn.addEventListener('click', function() {
+                    const eventId = document.getElementById('eventModal').dataset.id;
+                    window.location.href = `/assignments/${eventId}/suggest-modification-form`;
+                });
+            }
 
             document.getElementById('closeModal').addEventListener('click', function() {
                 document.getElementById('eventModal').style.display = 'none';
@@ -76,21 +96,15 @@
                 fetch(`/api/assignments/${eventId}/toggle-complete`, { method: 'POST' })
                     .then(response => response.json())
                     .then(data => {
-                        const listItem = document.querySelector(`.event-item[data-id="${eventId}"]`);
+                        const listItem = document.querySelector(`div[data-id="${eventId}"]`);
                         if (listItem) {
-                            listItem.classList.toggle('completed', data.isCompleted);
-                            listItem.querySelector('.complete-checkbox').checked = data.isCompleted;
+                            listItem.querySelector('input[type="checkbox"]').checked = data.isCompleted;
                         }
                         const calendarEvent = calendar.getEventById(eventId);
                         if (calendarEvent) {
                             calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
                         }
                     });
-            });
-
-            document.getElementById('suggestModification').addEventListener('click', function() {
-                const eventId = document.getElementById('eventModal').dataset.id;
-                window.location.href = `/assignments/${eventId}/suggest-modification-form`;
             });
 
             const notifications = {{ notifications|json_encode|raw }};
@@ -101,8 +115,8 @@
                 setTimeout(() => div.remove(), 5000);
             });
 
-            const suggestionsBox = document.querySelector('.suggestions-box');
-            const showSuggestionsBtn = document.querySelector('.show-suggestions-btn');
+            const suggestionsBox = document.querySelector('div[data-suggestions]');
+            const showSuggestionsBtn = document.querySelector('button[data-show-suggestions]');
             if (suggestionsBox && showSuggestionsBtn) {
                 const isHidden = localStorage.getItem('suggestionsBoxHidden') === 'true';
                 if (isHidden) {
@@ -126,7 +140,7 @@
                     fetch('/api/suggestions/pending')
                         .then(response => response.json())
                         .then(data => {
-                            const suggestionsList = document.querySelector('.suggestions-box ul');
+                            const suggestionsList = suggestionsBox.querySelector('ul');
                             if (!suggestionsList) return;
 
                             suggestionsList.innerHTML = '';
@@ -149,64 +163,42 @@
                 document.addEventListener('suggestionProcessed', updateSuggestions);
             }
         });
-
-        function showEventDetails(event) {
-            document.getElementById('modalTitle').textContent = event.title;
-            document.getElementById('modalDate').textContent = event.start.toLocaleString();
-            document.getElementById('modalCreatedAt').textContent = event.extendedProps.createdAt || 'Inconnu';
-            document.getElementById('modalDescription').textContent = event.extendedProps.description || 'Aucune description';
-            const submissionUrlEl = document.getElementById('modalSubmissionUrl');
-            if (event.extendedProps.submissionUrl) {
-                submissionUrlEl.innerHTML = `<a href="${event.extendedProps.submissionUrl}" target="_blank">${event.extendedProps.submissionUrl}</a>`;
-            } else {
-                submissionUrlEl.textContent = 'Aucune URL de soumission';
-            }
-            document.getElementById('modalType').textContent = event.extendedProps.type || 'Non spécifié';
-            document.getElementById('modalCompleted').checked = event.extendedProps.isCompleted;
-            document.getElementById('eventModal').dataset.id = event.id;
-            document.getElementById('eventModal').style.display = 'block';
-        }
     </script>
 {% endblock %}
 
 {% block body %}
     <div>
-        <div>
-            <h2>Calendrier des devoirs</h2>
-            <form method="get">
-                <label for="type">Filtrer par type :</label>
-                <select name="type" id="type" onchange="this.form.submit()">
-                    <option value="">Tous</option>
-                    <option value="devoir" {{ type_filter == 'devoir' ? 'selected' }}>Devoir</option>
-                    <option value="examen" {{ type_filter == 'examen' ? 'selected' }}>Examen</option>
-                    <option value="oral" {{ type_filter == 'oral' ? 'selected' }}>Oral</option>
-                </select>
-            </form>
-            <div id="calendar"></div>
-            <a href="{{ path('app_assignments_history') }}">Voir l'historique des devoirs</a>
-        </div>
-
-        <div>
-            <h2>Prochains devoirs</h2>
-            {% if assignments_data|length > 0 %}
-                {% for data in assignments_data %}
-                    {% set assignment = data.assignment %}
-                    <div class="event-item {{ data.isCompleted ? 'completed' }}" data-id="{{ assignment.id }}">
-                        <input type="checkbox" class="complete-checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
-                        <div style="background-color: {{ data.color }}"></div>
-                        <div>
-                            <strong>[{{ data.subjectCode }}] {{ assignment.title }}</strong><br>
-                            <small>{{ assignment.dueDate|date('d/m/Y H:i') }}</small>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>Aucun devoir à venir.</p>
-            {% endif %}
-        </div>
+        <h2>Calendrier des devoirs</h2>
+        <form method="get">
+            <label for="type">Filtrer par type :</label>
+            <select name="type" id="type" onchange="this.form.submit()">
+                <option value="">Tous</option>
+                <option value="devoir" {{ type_filter == 'devoir' ? 'selected' }}>Devoir</option>
+                <option value="examen" {{ type_filter == 'examen' ? 'selected' }}>Examen</option>
+                <option value="oral" {{ type_filter == 'oral' ? 'selected' }}>Oral</option>
+            </select>
+        </form>
+        <div id="calendar"></div>
+        <a href="{{ path('app_assignments_history') }}">Voir l'historique des devoirs</a>
     </div>
-
-    <div id="eventModal" style="display: none;">
+    <div>
+        <h2>Prochains devoirs</h2>
+        {% if assignments_data|length > 0 %}
+            {% for data in assignments_data %}
+                {% set assignment = data.assignment %}
+                <div data-id="{{ assignment.id }}" class="event-item">
+                    <input type="checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
+                    <div>
+                        <strong> [{{ data.subjectCode }}] {{ assignment.title }}</strong><br>
+                        <small> {{ assignment.dueDate|date('d/m/Y H:i') }}</small>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Aucun devoir à venir.</p>
+        {% endif %}
+    </div>
+    <div id="eventModal">
         <div>
             <h3><span id="modalTitle"></span></h3>
             <p><strong>Date :</strong> <span id="modalDate"></span></p>
@@ -215,13 +207,16 @@
             <p><strong>Description :</strong> <span id="modalDescription"></span></p>
             <p><strong>URL de soumission :</strong> <span id="modalSubmissionUrl"></span></p>
             <p><strong>Effectué :</strong> <input type="checkbox" id="modalCompleted"></p>
-            <button id="suggestModification">Suggérer une modification</button>
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_DELEGATE') %}
+                <a href="#" id="editAssignment">Modifier le devoir</a>
+            {% else %}
+                <button id="suggestModification">Suggérer une modification</button>
+            {% endif %}
             <button id="closeModal">Fermer</button>
         </div>
     </div>
-
     {% if is_granted('ROLE_DELEGATE') %}
-        <div class="suggestions-box">
+        <div data-suggestions>
             <h4>
                 <span>Suggestions de modifications</span>
                 <button id="closeSuggestions">Fermer</button>
@@ -235,6 +230,6 @@
             </ul>
             <a href="{{ path('app_suggestions') }}">Voir l'historique complet</a>
         </div>
-        <button class="show-suggestions-btn">Afficher les suggestions</button>
+        <button data-show-suggestions>Afficher les suggestions</button>
     {% endif %}
 {% endblock %}

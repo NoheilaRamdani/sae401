@@ -1,45 +1,43 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Gestion des devoirs{% endblock %}
-
-{% block stylesheets %}{% endblock %}
-
 {% block body %}
+    <h1>Gestion des devoirs</h1>
     <div>
-        <h1>Gestion des devoirs</h1>
-
-        <a href="{{ path('add_assignment') }}">Ajouter un devoir</a>
-
-        {% if assignments|length > 0 %}
-            <table>
-                <thead>
-                <tr>
-                    <th>Titre</th>
-                    <th>Date de rendu</th>
-                    <th>Créé par</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for assignment in assignments %}
-                    <tr>
-                        <td>{{ assignment.title }}</td>
-                        <td>{{ assignment.getDueDate()|date('d/m/Y H:i') }}</td>
-                        <td>{{ assignment.createdBy.userIdentifier }}</td>
-                        <td>
-                            <a href="{{ path('edit_assignment', {'id': assignment.id}) }}">Modifier</a>
-                            <form method="post" action="{{ path('delete_assignment', {'id': assignment.id}) }}" style="display:inline;"
-                                  onsubmit="return confirm('Voulez-vous vraiment supprimer ce devoir ?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ assignment.id) }}">
-                                <button type="submit">Supprimer</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>Aucun devoir à gérer pour le moment.</p>
-        {% endif %}
+        <form method="get" action="{{ path('manage_assignments') }}">
+            <div>
+                <select name="subject">
+                    <option value="">Toutes les matières</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}" {% if current_subject == subject.id|default('') %}selected{% endif %}>
+                            {{ subject.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <select name="group">
+                    <option value="">Tous les groupes</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}" {% if current_group == group.id|default('') %}selected{% endif %}>
+                            {{ group.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit">Filtrer</button>
+            </div>
+        </form>
     </div>
+    {% if assignments|length > 0 %}
+        {% for assignment in assignments %}
+            <div>
+                <strong>{{ assignment.title }}</strong><br>
+                <small>Date limite: {{ assignment.dueDate|date('d/m/Y') }}</small>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Aucun devoir trouvé.</p>
+    {% endif %}
 {% endblock %}

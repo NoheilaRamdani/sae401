@@ -2,43 +2,39 @@
 
 {% block title %}Historique des suggestions{% endblock %}
 
-{% block stylesheets %}{% endblock %}
-
 {% block body %}
-    <div>
-        <h1>Historique des suggestions</h1>
-        {% if suggestions|length > 0 %}
-            <ul>
-                {% for suggestion in suggestions %}
-                    <li data-suggestion-id="{{ suggestion.id }}">
-                        <span>
-                            <strong>{{ suggestion.suggestedBy.userIdentifier }}</strong> pour "{{ suggestion.assignment.title }}"
-                            le {{ suggestion.createdAt|date('d/m/Y H:i') }} : {{ suggestion.message }}
-                        </span>
-                        <span>
-                            {% if suggestion.isProcessed %}
-                                Traité
-                            {% else %}
-                                Non traité
-                            {% endif %}
-                        </span>
-                        <button data-processed="{{ suggestion.isProcessed ? 'true' : 'false' }}">
-                            {% if suggestion.isProcessed %}Marquer comme non traité{% else %}Marquer comme traité{% endif %}
-                        </button>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Aucune suggestion pour le moment.</p>
-        {% endif %}
-    </div>
+    <h1>Suggestion de modification</h1>
+    {% if suggestions|length > 0 %}
+        <ul>
+            {% for suggestion in suggestions %}
+                <li data-suggestion-id="{{ suggestion.id }}">
+                    <span>
+                        <strong>{{ suggestion.suggestedBy.userIdentifier }}</strong> pour "{{ suggestion.assignment.title }}"
+                        le {{ suggestion.createdAt|date('d/m/Y H:i') }} : {{ suggestion.message }}
+                    </span>
+                    <span>
+                        {% if suggestion.isProcessed %}
+                            Traité
+                        {% else %}
+                            Non traité
+                        {% endif %}
+                    </span>
+                    <button data-processed="{{ suggestion.isProcessed ? 'true' : 'false' }}">
+                        {% if suggestion.isProcessed %}Marquer comme non traité{% else %}Marquer comme traité{% endif %}
+                    </button>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Aucune suggestion pour le moment.</p>
+    {% endif %}
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const buttons = document.querySelectorAll('button[data-processed]');
+            const buttons = document.querySelectorAll('button');
             buttons.forEach(button => {
                 button.addEventListener('click', function () {
                     const suggestionId = this.closest('li').dataset.suggestionId;
@@ -64,7 +60,6 @@
                                     this.textContent = 'Marquer comme traité';
                                     this.dataset.processed = 'false';
                                 }
-
                                 const event = new CustomEvent('suggestionProcessed', { detail: { id: data.id } });
                                 document.dispatchEvent(event);
                             }

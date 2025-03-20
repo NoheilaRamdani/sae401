@@ -1,74 +1,74 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Historique des devoirs{% endblock %}
-
-{% block stylesheets %}{% endblock %}
-
 {% block body %}
+    <h1>Historique des devoirs</h1>
     <div>
-        <h1>Historique des devoirs</h1>
-
+        <label for="subjectSelect">Toutes les matières</label>
+        <select id="subjectSelect">
+            <option value="">Sélectionner une matière</option>
+            {% if subjects is defined and subjects|length > 0 %}
+                {% for subject in subjects %}
+                    <option value="{{ subject.name }}">{{ subject.name }}</option>
+                {% endfor %}
+            {% else %}
+                <option disabled>Aucune matière disponible</option>
+            {% endif %}
+        </select>
+    </div>
+    {% if is_delegate_or_admin %}
         <div>
-            <form method="get" action="{{ path('assignments_history') }}">
-                <div>
-                    <select name="subject">
-                        <option value="">Toutes les matières</option>
-                        {% if subjects is defined and subjects|length > 0 %}
-                            {% for subject in subjects %}
-                                <option value="{{ subject.id }}" {% if current_subject == subject.id|default('') %}selected{% endif %}>
-                                    {{ subject.name }}
-                                </option>
-                            {% endfor %}
-                        {% else %}
-                            <option value="">Aucune matière disponible</option>
-                        {% endif %}
-                    </select>
-                    {% if is_delegate_or_admin %}
-                        <select name="group">
-                            <option value="">Tous les groupes</option>
-                            {% if groups is defined and groups|length > 0 %}
-                                {% for group in groups %}
-                                    <option value="{{ group.id }}" {% if current_group == group.id|default('') %}selected{% endif %}>
-                                        {{ group.name }}
-                                    </option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="">Aucun groupe disponible</option>
-                            {% endif %}
-                        </select>
-                    {% endif %}
-                    <button type="submit">Filtrer</button>
-                </div>
-            </form>
+            <label for="groupSelect">Tous les groupes</label>
+            <select id="groupSelect">
+                <option value="">Sélectionner un groupe</option>
+                {% if groups is defined and groups|length > 0 %}
+                    {% for group in groups %}
+                        <option value="{{ group.name }}">{{ group.name }}</option>
+                    {% endfor %}
+                {% else %}
+                    <option disabled>Aucun groupe disponible</option>
+                {% endif %}
+            </select>
         </div>
-
+    {% endif %}
+    <button onclick="filterAssignments()">Filtrer</button>
+    <div id="assignmentsContainer">
         {% if assignments|length > 0 %}
             {% for assignment in assignments %}
-                <div data-id="{{ assignment.id }}">
-                    <div style="background-color: {{ assignment.subject.color ?? '#3498db' }}"></div>
-                    <div>
-                        <strong>{{ assignment.title }}</strong><br>
-                        Date limite : {{ assignment.dueDate|date('d/m/Y H:i') }}<br>
-                        Ajouté le : {{ assignment.createdAt|date('d/m/Y H:i') }}<br>
-                        Matière : {{ assignment.subject.name }}<br>
-                        <div>
-                            Groupes :
-                            {% if assignment.groups|length > 0 %}
-                                {% for group in assignment.groups %}
-                                    {{ group.name }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                Aucun groupe
-                            {% endif %}
-                        </div>
-                        Statut : {{ assignment.isCompleted ? 'Terminé' : 'En cours' }}
-                    </div>
+                <div>
+                    <h5>{{ assignment.title }}</h5>
+                    <p>Date limite : {{ assignment.dueDate|date('d/m/Y H:i') }}</p>
+                    <p>Ajouté le : {{ assignment.createdAt|date('d/m/Y H:i') }}</p>
+                    <p>Matière : {{ assignment.subject.name }}</p>
+                    <p>
+                        Groupes :
+                        {% if assignment.groups|length > 0 %}
+                            {% for group in assignment.groups %}
+                                {{ group.name }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Aucun groupe
+                        {% endif %}
+                    </p>
+                    <p>Statut : {{ assignment.isCompleted ? 'Terminé' : 'En cours' }}</p>
                 </div>
             {% endfor %}
         {% else %}
             <p>Aucun devoir trouvé dans l'historique.</p>
         {% endif %}
-
-        <a href="{{ path('app_home') }}">Retour à l'accueil</a>
     </div>
+    <a href="/">Retour à l'accueil</a>
+    <script>
+        function filterAssignments() {
+            let selectedSubject = document.getElementById("subjectSelect").value;
+            let selectedGroup = document.getElementById("groupSelect").value;
+            document.querySelectorAll(".assignment").forEach(assignment => {
+                let subject = assignment.getAttribute("data-subject");
+                let groups = assignment.getAttribute("data-groups").split(", ");
+                let matchesSubject = !selectedSubject || subject === selectedSubject;
+                let matchesGroup = !selectedGroup || groups.includes(selectedGroup);
+                assignment.style.display = matchesSubject && matchesGroup ? "block" : "none";
+            });
+        }
+    </script>
 {% endblock %}

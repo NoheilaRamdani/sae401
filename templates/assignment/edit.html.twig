@@ -2,17 +2,13 @@
 
 {% block title %}Modifier un devoir{% endblock %}
 
-{% block stylesheets %}
-
-{% endblock %}
 
 {% block body %}
+    <h1>Modifier "{{ assignment.title }}"</h1>
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    <button type="submit">Enregistrer</button>
+    <a href="{{ path('manage_assignments') }}">Retour</a>
+    {{ form_end(form) }}
 
-        <h1> Modifier "{{ assignment.title }}"</h1>
-
-        {{ form_start(form) }}
-        {{ form_widget(form) }}
-        <button type="submit"> Enregistrer </button>
-        <a href="{{ path('manage_assignments') }}" > Retour</a>
-        {{ form_end(form) }}
 {% endblock %}
