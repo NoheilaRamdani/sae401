@@ -5,7 +5,6 @@
 {% block stylesheets %}{% endblock %}
 
 {% block body %}
-<<<<<<< HEAD
     <div>
         <h1>Ajouter un nouveau devoir</h1>
 
@@ -65,56 +64,7 @@
         </div>
 
         <button type="submit">Ajouter le devoir</button>
+
         {{ form_end(form) }}
-=======
-    <h1>Ajouter un nouveau devoir</h1>
-    {{ form_start(form) }}
-    <div>
-        {{ form_label(form.title) }}
-        {{ form_widget(form.title) }}
-        {{ form_errors(form.title) }}
     </div>
-    <div>
-        {{ form_label(form.description) }}
-        {{ form_widget(form.description) }}
-        {{ form_errors(form.description) }}
-    </div>
-    <div>
-        {{ form_label(form.dueDate) }}
-        {{ form_widget(form.dueDate) }}
-        {{ form_errors(form.dueDate) }}
-    </div>
-    <div>
-        {{ form_label(form.subject) }}
-        {{ form_widget(form.subject) }}
-        {{ form_errors(form.subject) }}
-    </div>
-    <div>
-        {{ form_label(form.groups) }}
-        {% for group in form.groups %}
-            <div>
-                {{ form_widget(group) }}
-                {{ form_label(group) }}
-            </div>
-        {% endfor %}
-        {{ form_errors(form.groups) }}
-    </div>
-    <div>
-        {{ form_label(form.submission_type) }}
-        {{ form_widget(form.submission_type) }}
-        {{ form_errors(form.submission_type) }}
-    </div>
-    <div>
-        {{ form_label(form.submission_url) }}
-        {{ form_widget(form.submission_url) }}
-        {{ form_errors(form.submission_url) }}
-    </div>
-    <div>
-        {{ form_label(form.type) }}
-        {{ form_widget(form.type) }}
-        {{ form_errors(form.type) }}
->>>>>>> main
-    </div>
-    <button type="submit">Ajouter le devoir</button>
-    {{ form_end(form) }}
 {% endblock %}
