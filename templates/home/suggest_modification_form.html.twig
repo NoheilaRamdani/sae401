@@ -2,61 +2,50 @@
 
 {% block title %}Suggérer une modification{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .suggestion-form { max-width: 600px; margin: 20px auto; }
-    </style>
-{% endblock %}
-
 {% block body %}
-    <div class="suggestion-form">
-        <h1><i class="fas fa-edit"></i> Suggérer une modification pour "[{{ assignment.subject.code }}] {{ assignment.title }}"</h1>
-
-        {% for flash_message in app.flashes('success') %}
-            <div class="alert alert-success">{{ flash_message }}</div>
-        {% endfor %}
-
-        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
-        <div class="mb-3">
-            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.title, {'attr': {'class': 'invalid-feedback'}}) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.description, {'attr': {'class': 'invalid-feedback'}}) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.due_date, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.due_date, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.due_date, {'attr': {'class': 'invalid-feedback'}}) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.submission_type, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.submission_type, {'attr': {'class': 'form-select'}}) }}
-            {{ form_errors(form.submission_type, {'attr': {'class': 'invalid-feedback'}}) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.submission_url, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.submission_url, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.submission_url, {'attr': {'class': 'invalid-feedback'}}) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
-            {{ form_errors(form.type, {'attr': {'class': 'invalid-feedback'}}) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.message, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.message, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.message, {'attr': {'class': 'invalid-feedback'}}) }}
-        </div>
-        <div class="mb-3">
-            {{ form_widget(form.submit) }}
-            <a href="{{ path('app_home') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a>
-        </div>
-        {{ form_end(form) }}
+    <h1>Suggérer une modification pour "[{{ assignment.subject.code }}] {{ assignment.title }}"</h1>
+    {% for flash_message in app.flashes('success') %}
+        <div>{{ flash_message }}</div>
+    {% endfor %}
+    {{ form_start(form) }}
+    <div>
+        {{ form_label(form.title) }}
+        {{ form_widget(form.title) }}
+        {{ form_errors(form.title) }}
     </div>
+    <div>
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description) }}
+        {{ form_errors(form.description) }}
+    </div>
+    <div>
+        {{ form_label(form.dueDate) }}
+        {{ form_widget(form.dueDate) }}
+        {{ form_errors(form.dueDate) }}
+    </div>
+    <div>
+        {{ form_label(form.submission_type) }}
+        {{ form_widget(form.submission_type) }}
+        {{ form_errors(form.submission_type) }}
+    </div>
+    <div>
+        {{ form_label(form.submission_url) }}
+        {{ form_widget(form.submission_url) }}
+        {{ form_errors(form.submission_url) }}
+    </div>
+    <div>
+        {{ form_label(form.type) }}
+        {{ form_widget(form.type) }}
+        {{ form_errors(form.type) }}
+    </div>
+    <div>
+        {{ form_label(form.message) }}
+        {{ form_widget(form.message) }}
+        {{ form_errors(form.message) }}
+    </div>
+    <div>
+        {{ form_widget(form.submit) }}
+        <a href="{{ path('app_home') }}">Annuler</a>
+    </div>
+    {{ form_end(form) }}
 {% endblock %}

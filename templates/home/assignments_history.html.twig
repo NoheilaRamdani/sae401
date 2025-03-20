@@ -2,16 +2,11 @@
 
 {% block title %}Historique des devoirs{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-{% endblock %}
-
 {% block body %}
     <h1>Historique des devoirs</h1>
-
-    <div class="mb-3">
-        <label for="subjectSelect" class="form-label">Toutes les matières</label>
-        <select id="subjectSelect" class="form-select">
+    <div>
+        <label for="subjectSelect">Toutes les matières</label>
+        <select id="subjectSelect">
             <option value="">Sélectionner une matière</option>
             {% if subjects is defined and subjects|length > 0 %}
                 {% for subject in subjects %}
@@ -22,11 +17,10 @@
             {% endif %}
         </select>
     </div>
-
     {% if is_delegate_or_admin %}
-        <div class="mb-3">
-            <label for="groupSelect" class="form-label">Tous les groupes</label>
-            <select id="groupSelect" class="form-select">
+        <div>
+            <label for="groupSelect">Tous les groupes</label>
+            <select id="groupSelect">
                 <option value="">Sélectionner un groupe</option>
                 {% if groups is defined and groups|length > 0 %}
                     {% for group in groups %}
@@ -38,58 +32,43 @@
             </select>
         </div>
     {% endif %}
-
-    <button class="btn btn-success" onclick="filterAssignments()">Filtrer</button>
-
+    <button onclick="filterAssignments()">Filtrer</button>
     <div id="assignmentsContainer">
         {% if assignments|length > 0 %}
             {% for assignment in assignments %}
-                <div class="card my-3 assignment" data-subject="{{ assignment.subject.name }}" data-groups="{% for group in assignment.groups %}{{ group.name }}{% if not loop.last %}, {% endif %}{% endfor %}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ assignment.title }}</h5>
-                        <p class="card-text">Date limite : {{ assignment.dueDate|date('d/m/Y H:i') }}</p>
-                        <p class="card-text">Ajouté le : {{ assignment.createdAt|date('d/m/Y H:i') }}</p>
-                        <p class="card-text">Matière : {{ assignment.subject.name }}</p>
-                        <p class="card-text">
-                            Groupes :
-                            {% if assignment.groups|length > 0 %}
-                                {% for group in assignment.groups %}
-                                    {{ group.name }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                Aucun groupe
-                            {% endif %}
-                        </p>
-                        <p class="card-text">Statut : <span class="badge {% if assignment.isCompleted %}badge-success{% else %}badge-warning{% endif %}">
-                            {{ assignment.isCompleted ? 'Terminé' : 'En cours' }}</span>
-                        </p>
-                    </div>
+                <div>
+                    <h5>{{ assignment.title }}</h5>
+                    <p>Date limite : {{ assignment.dueDate|date('d/m/Y H:i') }}</p>
+                    <p>Ajouté le : {{ assignment.createdAt|date('d/m/Y H:i') }}</p>
+                    <p>Matière : {{ assignment.subject.name }}</p>
+                    <p>
+                        Groupes :
+                        {% if assignment.groups|length > 0 %}
+                            {% for group in assignment.groups %}
+                                {{ group.name }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Aucun groupe
+                        {% endif %}
+                    </p>
+                    <p>Statut : {{ assignment.isCompleted ? 'Terminé' : 'En cours' }}</p>
                 </div>
             {% endfor %}
         {% else %}
             <p>Aucun devoir trouvé dans l'historique.</p>
         {% endif %}
     </div>
-
-    <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
-
+    <a href="/">Retour à l'accueil</a>
     <script>
         function filterAssignments() {
             let selectedSubject = document.getElementById("subjectSelect").value;
             let selectedGroup = document.getElementById("groupSelect").value;
-
             document.querySelectorAll(".assignment").forEach(assignment => {
                 let subject = assignment.getAttribute("data-subject");
                 let groups = assignment.getAttribute("data-groups").split(", ");
-
                 let matchesSubject = !selectedSubject || subject === selectedSubject;
                 let matchesGroup = !selectedGroup || groups.includes(selectedGroup);
-
-                if (matchesSubject && matchesGroup) {
-                    assignment.style.display = "block";
-                } else {
-                    assignment.style.display = "none";
-                }
+                assignment.style.display = matchesSubject && matchesGroup ? "block" : "none";
             });
         }
     </script>
