@@ -76,7 +76,10 @@
                     submissionUrlEl.textContent = 'Aucune URL de soumission';
                 }
 
-                document.getElementById('modalSubmissionType').textContent = event.submissionType || 'Non spécifié';
+                // Traduire "other" en "Autre" pour le mode de rendu
+                const submissionTypeDisplay = event.submissionType === 'other' ? 'Autre' : event.submissionType || 'Non spécifié';
+                document.getElementById('modalSubmissionType').textContent = submissionTypeDisplay;
+
                 console.log('Submission Type:', event.submissionType);
                 console.log('Submission Other:', event.submissionOther);
 
@@ -202,15 +205,19 @@
         <a href="{{ path('app_assignments_history') }}">Voir l'historique des devoirs</a>
     </div>
     <div>
-        <h2>Prochains devoirs</h2>
+        <h2>A venir</h2>
         {% if assignments_data|length > 0 %}
             {% for data in assignments_data %}
                 {% set assignment = data.assignment %}
+                {% set now = "now"|date('U') %}
+                {% set dueDate = assignment.dueDate|date('U') %}
+                {% set daysUntilDue = (dueDate - now) / (60 * 60 * 24) %}
+                {% set daysUntilDue = daysUntilDue|round(0, 'floor') %}
                 <div data-id="{{ assignment.id }}" class="event-item">
                     <input type="checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
                     <div>
-                        <strong> [{{ data.subjectCode }}] {{ assignment.title }}</strong><br>
-                        <small> {{ assignment.dueDate|date('d/m/Y H:i') }}</small>
+                        <strong>{{ assignment.type|capitalize }} - [{{ data.subjectCode }}] {{ assignment.subject.name }} - {{ assignment.title }}</strong><br>
+                        <small>{{ assignment.dueDate|date('d/m/Y H:i') }} {{ daysUntilDue >= 0 ? daysUntilDue ~ ' jour' ~ (daysUntilDue > 1 ? 's' : '') ~ ' ' : 'Expiré' }}</small>
                     </div>
                 </div>
             {% endfor %}

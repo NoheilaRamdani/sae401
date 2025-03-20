@@ -58,7 +58,7 @@ class AssignmentFormType extends AbstractType
                     'Par mail' => 'email',
                     'Moodle' => 'moodle',
                     'VPS' => 'vps',
-                    'Autre' => 'other',
+                    'Autre' => 'Autre',
                 ],
                 'placeholder' => 'Choisir un mode de rendu',
                 'required' => true,
