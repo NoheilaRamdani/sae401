@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <title>{% block title %}Welcome!{% endblock %}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-<<<<<<< Updated upstream
-    {% block stylesheets %}{% endblock %}
-=======
 
     {% block stylesheets %}
         <link rel="stylesheet" href="{{ asset('styles/css/app.css') }}">
@@ -22,7 +19,6 @@
         {# Suppression définitive de Font Awesome #}
     {% endblock %}
 
->>>>>>> Stashed changes
     {% block javascripts %}
         {% block importmap %}
             {{ importmap('app') }}
@@ -31,50 +27,6 @@
     {% endblock %}
 </head>
 <body>
-<<<<<<< Updated upstream
-<nav>
-    <ul>
-        <li>
-            <a href="{{ path('app_home') }}">Accueil</a>
-        </li>
-        {% if is_granted('ROLE_ADMIN') %}
-            <li>
-                <a href="{{ path('delegate_manage') }}">Gestion des délégués</a>
-            </li>
-            <li>
-                <a href="{{ path('manage_assignments') }}">Gestion des devoirs</a>
-            </li>
-            <li>
-                <a href="{{ path('add_assignment') }}">Ajouter une tâche</a>
-            </li>
-        {% elseif is_granted('ROLE_DELEGATE') %}
-            <li>
-                <a href="{{ path('manage_assignments') }}">Gestion des devoirs</a>
-            </li>
-            <li>
-                <a href="{{ path('add_assignment') }}">Ajouter une tâche</a>
-            </li>
-            <li>
-                <a href="{{ path('app_suggestions') }}">Suggestions de modification</a>
-            </li>
-        {% endif %}
-        {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
-            <li>
-                <a href="{{ path('app_register') }}">S'inscrire</a>
-            </li>
-            <li>
-                <a href="{{ path('app_login') }}">Se connecter</a>
-            </li>
-        {% else %}
-            <li>
-                <a href="{{ path('ical_user_feed') }}" target="_blank">Ajouter à mon calendrier</a>
-            </li>
-            <li>
-                <a href="{{ path('app_assignments_history') }}">Historique des tâches</a>
-            </li>
-            <li>
-                <a href="{{ path('app_logout') }}">Se déconnecter</a>
-=======
 <nav class="row-spacebtwn">
     <ul class="links">
         <li class="row-center">
@@ -128,7 +80,6 @@
             <li class="row-center separator"></li>
             <li class="row-center">
                 <a class="row-center" href="{{ path('app_logout') }}">Se déconnecter</a>
->>>>>>> Stashed changes
             </li>
         {% endif %}
     </ul>
