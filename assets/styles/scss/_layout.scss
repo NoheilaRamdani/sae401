@@ -78,15 +78,25 @@ nav {
       }
 
       .row-center {
-        gap: 10px;
+        gap: 8px;
         color: $purpledark;
         height: 100%;
         width: 100%;
-        padding: 0px 25px;
         flex-shrink: 0;
+        font-size: 0.8rem;
+        white-space: nowrap;
+
+        .icon {
+          height: 14px;
+
+          path {
+            fill: $purpledark;
+          }
+        }
       }
 
       &.separator {
+        transform: scaleX(0.6);
         width: 2px;
         background-color: $purplelight;
         height: 30px;
@@ -99,6 +109,10 @@ nav {
 
         .row-center {
           color: white;
+
+          .icon path {
+            fill: white;
+          }
         }
 
         // Cacher le séparateur APRÈS
