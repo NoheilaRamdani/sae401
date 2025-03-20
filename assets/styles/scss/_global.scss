@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+
+//FONTS
+$mainfont : "Poppins";
+
+//GREYSCALE COLORS
+$titlecolor : #1B1B1B;
+$maincolor : #373737;
+$lightgrey : #A3A3A3;
+
+//ACCENT COLORS
+$purpledark : #4D3677;
+$purplemedium : #9C36B5;
+$purplelight : #F0B5FF;
+
+//TIME COLORS
+$urgent : #DC3545;
+$soon : #FFA600;
+$ontime : #9BDC33;
+
+//PALETTE
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  list-style: none;
+  scroll-behavior: smooth;
+  font-family: $mainfont;
+}
+
+$mobile: 480px;
+$small-tablet : 576px;
+$large-tablet: 768px;
+$computer: 960px;
+$large-computer : 1240px;
