@@ -300,7 +300,47 @@ class HomeController extends AbstractController
             'Content-Disposition' => 'inline; filename="cal.ics"',
         ]);
     }
+    #[Route('/api/assignments/{id}', name: 'api_assignment_details', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function getAssignmentDetails(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $assignment = $entityManager->getRepository(Assignment::class)->find($id);
+        if (!$assignment) {
+            return $this->json(['error' => 'Devoir non trouvé'], 404);
+        }
 
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            /** @var User $user */
+            $user = $this->getUser();
+            $groups = $user->getGroups();
+            $hasAccess = false;
+            foreach ($assignment->getGroups() as $group) {
+                if ($groups->contains($group)) {
+                    $hasAccess = true;
+                    break;
+                }
+            }
+            if (!$hasAccess) {
+                return $this->json(['error' => 'Accès refusé'], 403);
+            }
+        }
+
+        $titleWithCode = sprintf('[%s] %s', $assignment->getSubject()->getCode(), $assignment->getTitle());
+
+        return $this->json([
+            'id' => $assignment->getId(),
+            'title' => $titleWithCode,
+            'start' => $assignment->getDueDate()->format('c'),
+            'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
+            'description' => $assignment->getDescription() ?? 'Aucune description',
+            'submissionType' => $assignment->getSubmissionType(),
+            'submissionOther' => $assignment->getSubmissionOther(),
+            'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
+            'courseLocation' => $assignment->getCourseLocation() ?? 'Non spécifié',
+            'isCompleted' => $assignment->isCompleted(),
+            'type' => $assignment->getType(),
+        ]);
+    }
     #[Route('/api/assignments/{id}/suggest-modification', name: 'api_suggest_modification', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function suggestModification(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
