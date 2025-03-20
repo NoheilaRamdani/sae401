@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique des suggestions{% endblock %}
+
+{% block body %}
+    <h1>Historique des suggestions</h1>
+    {% if suggestions|length > 0 %}
+        {% for suggestion in suggestions %}
+            <div>
+                <h3>{{ suggestion.assignment.title }}</h3>
+                <p>Proposé par : {{ suggestion.suggestedBy.email }}</p>
+                <p>Message : {{ suggestion.message|default('Aucun message') }}</p>
+                <p>Changements proposés :
+                    {% if suggestion.proposedChanges|length > 0 %}
+                <ul>
+                    {% for field, value in suggestion.proposedChanges %}
+                        <li>{{ field }} : {{ value }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                    Aucun changement proposé
+                {% endif %}
+                </p>
+                <p>Créé le : {{ suggestion.createdAt|date('d/m/Y H:i') }}</p>
+                <p>Statut : {{ suggestion.isProcessed ? 'Traité' : 'En attente' }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Aucune suggestion trouvée.</p>
+    {% endif %}
+{% endblock %}

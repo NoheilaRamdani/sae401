@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gérer les devoirs{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Gérer les devoirs</h1>
+
+        {# Affichage des messages flash #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        {# Formulaire de filtres #}
+        <form method="POST" action="{{ path('manage_assignments') }}" class="filter-form">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="subject">Filtrer par matière :</label>
+                    <select name="subject" id="subject" class="form-control">
+                        <option value="">Toutes les matières</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject.id }}" {% if current_subject == subject.id %}selected{% endif %}>
+                                {{ subject.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% if is_delegate_or_admin %}
+                    <div class="col-md-4">
+                        <label for="group">Filtrer par groupe :</label>
+                        <select name="group" id="group" class="form-control">
+                            <option value="">Tous les groupes</option>
+                            {% for group in groups %}
+                                <option value="{{ group.id }}" {% if current_group == group.id %}selected{% endif %}>
+                                    {{ group.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary" style="margin-top: 32px;">Appliquer les filtres</button>
+                </div>
+            </div>
+        </form>
+
+        {# Liste des devoirs #}
+        <div class="assignments-list mt-4">
+            {% if assignments|length > 0 %}
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Matière</th>
+                        <th>Date de rendu</th>
+                        <th>Type</th>
+                        <th>Groupes</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for assignment in assignments %}
+                        <tr>
+                            <td>{{ assignment.title }}</td>
+                            <td>{{ assignment.subject.name }}</td>
+                            <td>{{ assignment.dueDate|date('d/m/Y H:i') }}</td>
+                            <td>{{ assignment.type|capitalize }}</td>
+                            <td>
+                                {% for group in assignment.groups %}
+                                    {{ group.name }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <a href="{{ path('app_edit_assignment', {'id': assignment.id}) }}" class="btn btn-sm btn-warning">Éditer</a>
+                                <form method="POST" action="{{ path('delete_assignment', {'id': assignment.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce devoir ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ assignment.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Aucun devoir trouvé avec ces filtres.</p>
+            {% endif %}
+        </div>
+
+        {# Lien pour ajouter un nouveau devoir #}
+        <a href="{{ path('add_assignment') }}" class="btn btn-success mt-3">Ajouter un nouveau devoir</a>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .filter-form {
+            margin-bottom: 20px;
+        }
+        .assignments-list {
+            margin-top: 20px;
+        }
+        .btn-sm {
+            margin-right: 5px;
+        }
+    </style>
+{% endblock %}

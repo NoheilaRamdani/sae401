@@ -16,15 +16,20 @@ security:
             lazy: true
             provider: app_user_provider
             custom_authenticator: App\Security\AppAuthenticator
-            entry_point: App\Security\AppAuthenticator  # Doit correspondre à la classe corrigée
+            entry_point: App\Security\AppAuthenticator
             logout:
                 path: app_logout
-                target: app_register
+                target: app_login  # Redirige vers login après déconnexion, pas register
+            # Ajoute une gestion explicite de la connexion si nécessaire
+            form_login:
+                login_path: app_login
+                check_path: app_login
 
     access_control:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/home, roles: ROLE_USER }
-        - { path: ^/, roles: PUBLIC_ACCESS }
+        - { path: ^/assignments, roles: [ROLE_ADMIN, ROLE_DELEGATE] }
+        - { path: ^/, roles: PUBLIC_ACCESS }  # Doit être en dernier
 
-    access_denied_url: /register
+    access_denied_url: /login  # Redirige vers login en cas d’accès refusé, pas register

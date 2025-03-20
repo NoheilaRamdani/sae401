@@ -19,6 +19,9 @@ class Suggestion
     #[ORM\JoinColumn(nullable: false)]
     private User $suggestedBy;
 
+    #[ORM\Column(type: 'json', nullable: true)] // Permet NULL dans la base
+    private ?array $proposedChanges = []; // Type union : peut être un tableau ou null
+
     #[ORM\Column(type: 'text')]
     private string $message;
 
@@ -33,7 +36,6 @@ class Suggestion
         $this->createdAt = new \DateTime();
     }
 
-    // Getters et setters
     public function getId(): ?int
     {
         return $this->id;
@@ -58,6 +60,17 @@ class Suggestion
     public function setSuggestedBy(User $suggestedBy): self
     {
         $this->suggestedBy = $suggestedBy;
+        return $this;
+    }
+
+    public function getProposedChanges(): array
+    {
+        return $this->proposedChanges ?? []; // Retourne un tableau vide si null
+    }
+
+    public function setProposedChanges(?array $proposedChanges): self
+    {
+        $this->proposedChanges = $proposedChanges; // Accepte null ou un tableau
         return $this;
     }
 

@@ -1,12 +1,23 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Gestion des devoirs{% endblock %}
+
 {% block body %}
-    <h1>Gestion des devoirs</h1>
     <div>
-        <form method="get" action="{{ path('manage_assignments') }}">
+        <h1>Gestion des devoirs</h1>
+
+        {# Affichage des messages flash #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div>{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        {# Formulaire de filtres #}
+        <form method="GET" action="{{ path('manage_assignments') }}">
             <div>
-                <select name="subject">
+                <label for="subject">Filtrer par matière :</label>
+                <select name="subject" id="subject">
                     <option value="">Toutes les matières</option>
                     {% for subject in subjects %}
                         <option value="{{ subject.id }}" {% if current_subject == subject.id|default('') %}selected{% endif %}>
@@ -16,7 +27,8 @@
                 </select>
             </div>
             <div>
-                <select name="group">
+                <label for="group">Filtrer par groupe :</label>
+                <select name="group" id="group">
                     <option value="">Tous les groupes</option>
                     {% for group in groups %}
                         <option value="{{ group.id }}" {% if current_group == group.id|default('') %}selected{% endif %}>
@@ -29,15 +41,50 @@
                 <button type="submit">Filtrer</button>
             </div>
         </form>
+
+        {# Liste des devoirs #}
+        <div>
+            {% if assignments|length > 0 %}
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Matière</th>
+                        <th>Date limite</th>
+                        <th>Type</th>
+                        <th>Groupes</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for assignment in assignments %}
+                        <tr>
+                            <td>{{ assignment.title }}</td>
+                            <td>{{ assignment.subject.name }}</td>
+                            <td>{{ assignment.dueDate|date('d/m/Y H:i') }}</td>
+                            <td>{{ assignment.type|capitalize }}</td>
+                            <td>
+                                {% for group in assignment.groups %}
+                                    {{ group.name }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <a href="{{ path('app_edit_assignment', {'id': assignment.id}) }}">Modifier</a>
+                                <form method="POST" action="{{ path('delete_assignment', {'id': assignment.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce devoir ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ assignment.id) }}">
+                                    <button type="submit">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Aucun devoir trouvé.</p>
+            {% endif %}
+        </div>
+
+        {# Lien pour ajouter un nouveau devoir #}
+        <a href="{{ path('add_assignment') }}">Ajouter un nouveau devoir</a>
     </div>
-    {% if assignments|length > 0 %}
-        {% for assignment in assignments %}
-            <div>
-                <strong>{{ assignment.title }}</strong><br>
-                <small>Date limite: {{ assignment.dueDate|date('d/m/Y') }}</small>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>Aucun devoir trouvé.</p>
-    {% endif %}
 {% endblock %}

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Form;
 
 use App\Entity\Assignment;
@@ -69,9 +68,9 @@ class SuggestionFormType extends AbstractType
             ])
             ->add('message', TextareaType::class, [
                 'label' => 'Votre suggestion de modification',
-                'required' => true,
+                'required' => false, // Changé de true à false
                 'attr' => [
-                    'placeholder' => 'Expliquez pourquoi vous suggérez ces changements...',
+                    'placeholder' => 'Expliquez pourquoi vous suggérez ces changements (facultatif)...',
                     'rows' => 5,
                 ],
             ])
