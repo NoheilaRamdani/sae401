@@ -81,33 +81,6 @@ class SuggestionController extends AbstractController
         ]);
     }
 
-    #[Route('/suggestions/manage', name: 'manage_suggestions', methods: ['GET'])]
-    #[IsGranted('ROLE_DELEGATE')]
-    public function manageSuggestions(EntityManagerInterface $entityManager): Response
-    {
-        $user = $this->getUser();
-        $queryBuilder = $entityManager->getRepository(Suggestion::class)
-            ->createQueryBuilder('s')
-            ->leftJoin('s.assignment', 'a')
-            ->leftJoin('a.groups', 'g')
-            ->where('s.isProcessed = :isProcessed')
-            ->setParameter('isProcessed', false);
-
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $userGroups = $user->getGroups();
-            $queryBuilder->andWhere('g IN (:userGroups)')
-                ->setParameter('userGroups', $userGroups);
-        }
-
-        $suggestions = $queryBuilder->orderBy('s.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
-
-        return $this->render('suggestion/manage.html.twig', [
-            'suggestions' => $suggestions,
-        ]);
-    }
-
     #[Route('/suggestion/{id}/validate', name: 'validate_suggestion', methods: ['POST'])]
     #[IsGranted('ROLE_DELEGATE')]
     public function validateSuggestion(int $id, Request $request, EntityManagerInterface $entityManager): Response
