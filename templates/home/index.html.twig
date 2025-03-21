@@ -29,18 +29,15 @@
             calendar.render();
 
             document.querySelectorAll('.event-item').forEach(item => {
-                // Vérifier si la case est cochée au chargement et appliquer la classe correspondante
                 const checkbox = item.querySelector('input[type="checkbox"]');
-                const checkEnabledElements = item.querySelectorAll('.check-enabled'); // Cibler tous les éléments avec la classe .check-enabled
+                const checkEnabledElements = item.querySelectorAll('.check-enabled');
                 if (checkbox && checkEnabledElements.length > 0) {
-                    // Si la case est cochée, ajouter la classe "completed-task" à tous les éléments .check-enabled
                     if (checkbox.checked) {
                         checkEnabledElements.forEach(element => {
                             element.classList.add('completed-task');
                         });
                     }
 
-                    // Ajouter un événement pour gérer le changement de l'état de la case
                     checkbox.addEventListener('change', function(e) {
                         e.stopPropagation();
                         const eventId = this.dataset.id;
@@ -52,7 +49,6 @@
                                     calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
                                 }
 
-                                // Ajouter ou enlever la classe "completed-task" à tous les éléments .check-enabled selon l'état de la case
                                 checkEnabledElements.forEach(element => {
                                     if (data.isCompleted) {
                                         element.classList.add('completed-task');
@@ -64,7 +60,6 @@
                     });
                 }
 
-                // Ajouter l'événement de clic pour afficher les détails de l'événement
                 item.addEventListener('click', function(e) {
                     if (e.target.tagName === 'INPUT') {
                         e.stopPropagation();
@@ -109,13 +104,9 @@
                     submissionOtherContainer.style.display = 'none';
                 }
 
-                //document.getElementById('modalCourseLocation').textContent = event.courseLocation || 'Non spécifié';
                 document.getElementById('modalType').textContent = event.type || 'Non spécifié';
                 document.getElementById('modalCompleted').checked = event.isCompleted || false;
                 document.getElementById('eventModal').dataset.id = event.id;
-
-                //document.getElementById('modalSubjectInstruction').textContent = event.courseLocation || 'Non spécifié';
-                document.getElementById('modalSubmissionInstruction').textContent = submissionTypeDisplay;
 
                 const editAssignmentLink = document.getElementById('editAssignment');
                 if (editAssignmentLink) {
@@ -124,31 +115,35 @@
 
                 document.getElementById('eventModal').style.display = 'flex';
 
-                // Ajout de la détection du clic sur la checkbox du modal
+                // Modification pour la checkbox dans le modal
                 const modalCheckbox = document.getElementById('modalCompleted');
                 modalCheckbox.addEventListener('change', function() {
                     const eventId = document.getElementById('eventModal').dataset.id;
-                    fetch(`/api/assignments/${eventId}/toggle-complete`, { method: 'POST' })
-                        .then(response => response.json())
+                    const isCompleted = this.checked;
+
+                    fetch(`/api/assignments/${eventId}/toggle-complete`, {
+                        method: 'POST'
+                    }).then(response => response.json())
                         .then(data => {
                             const listItem = document.querySelector(`div[data-id="${eventId}"]`);
                             if (listItem) {
-                                listItem.querySelector('input[type="checkbox"]').checked = data.isCompleted;
-                            }
-                            const calendarEvent = calendar.getEventById(eventId);
-                            if (calendarEvent) {
-                                calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
-                            }
-
-                            // Ajouter ou enlever la classe "completed-task" à tous les éléments .check-enabled
-                            const checkEnabledElements = listItem.querySelectorAll('.check-enabled');
-                            checkEnabledElements.forEach(element => {
-                                if (data.isCompleted) {
-                                    element.classList.add('completed-task');
-                                } else {
-                                    element.classList.remove('completed-task');
+                                listItem.querySelector('input[type="checkbox"]').checked = isCompleted;
+                                // Mise à jour de l'état de la classe à l'élément principal
+                                const calendarEvent = calendar.getEventById(eventId);
+                                if (calendarEvent) {
+                                    calendarEvent.setProp('classNames', isCompleted ? ['completed-event'] : []);
                                 }
-                            });
+
+                                // Mise à jour de la classe à l'élément principal
+                                const checkEnabledElements = listItem.querySelectorAll('.check-enabled');
+                                checkEnabledElements.forEach(element => {
+                                    if (isCompleted) {
+                                        element.classList.add('completed-task');
+                                    } else {
+                                        element.classList.remove('completed-task');
+                                    }
+                                });
+                            }
                         });
                 });
             }
