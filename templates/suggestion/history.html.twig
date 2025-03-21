@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Historique des suggestions{% endblock %}
+{% block title %}Toutes les suggestions{% endblock %}
 
 {% block body %}
-    <div class="container">
-        <h1>Historique des suggestions</h1>
+    <main class="padding container suggestion">
+        <h1>Toutes les suggestions</h1>
 
         {# Affichage des messages flash #}
         {% for label, messages in app.flashes %}
@@ -29,7 +29,7 @@
                     <tr>
                         <td>{{ suggestion.assignment.title }}</td>
                         <td>{{ suggestion.suggestedBy.email }}</td>
-                        <td>{{ suggestion.createdAt|date('d/m/Y H:i') }}</td>
+                        <td>{{ suggestion.createdAt|date('d/m/Y - H:i') }}</td>
                         <td>
                             {% if suggestion.isProcessed %}
                                 <span class="badge bg-success">Traitée</span>
@@ -38,7 +38,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}" class="btn btn-sm btn-info">Revoir</a>
+                            <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}" class="button">Revoir</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -48,12 +48,11 @@
             <p>Aucune suggestion trouvée.</p>
         {% endif %}
 
-        <div class="mt-3">
-            <a href="{{ path('manage_suggestions') }}" class="btn btn-info">Suggestions en attente</a>
-            <a href="{{ path('manage_assignments') }}" class="btn btn-secondary">Gérer les devoirs</a>
-            <a href="{{ path('app_home') }}" class="btn btn-grey">Retour à l'accueil</a>
+        <div class="row-start">
+            <a href="{{ path('manage_assignments') }}" class="button">Gérer les tâches</a>
+            <a href="{{ path('app_home') }}" class="button">Retour à l'accueil</a>
         </div>
-    </div>
+    </main>
 {% endblock %}
 
 {% block stylesheets %}

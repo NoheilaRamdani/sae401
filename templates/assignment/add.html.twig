@@ -3,7 +3,7 @@
 {% block title %}Ajouter un devoir{% endblock %}
 
 {% block body %}
-    <div>
+    <main class="form">
         <h1>Ajouter un nouveau devoir</h1>
 
         {{ form_start(form) }}
@@ -73,10 +73,10 @@
             {{ form_errors(form.type) }}
         </div>
 
-        <button type="submit">Ajouter le devoir</button>
+        <button class="button" type="submit">Ajouter la tâche</button>
 
         {{ form_end(form) }}
-    </div>
+    </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
