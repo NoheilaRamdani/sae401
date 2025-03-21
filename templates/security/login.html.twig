@@ -9,20 +9,20 @@
         {% endif %}
         {% if app.user %}
             <div>
-                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
+                Vous êtes connecté en tant que {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Déconnexion</a>
             </div>
         {% endif %}
-        <h1>Please sign in</h1>
+        <h1>Se connecter</h1>
         <label for="inputEmail">Email</label>
         <input type="email" value="{{ last_username }}" name="email" id="inputEmail" autocomplete="email" required autofocus>
-        <label for="inputPassword">Password</label>
+        <label for="inputPassword">Mot de passe</label>
         <input type="password" name="password" id="inputPassword" autocomplete="current-password" required>
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
         <div>
-            <label>
-                <input type="checkbox" name="_remember_me"> Remember me
+            <label class="row-start">
+                <input type="checkbox" name="_remember_me"> Se souvenir de moi
             </label>
         </div>
-        <button type="submit">Sign in</button>
+        <button class="button" type="submit">Se connecter</button>
     </form>
 {% endblock %}
