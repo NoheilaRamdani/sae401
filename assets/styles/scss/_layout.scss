@@ -554,3 +554,8 @@ table:not(#calendar table) {
     }
   }
 }
+
+
+.fc-today-button, .fc-next-button, .fc-prev-button {
+  background-color: $purpledark !important;
+}

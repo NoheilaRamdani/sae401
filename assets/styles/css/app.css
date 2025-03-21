@@ -524,6 +524,10 @@ table:not(#calendar table) tbody tr td span.delegate {
   gap: 10px;
 }
 
+.fc-today-button, .fc-next-button, .fc-prev-button {
+  background-color: #4D3677 !important;
+}
+
 .home {
   width: 100%;
   padding: 0;
