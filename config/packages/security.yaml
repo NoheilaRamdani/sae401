@@ -32,6 +32,7 @@ security:
     # Contrôle d'accès basé sur les routes et les rôles
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/assignments/\d+/suggest-modification-form, roles: ROLE_USER }
         - { path: ^/assignment/add, roles: [ROLE_DELEGATE, ROLE_ADMIN] }
         - { path: ^/assignments/\d+/edit, roles: [ROLE_DELEGATE, ROLE_ADMIN] }
