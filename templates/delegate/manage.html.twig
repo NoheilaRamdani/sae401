@@ -4,7 +4,7 @@
 
 {% block body %}
 
-    <main class="delegate-page">
+    <main class="delegate-page padding">
         <h1>Gestion des délégués</h1>
         {% for label, messages in app.flashes %}
             {% for message in messages %}
@@ -38,8 +38,11 @@
                     </thead>
                     <tbody>
                     {% for userData in groupData.users %}
-                        <tr>
-                            <td>{{ userData.user.lastName }}</td>
+                        {% if userData.isDelegate %}
+                            <tr class="is-delegate">
+                        {% else %}
+                            <tr>
+                        {% endif %}                            <td>{{ userData.user.lastName }}</td>
                             <td>{{ userData.user.firstName }}</td>
                             <td>{{ userData.user.email }}</td>
                             <td>
@@ -50,13 +53,15 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a class="button" href="{{ path('delegate_toggle', {'userId': userData.user.id, 'groupId': groupData.group.id}) }}">
-                                    {% if userData.isDelegate %}
-                                        Retirer
-                                    {% else %}
-                                        Désigner
-                                    {% endif %}
+                                {% if userData.isDelegate %}
+                                <a class="button delegate-btn" href="{{ path('delegate_toggle', {'userId': userData.user.id, 'groupId': groupData.group.id}) }}">
+                                Retirer
                                 </a>
+                                {% else %}
+                                    <a class="button" href="{{ path('delegate_toggle', {'userId': userData.user.id, 'groupId': groupData.group.id}) }}">
+                                        Désigner
+                                    </a>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}

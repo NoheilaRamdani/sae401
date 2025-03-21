@@ -123,6 +123,34 @@
                 }
 
                 document.getElementById('eventModal').style.display = 'flex';
+
+                // Ajout de la détection du clic sur la checkbox du modal
+                const modalCheckbox = document.getElementById('modalCompleted');
+                modalCheckbox.addEventListener('change', function() {
+                    const eventId = document.getElementById('eventModal').dataset.id;
+                    fetch(`/api/assignments/${eventId}/toggle-complete`, { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            const listItem = document.querySelector(`div[data-id="${eventId}"]`);
+                            if (listItem) {
+                                listItem.querySelector('input[type="checkbox"]').checked = data.isCompleted;
+                            }
+                            const calendarEvent = calendar.getEventById(eventId);
+                            if (calendarEvent) {
+                                calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
+                            }
+
+                            // Ajouter ou enlever la classe "completed-task" à tous les éléments .check-enabled
+                            const checkEnabledElements = listItem.querySelectorAll('.check-enabled');
+                            checkEnabledElements.forEach(element => {
+                                if (data.isCompleted) {
+                                    element.classList.add('completed-task');
+                                } else {
+                                    element.classList.remove('completed-task');
+                                }
+                            });
+                        });
+                });
             }
 
             const suggestModificationBtn = document.getElementById('suggestModification');
@@ -257,7 +285,7 @@
                                     </div>
                                 </div>
                                 <div class="countdown row-start">
-                                    <i class="check-enabled fa-solid fa-clock ontime"></i>
+                                    <i class="check-enabled fa-solid fa-clock {{ daysUntilDue <= 2 ? 'urgent' : (daysUntilDue <= 5 ? 'soon' : 'ontime') }}""></i>
                                     <p class="check-enabled">{{ daysUntilDue >= 0 ? daysUntilDue ~ ' jour' ~ (daysUntilDue > 1 ? 's' : '') ~ ' ' : 'Expiré' }}</p>
                                 </div>
                             </div>

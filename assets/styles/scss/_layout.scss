@@ -19,6 +19,12 @@
   color: $urgent;
 }
 
+
+.padding {
+  padding-top: 45px;
+  padding-bottom: 45px;
+}
+
 .row-start {
   @include flex-row(flex-start);
 }

@@ -1,6 +1,4 @@
 .delegate-page {
-  padding-top: 45px;
-  padding-bottom: 45px;
   .row-baseline {
     gap: 15px;
   }
@@ -8,8 +6,23 @@
   .delegate-table {
     margin-top: 50px;
 
+    .is-delegate {
+      background-color: transparentize($purplelight, 0.8);
+    }
+
     .button {
       font-size: 0.8em;
+      width: 98px;
+
+      &.delegate-btn {
+        background-color: $purplelight;
+        color: $purpledark;
+
+        &:hover {
+          background-color: $purplemedium;
+          color: white;
+        }
+      }
     }
   }
 

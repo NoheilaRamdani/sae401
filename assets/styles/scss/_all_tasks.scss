@@ -1,9 +1,6 @@
 .all-tasks {
   min-height: 100vh;
   @include flex-row(flex-start, flex-start);
-  padding-top: 45px;
-  padding-bottom: 45px;
-
 
   .filter-section {
     @include flex-column(flex-start, space-between);

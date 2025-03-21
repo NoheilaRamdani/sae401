@@ -50,6 +50,11 @@
   color: #DC3545;
 }
 
+.padding {
+  padding-top: 45px;
+  padding-bottom: 45px;
+}
+
 .row-start {
   justify-content: flex-start;
   align-items: center;
@@ -88,7 +93,7 @@
   padding: 10px 20px;
   background-color: #4D3677;
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 0.9rem;
   width: fit-content;
   gap: 15px;
   cursor: pointer;
@@ -464,6 +469,9 @@ table:not(#calendar table) tbody tr td span.delegate {
   padding: 0;
   display: flex;
 }
+.home .fa-solid {
+  font-size: 1.2em;
+}
 .home h1 {
   position: absolute;
   width: 1px;
@@ -510,7 +518,7 @@ table:not(#calendar table) tbody tr td span.delegate {
   padding: 10px 20px;
   background-color: #373737;
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 0.9rem;
   width: fit-content;
   gap: 15px;
   cursor: pointer;
@@ -524,8 +532,6 @@ table:not(#calendar table) tbody tr td span.delegate {
   min-height: 100vh;
   justify-content: flex-start;
   align-items: flex-start;
-  padding-top: 45px;
-  padding-bottom: 45px;
 }
 .all-tasks .filter-section {
   justify-content: space-between;
@@ -575,18 +581,26 @@ table:not(#calendar table) tbody tr td span.delegate {
   margin-top: 15px;
 }
 
-.delegate-page {
-  padding-top: 45px;
-  padding-bottom: 45px;
-}
 .delegate-page .row-baseline {
   gap: 15px;
 }
 .delegate-page .delegate-table {
   margin-top: 50px;
 }
+.delegate-page .delegate-table .is-delegate {
+  background-color: rgba(240, 181, 255, 0.2);
+}
 .delegate-page .delegate-table .button {
   font-size: 0.8em;
+  width: 98px;
+}
+.delegate-page .delegate-table .button.delegate-btn {
+  background-color: #F0B5FF;
+  color: #4D3677;
+}
+.delegate-page .delegate-table .button.delegate-btn:hover {
+  background-color: #9C36B5;
+  color: white;
 }
 
 .manage-assignmts .filter-section {
