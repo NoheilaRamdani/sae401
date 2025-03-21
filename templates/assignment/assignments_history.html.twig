@@ -7,9 +7,9 @@
 
         <div class="filter-section">
 
-            <div>
+            <div class="filter-container">
                 <h1>Toutes les tâches</h1>
-                <div>
+                <div class="filter">
                     <label for="subjectSelect">Sélectionner une matière</label>
                     <select id="subjectSelect">
                         <option value="">Toutes les matières</option>
@@ -24,7 +24,7 @@
                 </div>
 
                 {% if is_delegate_or_admin %}
-                    <div>
+                    <div class="filter">
                         <label for="groupSelect">Sélectionner un groupe</label>
                         <select id="groupSelect">
                             <option value="">Tous les groupes</option>
@@ -38,7 +38,7 @@
                         </select>
                     </div>
                 {% endif %}
-                <button onclick="filterAssignments()">Filtrer</button>
+                <button class="button-grey" onclick="filterAssignments()"><i class="fa-solid fa-filter"></i> Filtrer</button>
             </div>
 
 

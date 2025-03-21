@@ -1,0 +1,31 @@
+
+.manage-assignmts {
+  .filter-section {
+    gap: 30px;
+    margin: 25px 0;
+  }
+
+  .row-start {
+    gap: 10px;
+
+    .button-modify {
+      @include btn-variant($purplelight, 0.9em, 10px, 6px 14px);
+      color: $purpledark;
+      width: 35px;
+      height: 35px;
+    }
+
+    .button-delete{
+      @include btn-variant($maincolor, 0.9em, 10px, 6px 14px);
+      width: 35px;
+      height: 35px;
+    }
+  }
+
+
+
+  .button {
+    margin-top: 23px;
+  }
+}
+

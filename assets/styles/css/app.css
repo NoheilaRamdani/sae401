@@ -9,7 +9,7 @@
   font-family: "Poppins";
 }
 
-.home .tasks-container .button-grey, .button, .all-tasks #assignmentsContainer .task-container .status, .tag-small, .tag {
+.manage-assignmts .row-start .button-delete, .manage-assignmts .row-start .button-modify, .home .tasks-container .button-grey, main .filter-section .button-grey, .button, .all-tasks #assignmentsContainer .task-container .status, .tag-small, .tag {
   font-weight: 600;
   border-radius: 9px;
   text-align: center;
@@ -250,7 +250,44 @@ main p {
   font-size: 1em;
   font-weight: 400;
 }
+main .filter-section {
+  /* Style du label */
+  /* Style du select */
+}
+main .filter-section label {
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #555;
+}
+main .filter-section select {
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  /* Option disabled */
+}
+main .filter-section select option:disabled {
+  color: #999;
+}
+main .filter-section .button-grey {
+  padding: 6px 14px;
+  background-color: #373737;
+  color: #ffffff;
+  font-size: 0.85rem;
+  width: fit-content;
+  gap: 10px;
+  cursor: pointer;
+}
+main .filter-section .button-grey:hover {
+  background-color: rgb(29.5, 29.5, 29.5);
+}
 main .task-container {
+  cursor: pointer;
   width: 100%;
   background-color: white;
   border-radius: 18px;
@@ -496,7 +533,16 @@ table:not(#calendar table) tbody tr td span.delegate {
   height: 100vh;
   top: 0;
   position: sticky;
-  padding-bottom: 25px;
+  padding: 0 25px 25px 0;
+  width: 30%;
+}
+.all-tasks .filter-section .filter {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+.all-tasks .filter-section .button-grey {
+  margin-top: 20px;
 }
 .all-tasks .filter-section .button.back-btn {
   position: fixed;
@@ -541,6 +587,46 @@ table:not(#calendar table) tbody tr td span.delegate {
 }
 .delegate-page .delegate-table .button {
   font-size: 0.8em;
+}
+
+.manage-assignmts .filter-section {
+  gap: 30px;
+  margin: 25px 0;
+}
+.manage-assignmts .row-start {
+  gap: 10px;
+}
+.manage-assignmts .row-start .button-modify {
+  padding: 6px 14px;
+  background-color: #F0B5FF;
+  color: #ffffff;
+  font-size: 0.9em;
+  width: fit-content;
+  gap: 10px;
+  cursor: pointer;
+  color: #4D3677;
+  width: 35px;
+  height: 35px;
+}
+.manage-assignmts .row-start .button-modify:hover {
+  background-color: rgb(229.6621621622, 130, 255);
+}
+.manage-assignmts .row-start .button-delete {
+  padding: 6px 14px;
+  background-color: #373737;
+  color: #ffffff;
+  font-size: 0.9em;
+  width: fit-content;
+  gap: 10px;
+  cursor: pointer;
+  width: 35px;
+  height: 35px;
+}
+.manage-assignmts .row-start .button-delete:hover {
+  background-color: rgb(29.5, 29.5, 29.5);
+}
+.manage-assignmts .button {
+  margin-top: 23px;
 }
 
 /*# sourceMappingURL=app.css.map */

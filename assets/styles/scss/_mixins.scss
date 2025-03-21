@@ -41,13 +41,13 @@
 @mixin btn-variant(
   $bg-color: $purpledark,
   $font-size: 1rem,
-  $gap: 15px,
+  $gap: 15px, $padding: 10px 20px,
   $color: #ffffff,
   $width: fit-content
 ) {
   @extend %btn-base;
 
-  padding: 10px 20px;
+  padding: $padding;
   background-color: $bg-color;
   color: $color;
   font-size: $font-size;

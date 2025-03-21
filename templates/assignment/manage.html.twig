@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Gestion des devoirs{% endblock %}
+{% block title %}Gestion des tâches{% endblock %}
 
 {% block body %}
-    <div>
-        <h1>Gestion des devoirs</h1>
+    <main class="manage-assignmts">
+        <h1>Gestion des tâches</h1>
 
         {# Affichage des messages flash #}
         {% for label, messages in app.flashes %}
@@ -14,7 +14,7 @@
         {% endfor %}
 
         {# Formulaire de filtres #}
-        <form method="GET" action="{{ path('manage_assignments') }}">
+        <form class="filter-section row-start" method="GET" action="{{ path('manage_assignments') }}">
             <div>
                 <label for="subject">Filtrer par matière :</label>
                 <select name="subject" id="subject">
@@ -38,7 +38,7 @@
                 </select>
             </div>
             <div>
-                <button type="submit">Filtrer</button>
+                <button class="button-grey" type="submit">Filtrer</button>
             </div>
         </form>
 
@@ -68,11 +68,11 @@
                                     {{ group.name }}{% if not loop.last %}, {% endif %}
                                 {% endfor %}
                             </td>
-                            <td>
-                                <a href="{{ path('app_edit_assignment', {'id': assignment.id}) }}">Modifier</a>
+                            <td class="row-start">
+                                <a class="button-modify" href="{{ path('app_edit_assignment', {'id': assignment.id}) }}"><i class="fa-solid fa-pen"></i></a>
                                 <form method="POST" action="{{ path('delete_assignment', {'id': assignment.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce devoir ?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ assignment.id) }}">
-                                    <button type="submit">Supprimer</button>
+                                    <button class="button-delete" type="submit"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -85,6 +85,6 @@
         </div>
 
         {# Lien pour ajouter un nouveau devoir #}
-        <a href="{{ path('add_assignment') }}">Ajouter un nouveau devoir</a>
-    </div>
+        <a class="button" href="{{ path('add_assignment') }}"><i class="fa-solid fa-plus"></i> Ajouter une nouvelle tâche</a>
+    </main>
 {% endblock %}
