@@ -320,12 +320,10 @@ class AssignmentController extends AbstractController
             }
         }
 
-        $titleWithCode = sprintf('[%s] %s', $assignment->getSubject()->getCode(), $assignment->getTitle());
-
         return $this->json([
             'id' => $assignment->getId(),
-            'title' => $titleWithCode,
-            'start' => $assignment->getDueDate()->format('c'),
+            'title' => $assignment->getTitle(),
+            'start' => $assignment->getDueDate()->setTimezone(new \DateTimeZone('Europe/Paris'))->format('c'),
             'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
             'description' => $assignment->getDescription() ?? 'Aucune description',
             'submissionType' => $assignment->getSubmissionType(),
@@ -334,6 +332,10 @@ class AssignmentController extends AbstractController
             'courseLocation' => $assignment->getCourseLocation() ?? 'Non spécifié',
             'isCompleted' => $assignment->isCompleted(),
             'type' => $assignment->getType(),
+            'subject' => [
+                'code' => $assignment->getSubject()->getCode(),
+                'name' => $assignment->getSubject()->getName(),
+            ],
         ]);
     }
 }

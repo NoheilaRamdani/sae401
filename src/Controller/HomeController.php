@@ -185,7 +185,6 @@ class HomeController extends AbstractController
 
         $assignments = $queryBuilder->getQuery()->getResult();
 
-        // Récupérer les sujets et groupes uniques pour les filtres
         $subjects = [];
         $groups = [];
         foreach ($assignments as $assignment) {
@@ -204,9 +203,9 @@ class HomeController extends AbstractController
 
         return $this->render('assignment/assignments_history.html.twig', [
             'user' => $user,
-            'assignments' => $assignments, // Passer directement assignments
+            'assignments' => $assignments,
             'subjects' => $subjects,
-            'groups' => $isDelegateOrAdmin ? $groups : [], // Groupes uniquement pour admin/délégué
+            'groups' => $isDelegateOrAdmin ? $groups : [],
             'is_delegate_or_admin' => $isDelegateOrAdmin,
         ]);
     }

@@ -65,35 +65,37 @@
                 console.log('Event passé à showEventDetails:', event);
 
                 document.getElementById('modalTitle').textContent = event.title || 'Sans titre';
-                document.getElementById('modalDate').textContent = new Date(event.due_date || event.start).toLocaleString('fr-FR') || 'Date inconnue';
+                document.getElementById('modalDate').textContent = new Date(event.start).toLocaleString('fr-FR') || 'Date inconnue';
                 document.getElementById('modalDescription').textContent = event.description || 'Aucune description';
 
-                // Alignement avec la structure de "À venir"
-                document.getElementById('modalSubjectCode').textContent = event.subject_code || event.subject?.code || 'Non spécifié';
+                document.getElementById('modalSubjectCode').textContent = event.subject?.code || 'Non spécifié';
                 document.getElementById('modalSubjectName').textContent = event.subject?.name || 'Non spécifié';
 
                 const submissionUrlEl = document.getElementById('modalSubmissionUrl');
-                if (event.submission_url) {
-                    submissionUrlEl.innerHTML = `<a href="${event.submission_url}" target="_blank">${event.submission_url}</a>`;
+                if (event.submissionUrl) {
+                    submissionUrlEl.innerHTML = `<a href="${event.submissionUrl}" target="_blank">${event.submissionUrl}</a>`;
                 } else {
                     submissionUrlEl.textContent = 'Aucune URL de soumission';
                 }
 
-                const submissionTypeDisplay = event.submission_type === 'other' ? 'Autre' : event.submission_type || 'Non spécifié';
+                const submissionTypeDisplay = (event.submissionType && event.submissionType.toLowerCase() === 'other') ? 'Autre' : event.submissionType || 'Non spécifié';
                 document.getElementById('modalSubmissionType').textContent = submissionTypeDisplay;
 
                 const submissionOtherContainer = document.getElementById('modalSubmissionOtherContainer');
-                if (event.submission_type === 'other' && event.submission_other) {
-                    document.getElementById('modalSubmissionOther').textContent = event.submission_other;
+                if (event.submissionType && event.submissionType.toLowerCase() === 'other' && event.submissionOther) {
+                    document.getElementById('modalSubmissionOther').textContent = event.submissionOther;
                     submissionOtherContainer.style.display = 'block';
                 } else {
                     submissionOtherContainer.style.display = 'none';
                 }
 
-                document.getElementById('modalCourseLocation').textContent = event.course_location || 'Non spécifié';
+                document.getElementById('modalCourseLocation').textContent = event.courseLocation || 'Non spécifié';
                 document.getElementById('modalType').textContent = event.type || 'Non spécifié';
-                document.getElementById('modalCompleted').checked = event.is_completed || event.isCompleted || false;
+                document.getElementById('modalCompleted').checked = event.isCompleted || false;
                 document.getElementById('eventModal').dataset.id = event.id;
+
+                document.getElementById('modalSubjectInstruction').textContent = event.courseLocation || 'Non spécifié';
+                document.getElementById('modalSubmissionInstruction').textContent = submissionTypeDisplay;
 
                 const editAssignmentLink = document.getElementById('editAssignment');
                 if (editAssignmentLink) {
@@ -102,6 +104,7 @@
 
                 document.getElementById('eventModal').style.display = 'block';
             }
+
             const suggestModificationBtn = document.getElementById('suggestModification');
             if (suggestModificationBtn) {
                 suggestModificationBtn.addEventListener('click', function() {
@@ -263,8 +266,8 @@
                 <li class="plateformes">
                     <span class="title"><i class="fa-solid fa-layer-group"></i> Consignes et rendu</span>
                     <ul>
-                        <li>- <span>Sujet</span> : Moodle</li>
-                        <li>- <span>Rendu</span> : Moodle</li>
+                        <li>- <span>Sujet</span> : <span id="modalSubjectInstruction">Moodle</span></li>
+                        <li>- <span>Rendu</span> : <span id="modalSubmissionInstruction">Moodle</span></li>
                     </ul>
                 </li>
             </ul>
