@@ -109,6 +109,45 @@
   font-size: 0.8em;
 }
 
+input[type=checkbox] {
+  display: flex;
+  flex-shrink: 0;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+input[type=checkbox]:checked {
+  background-color: #373737;
+  border-color: #373737;
+}
+input[type=checkbox]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+input[type=checkbox]:hover {
+  border-color: #888; /* Bordure au survol */
+}
+
+.completed-task {
+  color: grey;
+}
+.completed-task:not(i) {
+  text-decoration: line-through;
+}
+
 .back-to-top {
   position: fixed;
   bottom: 20px;
@@ -246,11 +285,8 @@ main .task-container .content .task {
   gap: 15px;
   width: 60%;
 }
-main .task-container .content .task input {
+main .task-container .content .task input:not([type=checkbox]) {
   width: fit-content;
-}
-main .task-container .content .task input[type=checkbox] {
-  transform: scale(1.5);
 }
 main .task-container .content .task .details {
   width: 100%;
@@ -301,14 +337,18 @@ main .task-container .content .countdown .ontime {
   border-radius: 10px;
   background-color: white;
 }
-.modal-container .modal .fa-xmark {
+.modal-container .modal #closeModal {
+  background-color: rgba(255, 255, 255, 0);
+  border: none;
   float: right;
+}
+.modal-container .modal #closeModal .fa-xmark {
   font-size: 25px;
   color: #373737;
   cursor: pointer;
   transition: all 0.1s ease-in-out;
 }
-.modal-container .modal .fa-xmark:hover {
+.modal-container .modal #closeModal .fa-xmark:hover {
   color: #1B1B1B;
 }
 .modal-container .modal ul li.title,
@@ -323,7 +363,7 @@ main .task-container .content .countdown .ontime {
 .modal-container .modal ul li i {
   margin-right: 3px;
 }
-.modal-container .modal ul li span {
+.modal-container .modal ul li .subtitle {
   font-size: 0.9em;
   font-weight: 600;
 }
@@ -339,7 +379,7 @@ main .task-container .content .countdown .ontime {
   margin-top: 30px;
   font-weight: 500;
 }
-.modal-container .modal button {
+.modal-container .modal .button {
   float: right;
   margin-top: 30px;
 }
