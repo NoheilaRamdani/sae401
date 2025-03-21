@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Revoir la suggestion - {{ assignment.title }}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Revoir la suggestion pour "{{ assignment.title }}"</h1>
+
+        {# Affichage des messages flash #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <h2>Valeurs actuelles</h2>
+        <ul>
+            <li><strong>Titre :</strong> {{ assignment.title }}</li>
+            <li><strong>Description :</strong> {{ assignment.description|default('Aucune') }}</li>
+            <li><strong>Date limite :</strong> {{ assignment.dueDate|date('d/m/Y H:i') }}</li>
+            <li><strong>Type de rendu :</strong> {{ assignment.submissionType }}</li>
+            <li><strong>URL de rendu :</strong> {{ assignment.submissionUrl|default('Aucune') }}</li>
+            <li><strong>Type :</strong> {{ assignment.type }}</li>
+        </ul>
+
+        <h2>Changements proposés</h2>
+        <ul>
+            <li><strong>Titre :</strong> {{ 'title' in suggestion.proposedChanges ? suggestion.proposedChanges.title : assignment.title }}</li>
+            <li><strong>Description :</strong> {{ 'description' in suggestion.proposedChanges ? suggestion.proposedChanges.description|default('Aucune') : assignment.description|default('Aucune') }}</li>
+            <li><strong>Date limite :</strong> {{ 'due_date' in suggestion.proposedChanges ? suggestion.proposedChanges.due_date|date('d/m/Y H:i') : assignment.dueDate|date('d/m/Y H:i') }}</li>
+            <li><strong>Type de rendu :</strong> {{ 'submission_type' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_type : assignment.submissionType }}</li>
+            <li><strong>URL de rendu :</strong> {{ 'submission_url' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_url|default('Aucune') : assignment.submissionUrl|default('Aucune') }}</li>
+            <li><strong>Type :</strong> {{ 'type' in suggestion.proposedChanges ? suggestion.proposedChanges.type : assignment.type }}</li>
+        </ul>
+
+        <h2>Message</h2>
+        <p>{{ suggestion.message|default('Aucun message') }}</p>
+
+        {{ form_start(form) }}
+        {{ form_widget(form.approve) }}
+        {{ form_widget(form.reject) }}
+        {{ form_end(form) }}
+
+        <a href="{{ path('app_suggestions') }}" class="btn btn-sec">Retour à l’historique</a>
+    </div>
+{% endblock %}

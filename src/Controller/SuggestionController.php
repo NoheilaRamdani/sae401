@@ -85,8 +85,23 @@ class SuggestionController extends AbstractController
     #[IsGranted('ROLE_DELEGATE')]
     public function manageSuggestions(EntityManagerInterface $entityManager): Response
     {
-        $suggestions = $entityManager->getRepository(Suggestion::class)
-            ->findBy(['isProcessed' => false], ['createdAt' => 'DESC']);
+        $user = $this->getUser();
+        $queryBuilder = $entityManager->getRepository(Suggestion::class)
+            ->createQueryBuilder('s')
+            ->leftJoin('s.assignment', 'a')
+            ->leftJoin('a.groups', 'g')
+            ->where('s.isProcessed = :isProcessed')
+            ->setParameter('isProcessed', false);
+
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $userGroups = $user->getGroups();
+            $queryBuilder->andWhere('g IN (:userGroups)')
+                ->setParameter('userGroups', $userGroups);
+        }
+
+        $suggestions = $queryBuilder->orderBy('s.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
 
         return $this->render('suggestion/manage.html.twig', [
             'suggestions' => $suggestions,
@@ -102,11 +117,22 @@ class SuggestionController extends AbstractController
             throw $this->createNotFoundException('Suggestion non trouvée.');
         }
 
-        if ($this->isCsrfTokenValid('validate'.$id, $request->request->get('_token'))) {
-            $assignment = $suggestion->getAssignment();
-            $changes = $suggestion->getProposedChanges();
+        $user = $this->getUser();
+        $assignment = $suggestion->getAssignment();
+        $groups = $user->getGroups();
+        $hasAccess = false;
+        foreach ($assignment->getGroups() as $group) {
+            if ($groups->contains($group)) {
+                $hasAccess = true;
+                break;
+            }
+        }
+        if (!$hasAccess && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette suggestion.');
+        }
 
-            // Appliquer les changements proposés
+        if ($this->isCsrfTokenValid('validate'.$id, $request->request->get('_token'))) {
+            $changes = $suggestion->getProposedChanges();
             foreach ($changes as $field => $value) {
                 switch ($field) {
                     case 'title':
@@ -129,13 +155,9 @@ class SuggestionController extends AbstractController
                         break;
                 }
             }
-
-            // Mettre à jour la date de modification et marquer la suggestion comme traitée
             $assignment->setUpdatedAt(new \DateTime());
             $suggestion->setIsProcessed(true);
-
             $entityManager->flush();
-
             $this->addFlash('success', 'La suggestion a été validée et le devoir mis à jour !');
         } else {
             $this->addFlash('error', 'Erreur de sécurité lors de la validation.');
@@ -144,18 +166,108 @@ class SuggestionController extends AbstractController
         return $this->redirectToRoute('manage_suggestions');
     }
 
-    #[Route('/suggestions', name: 'app_suggestions')]
+    #[Route('/suggestions', name: 'app_suggestions', methods: ['GET'])]
     #[IsGranted('ROLE_DELEGATE')]
     public function suggestions(EntityManagerInterface $entityManager): Response
     {
-        $suggestions = $entityManager->getRepository(Suggestion::class)
+        $user = $this->getUser();
+        $queryBuilder = $entityManager->getRepository(Suggestion::class)
             ->createQueryBuilder('s')
-            ->orderBy('s.createdAt', 'DESC')
+            ->leftJoin('s.assignment', 'a')
+            ->leftJoin('a.groups', 'g');
+
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $userGroups = $user->getGroups();
+            $queryBuilder->andWhere('g IN (:userGroups)')
+                ->setParameter('userGroups', $userGroups);
+        }
+
+        $suggestions = $queryBuilder->orderBy('s.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
 
         return $this->render('suggestion/history.html.twig', [
             'suggestions' => $suggestions,
+        ]);
+    }
+
+    #[Route('/suggestions/{id}/review', name: 'review_suggestion', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_DELEGATE')]
+    public function reviewSuggestion(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $suggestion = $entityManager->getRepository(Suggestion::class)->find($id);
+        if (!$suggestion) {
+            throw $this->createNotFoundException('Suggestion non trouvée.');
+        }
+
+        $assignment = $suggestion->getAssignment();
+        $user = $this->getUser();
+        $groups = $user->getGroups();
+        $hasAccess = false;
+        foreach ($assignment->getGroups() as $group) {
+            if ($groups->contains($group)) {
+                $hasAccess = true;
+                break;
+            }
+        }
+        if (!$hasAccess && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette suggestion.');
+        }
+
+        $form = $this->createFormBuilder()
+            ->add('approve', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, [
+                'label' => 'Valider',
+                'attr' => ['class' => 'btn btn-success'],
+            ])
+            ->add('reject', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, [
+                'label' => 'Rejeter',
+                'attr' => ['class' => 'btn btn-danger'],
+            ])
+            ->getForm();
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($form->get('approve')->isClicked()) {
+                $changes = $suggestion->getProposedChanges();
+                foreach ($changes as $field => $value) {
+                    switch ($field) {
+                        case 'title':
+                            $assignment->setTitle($value);
+                            break;
+                        case 'description':
+                            $assignment->setDescription($value);
+                            break;
+                        case 'due_date':
+                            $assignment->setDueDate(new \DateTime($value));
+                            break;
+                        case 'submission_type':
+                            $assignment->setSubmissionType($value);
+                            break;
+                        case 'submission_url':
+                            $assignment->setSubmissionUrl($value);
+                            break;
+                        case 'type':
+                            $assignment->setType($value);
+                            break;
+                    }
+                }
+                $assignment->setUpdatedAt(new \DateTime());
+                $suggestion->setIsProcessed(true);
+                $entityManager->flush();
+                $this->addFlash('success', 'Suggestion validée et devoir mis à jour.');
+                return $this->redirectToRoute('app_suggestions');
+            } elseif ($form->get('reject')->isClicked()) {
+                $suggestion->setIsProcessed(true);
+                $entityManager->flush();
+                $this->addFlash('info', 'Suggestion rejetée.');
+                return $this->redirectToRoute('app_suggestions');
+            }
+        }
+
+        return $this->render('suggestion/review.html.twig', [
+            'suggestion' => $suggestion,
+            'assignment' => $assignment,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -217,11 +329,21 @@ class SuggestionController extends AbstractController
     #[IsGranted('ROLE_DELEGATE')]
     public function getPendingSuggestions(EntityManagerInterface $entityManager): JsonResponse
     {
-        $suggestions = $entityManager->getRepository(Suggestion::class)
+        $user = $this->getUser();
+        $queryBuilder = $entityManager->getRepository(Suggestion::class)
             ->createQueryBuilder('s')
+            ->leftJoin('s.assignment', 'a')
+            ->leftJoin('a.groups', 'g')
             ->where('s.isProcessed = :isProcessed')
-            ->setParameter('isProcessed', false)
-            ->orderBy('s.createdAt', 'DESC')
+            ->setParameter('isProcessed', false);
+
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $userGroups = $user->getGroups();
+            $queryBuilder->andWhere('g IN (:userGroups)')
+                ->setParameter('userGroups', $userGroups);
+        }
+
+        $suggestions = $queryBuilder->orderBy('s.createdAt', 'DESC')
             ->setMaxResults(5)
             ->getQuery()
             ->getResult();

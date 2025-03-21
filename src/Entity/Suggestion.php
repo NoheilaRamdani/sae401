@@ -19,11 +19,11 @@ class Suggestion
     #[ORM\JoinColumn(nullable: false)]
     private User $suggestedBy;
 
-    #[ORM\Column(type: 'json', nullable: true)] // Permet NULL dans la base
-    private ?array $proposedChanges = []; // Type union : peut être un tableau ou null
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $proposedChanges = [];
 
-    #[ORM\Column(type: 'text')]
-    private string $message;
+    #[ORM\Column(type: 'text', nullable: true)] // Rendre nullable dans la base
+    private ?string $message = null; // Rendre nullable en PHP
 
     #[ORM\Column(type: 'datetime')]
     private \DateTime $createdAt;
@@ -65,21 +65,21 @@ class Suggestion
 
     public function getProposedChanges(): array
     {
-        return $this->proposedChanges ?? []; // Retourne un tableau vide si null
+        return $this->proposedChanges ?? [];
     }
 
     public function setProposedChanges(?array $proposedChanges): self
     {
-        $this->proposedChanges = $proposedChanges; // Accepte null ou un tableau
+        $this->proposedChanges = $proposedChanges;
         return $this;
     }
 
-    public function getMessage(): string
+    public function getMessage(): ?string // Retourner null ou string
     {
         return $this->message;
     }
 
-    public function setMessage(string $message): self
+    public function setMessage(?string $message): self // Accepter null
     {
         $this->message = $message;
         return $this;

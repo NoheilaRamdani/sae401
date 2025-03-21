@@ -1,13 +1,17 @@
 security:
+    # Définir les algorithmes de hachage des mots de passe
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\User:
+            algorithm: auto  # Utilise l'algorithme recommandé (Argon2i ou bcrypt selon ton serveur)
 
+    # Définir les fournisseurs d'utilisateurs
     providers:
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
 
+    # Configurer les pare-feu (firewalls)
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -15,21 +19,22 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            custom_authenticator: App\Security\AppAuthenticator
-            entry_point: App\Security\AppAuthenticator
-            logout:
-                path: app_logout
-                target: app_login  # Redirige vers login après déconnexion, pas register
-            # Ajoute une gestion explicite de la connexion si nécessaire
             form_login:
                 login_path: app_login
                 check_path: app_login
+                enable_csrf: true
+                username_parameter: email
+                password_parameter: password
+            logout:
+                path: app_logout
+                target: app_home
 
+    # Contrôle d'accès basé sur les routes et les rôles
     access_control:
-        - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/home, roles: ROLE_USER }
-        - { path: ^/assignments, roles: [ROLE_ADMIN, ROLE_DELEGATE] }
-        - { path: ^/, roles: PUBLIC_ACCESS }  # Doit être en dernier
-
-    access_denied_url: /login  # Redirige vers login en cas d’accès refusé, pas register
+        - { path: ^/assignments/\d+/suggest-modification-form, roles: ROLE_USER }
+        - { path: ^/assignment/add, roles: [ROLE_DELEGATE, ROLE_ADMIN] }
+        - { path: ^/assignments/\d+/edit, roles: [ROLE_DELEGATE, ROLE_ADMIN] }
+        - { path: ^/assignment/\d+/delete, roles: [ROLE_DELEGATE, ROLE_ADMIN] }
+        - { path: ^/assignments/manage, roles: [ROLE_DELEGATE, ROLE_ADMIN] }
+        - { path: ^/, roles: ROLE_USER }

@@ -2,7 +2,8 @@
 namespace App\Controller;
 
 use App\Entity\Assignment;
-use App\Form\AssignmentFormType;
+use App\Entity\Suggestion;
+use App\Form\SuggestionFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -116,10 +117,16 @@ class AssignmentController extends AbstractController
         }
 
         if ($this->isCsrfTokenValid('delete'.$id, $request->request->get('_token'))) {
+            $suggestions = $entityManager->getRepository(\App\Entity\Suggestion::class)
+                ->findBy(['assignment' => $assignment]);
+            foreach ($suggestions as $suggestion) {
+                $entityManager->remove($suggestion);
+            }
+
             $entityManager->remove($assignment);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Le devoir a été supprimé avec succès !');
+            $this->addFlash('success', 'Le devoir et ses suggestions associées ont été supprimés avec succès !');
         } else {
             $this->addFlash('error', 'Erreur de sécurité lors de la suppression.');
         }
@@ -187,6 +194,7 @@ class AssignmentController extends AbstractController
                 'current_subject' => $subjectId,
                 'current_group' => $groupId,
                 'is_delegate_or_admin' => $this->isGranted('ROLE_DELEGATE') || $this->isGranted('ROLE_ADMIN'),
+                'entity_manager' => $entityManager,
             ]);
         } catch (\Exception $e) {
             dump($e->getMessage());
