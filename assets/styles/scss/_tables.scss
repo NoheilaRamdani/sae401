@@ -29,5 +29,17 @@
   }
 }
 
-.suggestion {}
+.suggestion {
+
+  table {
+    margin-top: 25px;
+  }
+  .row-start {
+    gap: 10px;
+
+    .button {
+      margin-top: 23px;
+    }
+  }
+}
 

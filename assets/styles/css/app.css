@@ -477,8 +477,8 @@ table:not(#calendar table) tbody tr td span.delegate {
   text-align: center;
   margin-bottom: 1.5rem;
 }
-.form div {
-  margin-bottom: 1rem;
+.form div:not(.group) {
+  margin-bottom: 20px;
 }
 .form label {
   font-weight: bold;
@@ -516,6 +516,12 @@ table:not(#calendar table) tbody tr td span.delegate {
 }
 .form #submission_other_container {
   display: none;
+}
+.form .assignment .row-start {
+  gap: 15px;
+}
+.form .assignment .row-start .row-start {
+  gap: 10px;
 }
 
 .home {
@@ -694,6 +700,16 @@ table:not(#calendar table) tbody tr td span.delegate {
   background-color: rgb(29.5, 29.5, 29.5);
 }
 .manage-assignmts .button {
+  margin-top: 23px;
+}
+
+.suggestion table {
+  margin-top: 25px;
+}
+.suggestion .row-start {
+  gap: 10px;
+}
+.suggestion .row-start .button {
   margin-top: 23px;
 }
 

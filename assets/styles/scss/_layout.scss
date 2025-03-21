@@ -497,8 +497,8 @@ table:not(#calendar table) {
     margin-bottom: 1.5rem;
   }
 
-  div {
-    margin-bottom: 1rem;
+  div:not(.group) {
+    margin-bottom: 20px;
   }
 
   label {
@@ -543,5 +543,14 @@ table:not(#calendar table) {
   // Champ conditionnel pour le mode de rendu
   #submission_other_container {
     display: none;
+  }
+
+  .assignment {
+    .row-start {
+      gap: 15px;
+      .row-start {
+        gap: 10px;
+      }
+    }
   }
 }
