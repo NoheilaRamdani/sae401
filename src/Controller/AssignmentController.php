@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Assignment;
 use App\Entity\Suggestion;
+use App\Form\AssignmentFormType; // Ajouté ici
 use App\Form\SuggestionFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
