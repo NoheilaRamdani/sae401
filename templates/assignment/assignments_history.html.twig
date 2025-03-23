@@ -2,20 +2,17 @@
 
 {% block title %}Tâches{% endblock %}
 {% block body %}
-
     <main class="all-tasks padding">
-
         <div class="filter-section">
-
             <div class="filter-container">
                 <h1>Toutes les tâches</h1>
                 <div class="filter">
                     <label for="subjectSelect">Sélectionner une matière</label>
-                    <select id="subjectSelect">
+                    <select id="subjectSelect" name="subject">
                         <option value="">Toutes les matières</option>
                         {% if subjects is defined and subjects|length > 0 %}
                             {% for subject in subjects %}
-                                <option value="{{ subject.name }}">{{ subject.name }}</option>
+                                <option value="{{ subject.id }}" {{ subject.id == current_subject ? 'selected' }}>{{ subject.name }}</option>
                             {% endfor %}
                         {% else %}
                             <option disabled>Aucune matière disponible</option>
@@ -26,11 +23,11 @@
                 {% if is_delegate_or_admin %}
                     <div class="filter">
                         <label for="groupSelect">Sélectionner un groupe</label>
-                        <select id="groupSelect">
+                        <select id="groupSelect" name="group">
                             <option value="">Tous les groupes</option>
                             {% if groups is defined and groups|length > 0 %}
                                 {% for group in groups %}
-                                    <option value="{{ group.name }}">{{ group.name }}</option>
+                                    <option value="{{ group.id }}" {{ group.id == current_group ? 'selected' }}>{{ group.name }}</option>
                                 {% endfor %}
                             {% else %}
                                 <option disabled>Aucun groupe disponible</option>
@@ -40,18 +37,20 @@
                 {% endif %}
                 <button class="button-grey" onclick="filterAssignments()"><i class="fa-solid fa-filter"></i> Filtrer</button>
             </div>
-
-
             <a class="button back-btn" href="/"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
-
         </div>
-
 
         <div id="assignmentsContainer" class="column-start">
             {% if assignments|length > 0 %}
                 {% for assignment in assignments %}
-                    <div class="task-container column-start">
-                        <span class="color"></span>
+                    {% set now = "now"|date('U') %}
+                    {% set dueDate = assignment.dueDate|date('U') %}
+                    {% set daysUntilDue = (dueDate - now) / (60 * 60 * 24) %}
+                    {% set daysUntilDue = daysUntilDue|round(0, 'floor') %}
+                    <div class="task-container column-start"
+                         data-subject="{{ assignment.subject.id }}"
+                         data-groups="{{ assignment.groups|map(group => group.id)|join(',') }}">
+                        <span class="color" style="background-color: {{ assignment.subject.color }}"></span>
                         <div class="top row-start">
                             <p class="date">{{ assignment.dueDate|date('d/m/Y - H:i') }}</p>
                             <p class="tag-small">{{ assignment.type|capitalize }}</p>
@@ -59,13 +58,12 @@
                         <div class="content row-spacebtwn">
                             <div class="task column-start-start">
                                 <div class="details row-start">
-                                    <p class="name">
+                                    <p class="name {% if assignment.isCompleted %}completed-task{% endif %}">
                                         {{ assignment.title }}
                                     </p>
                                     <p class="subject">| {{ assignment.subject.name }}</p>
                                 </div>
                                 <p class="description">{{ assignment.description }}</p>
-
                                 <p class="groupes">
                                     <span class="title">Groupes :</span>
                                     {% if assignment.groups|length > 0 %}
@@ -77,12 +75,15 @@
                                     {% endif %}
                                 </p>
                             </div>
+                            <div class="countdown row-start">
+                                <i class="fa-solid fa-clock {{ daysUntilDue <= 2 ? 'urgent' : (daysUntilDue <= 5 ? 'soon' : 'ontime') }}"></i>
+                                <p>{{ daysUntilDue >= 0 ? daysUntilDue ~ ' jour' ~ (daysUntilDue > 1 ? 's' : '') : 'Expiré' }}</p>
+                            </div>
                             <p class="status row-start">
                                 <span>{{ assignment.isCompleted ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-notch"></i>' }}</span>
                                 {{ assignment.isCompleted ? 'Terminé' : 'En cours' }}
                             </p>
                         </div>
-
                     </div>
                 {% endfor %}
             {% else %}
@@ -91,19 +92,24 @@
         </div>
     </main>
 
-
-
     <script>
         function filterAssignments() {
-            let selectedSubject = document.getElementById("subjectSelect").value;
-            let selectedGroup = document.getElementById("groupSelect").value;
-            document.querySelectorAll(".assignment").forEach(assignment => {
-                let subject = assignment.getAttribute("data-subject");
-                let groups = assignment.getAttribute("data-groups").split(", ");
-                let matchesSubject = !selectedSubject || subject === selectedSubject;
-                let matchesGroup = !selectedGroup || groups.includes(selectedGroup);
-                assignment.style.display = matchesSubject && matchesGroup ? "block" : "none";
-            });
+            const subjectSelect = document.getElementById('subjectSelect').value;
+            const groupSelect = document.getElementById('groupSelect') ? document.getElementById('groupSelect').value : '';
+            const url = new URL(window.location.href);
+            url.searchParams.set('subject', subjectSelect);
+            url.searchParams.set('group', groupSelect);
+            window.location.href = url.toString();
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const subject = urlParams.get('subject') || '';
+            const group = urlParams.get('group') || '';
+            document.getElementById('subjectSelect').value = subject;
+            if (document.getElementById('groupSelect')) {
+                document.getElementById('groupSelect').value = group;
+            }
+        });
     </script>
 {% endblock %}

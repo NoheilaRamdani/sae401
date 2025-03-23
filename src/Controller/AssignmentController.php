@@ -3,7 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Assignment;
 use App\Entity\Suggestion;
-use App\Form\AssignmentFormType; // Ajouté ici
+use App\Form\AssignmentFormType;
 use App\Form\SuggestionFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -239,15 +239,6 @@ class AssignmentController extends AbstractController
             $dueDate = $assignment->getDueDate();
             $daysUntilDue = $now->diff($dueDate)->days * ($dueDate >= $now ? 1 : -1);
             $color = $assignment->getSubject()->getColor() ?? '#3788d8';
-            if ($dueDate < $now) {
-                $color = '#808080';
-            } elseif ($daysUntilDue < 1) {
-                $color = '#dc3545';
-            } elseif ($daysUntilDue < 3) {
-                $color = '#fd7e14';
-            } elseif ($daysUntilDue >= 5) {
-                $color = '#28a745';
-            }
 
             $events[] = [
                 'id' => $assignment->getId(),

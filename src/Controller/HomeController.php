@@ -52,25 +52,18 @@ class HomeController extends AbstractController
         $notifications = [];
         foreach ($assignments as $assignment) {
             $dueDate = $assignment->getDueDate();
-            $daysUntilDue = $now->diff($dueDate)->days * ($dueDate >= $now ? 1 : -1);
-            $hoursUntilDue = (int) ($now->diff($dueDate)->days * 24 + $now->diff($dueDate)->h);
+            $hoursUntilDue = (int) (($dueDate->getTimestamp() - $now->getTimestamp()) / 3600); // Calcul en heures
+            $daysUntilDue = (int) ($hoursUntilDue / 24); // Pour l'affichage en jours
             $color = $assignment->getSubject()->getColor() ?? '#3788d8';
-            if ($dueDate < $now) {
-                $color = '#808080';
-            } elseif ($daysUntilDue < 1) {
-                $color = '#dc3545';
-            } elseif ($daysUntilDue < 3) {
-                $color = '#fd7e14';
-            } elseif ($daysUntilDue >= 5) {
-                $color = '#28a745';
-            }
 
             $assignmentsData[] = [
                 'assignment' => $assignment,
-                'daysUntilDue' => $daysUntilDue,
+                'daysUntilDue' => $daysUntilDue, // Pour l'affichage
+                'hoursUntilDue' => $hoursUntilDue, // Pour la logique des couleurs et affichage précis
                 'color' => $color,
                 'isCompleted' => $assignment->isCompleted(),
                 'subjectCode' => $assignment->getSubject()->getCode(),
+                'urgencyClass' => $this->getUrgencyClass($hoursUntilDue, $dueDate < $now),
             ];
 
             if (!$assignment->isCompleted() && ($hoursUntilDue === 24 || $hoursUntilDue === 48)) {
@@ -101,6 +94,18 @@ class HomeController extends AbstractController
             'notifications' => $notifications,
             'suggestions' => $suggestions,
         ]);
+    }
+
+    private function getUrgencyClass(int $hoursUntilDue, bool $isExpired): string
+    {
+        if ($isExpired) {
+            return 'expired';
+        } elseif ($hoursUntilDue < 24) {
+            return 'urgent'; // Moins de 24 heures
+        } elseif ($hoursUntilDue <= 48) {
+            return 'soon'; // Entre 24 et 48 heures
+        }
+        return 'ontime'; // Plus de 48 heures
     }
 
     #[Route('/cal.ics', name: 'ical_user_feed', methods: ['GET'])]
@@ -163,7 +168,7 @@ class HomeController extends AbstractController
 
     #[Route('/assignments/history', name: 'app_assignments_history')]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function assignmentsHistory(EntityManagerInterface $entityManager): Response
+    public function assignmentsHistory(Request $request, EntityManagerInterface $entityManager): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -173,14 +178,33 @@ class HomeController extends AbstractController
 
         $queryBuilder = $entityManager->getRepository(Assignment::class)
             ->createQueryBuilder('a')
+            ->leftJoin('a.groups', 'g')
             ->orderBy('a.due_date', 'DESC');
+
+        $subjectId = $request->query->get('subject');
+        $groupId = $request->query->get('group');
+
+        if ($subjectId) {
+            $queryBuilder->andWhere('a.subject = :subject')
+                ->setParameter('subject', $subjectId);
+        }
 
         if (!$this->isGranted('ROLE_ADMIN')) {
             $groups = $user->getGroups();
-            $queryBuilder
-                ->join('a.groups', 'g')
-                ->andWhere('g IN (:groups)')
-                ->setParameter('groups', $groups);
+            if ($groups->count() > 0) {
+                $queryBuilder
+                    ->andWhere('g IN (:groups)')
+                    ->setParameter('groups', $groups);
+            }
+            if ($groupId) {
+                $queryBuilder->andWhere('g.id = :group')
+                    ->setParameter('group', $groupId);
+            }
+        } else {
+            if ($groupId) {
+                $queryBuilder->andWhere('g.id = :group')
+                    ->setParameter('group', $groupId);
+            }
         }
 
         $assignments = $queryBuilder->getQuery()->getResult();
@@ -207,6 +231,8 @@ class HomeController extends AbstractController
             'subjects' => $subjects,
             'groups' => $isDelegateOrAdmin ? $groups : [],
             'is_delegate_or_admin' => $isDelegateOrAdmin,
+            'current_subject' => $subjectId,
+            'current_group' => $groupId,
         ]);
     }
 }

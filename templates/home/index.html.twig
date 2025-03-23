@@ -2,10 +2,6 @@
 
 {% block title %}Accueil - Cahier de texte{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-{% endblock %}
-
 {% block javascripts %}
     {{ parent() }}
     <script>
@@ -115,7 +111,6 @@
 
                 document.getElementById('eventModal').style.display = 'flex';
 
-                // Gestion de la checkbox dans le modal
                 const modalCheckbox = document.getElementById('modalCompleted');
                 modalCheckbox.addEventListener('change', function() {
                     const eventId = document.getElementById('eventModal').dataset.id;
@@ -134,7 +129,7 @@
                                 }
                                 const checkEnabledElements = listItem.querySelectorAll('.check-enabled');
                                 checkEnabledElements.forEach(element => {
-                                    if (isCompleted) {
+                                    if (data.isCompleted) {
                                         element.classList.add('completed-task');
                                     } else {
                                         element.classList.remove('completed-task');
@@ -145,33 +140,16 @@
                 });
             }
 
-            // Correction de l'URL pour "Suggérer une modification"
             const suggestModificationBtn = document.getElementById('suggestModification');
             if (suggestModificationBtn) {
                 suggestModificationBtn.addEventListener('click', function() {
                     const eventId = document.getElementById('eventModal').dataset.id;
-                    window.location.href = `/assignment/${eventId}/suggest`; // URL corrigée
+                    window.location.href = `/assignment/${eventId}/suggest`;
                 });
             }
 
             document.getElementById('closeModal').addEventListener('click', function() {
                 document.getElementById('eventModal').style.display = 'none';
-            });
-
-            document.getElementById('modalCompleted').addEventListener('change', function() {
-                const eventId = document.getElementById('eventModal').dataset.id;
-                fetch(`/api/assignments/${eventId}/toggle-complete`, { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => {
-                        const listItem = document.querySelector(`div[data-id="${eventId}"]`);
-                        if (listItem) {
-                            listItem.querySelector('input[type="checkbox"]').checked = data.isCompleted;
-                        }
-                        const calendarEvent = calendar.getEventById(eventId);
-                        if (calendarEvent) {
-                            calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
-                        }
-                    });
             });
 
             const notifications = {{ notifications|json_encode|raw }};
@@ -261,8 +239,8 @@
                         {% set daysUntilDue = (dueDate - now) / (60 * 60 * 24) %}
                         {% set daysUntilDue = daysUntilDue|round(0, 'floor') %}
 
-                        <div data-id="{{ assignment.id }}" class="event-item task-container column-start">
-                            <span class="color"></span>
+                        <div data-id="{{ assignment.id }}" class="event-item task-container column-start {{ data.urgencyClass }}">
+                            <span class="color" style="background-color: {{ data.color }}"></span>
                             <div class="top row-start">
                                 <p class="date">{{ assignment.dueDate|date('d/m/Y - H:i') }}</p>
                                 <p class="tag-small">{{ assignment.type|capitalize }}</p>
@@ -278,8 +256,16 @@
                                     </div>
                                 </div>
                                 <div class="countdown row-start">
-                                    <i class="check-enabled fa-solid fa-clock {{ daysUntilDue <= 2 ? 'urgent' : (daysUntilDue <= 5 ? 'soon' : 'ontime') }}"></i>
-                                    <p class="check-enabled">{{ daysUntilDue >= 0 ? daysUntilDue ~ ' jour' ~ (daysUntilDue > 1 ? 's' : '') ~ ' ' : 'Expiré' }}</p>
+                                    <i class="check-enabled fa-solid fa-clock {{ data.urgencyClass }}"></i>
+                                    <p class="check-enabled {{ data.hoursUntilDue < 24 and data.hoursUntilDue >= 0 ? 'urgent-time' : '' }}">
+                                        {% if data.hoursUntilDue < 0 %}
+                                            Expiré
+                                        {% elseif data.hoursUntilDue < 24 %}
+                                            {{ data.hoursUntilDue }} heure{{ data.hoursUntilDue > 1 ? 's' : '' }}
+                                        {% else %}
+                                            {{ daysUntilDue }} jour{{ daysUntilDue > 1 ? 's' : '' }}
+                                        {% endif %}
+                                    </p>
                                 </div>
                             </div>
                         </div>
