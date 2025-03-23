@@ -76,9 +76,17 @@
                 console.log('Event passé à showEventDetails:', event);
 
                 document.getElementById('modalTitle').textContent = event.title || 'Sans titre';
-                document.getElementById('modalDate').textContent = new Date(event.start).toLocaleString('fr-FR') || 'Date inconnue';
-                document.getElementById('modalDescription').textContent = event.description || 'Aucune description';
 
+                // Correction de l'affichage de la date pour éviter le décalage horaire
+                const dueDate = new Date(event.start);
+                const day = String(dueDate.getUTCDate()).padStart(2, '0');
+                const month = String(dueDate.getUTCMonth() + 1).padStart(2, '0'); // Les mois sont 0-based
+                const year = dueDate.getUTCFullYear();
+                const hours = String(dueDate.getUTCHours()).padStart(2, '0');
+                const minutes = String(dueDate.getUTCMinutes()).padStart(2, '0');
+                document.getElementById('modalDate').textContent = `${day}/${month}/${year} - ${hours}:${minutes}` || 'Date inconnue';
+
+                document.getElementById('modalDescription').textContent = event.description || 'Aucune description';
                 document.getElementById('modalSubjectCode').textContent = event.subject?.code || 'Non spécifié';
                 document.getElementById('modalSubjectName').textContent = event.subject?.name || 'Non spécifié';
 
