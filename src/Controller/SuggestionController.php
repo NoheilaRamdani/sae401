@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Suggestion;
 use App\Entity\Assignment;
+use App\Entity\Subject;
 use App\Form\SuggestionFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -42,31 +43,67 @@ class SuggestionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
+            // Construire les changements proposés
+            $proposedChanges = [];
+
+            // Normaliser les valeurs pour la comparaison
+            $submittedTitle = $data['title'] ?? '';
+            $currentTitle = $assignment->getTitle() ?? '';
+            if ($submittedTitle !== $currentTitle) {
+                $proposedChanges['title'] = $submittedTitle;
+            }
+
+            $submittedDescription = $data['description'] ?? '';
+            $currentDescription = $assignment->getDescription() ?? '';
+            if ($submittedDescription !== $currentDescription) {
+                $proposedChanges['description'] = $submittedDescription;
+            }
+
+            $submittedDueDate = $data['due_date'] ? $data['due_date']->format('Y-m-d H:i:s') : null;
+            $currentDueDate = $assignment->getDueDate() ? $assignment->getDueDate()->format('Y-m-d H:i:s') : null;
+            if ($submittedDueDate !== $currentDueDate) {
+                $proposedChanges['due_date'] = $submittedDueDate;
+            }
+
+            $submittedSubmissionType = $data['submission_type'] ?? '';
+            $currentSubmissionType = $assignment->getSubmissionType() ?? '';
+            if ($submittedSubmissionType !== $currentSubmissionType) {
+                $proposedChanges['submission_type'] = $submittedSubmissionType;
+            }
+
+            $submittedSubmissionUrl = $data['submission_url'] ?? '';
+            $currentSubmissionUrl = $assignment->getSubmissionUrl() ?? '';
+            if ($submittedSubmissionUrl !== $currentSubmissionUrl) {
+                $proposedChanges['submission_url'] = $submittedSubmissionUrl;
+            }
+
+            $submittedType = $data['type'] ?? '';
+            $currentType = $assignment->getType() ?? '';
+            if ($submittedType !== $currentType) {
+                $proposedChanges['type'] = $submittedType;
+            }
+
+            // Ajout de la matière
+            $submittedSubject = $data['subject'] ?? null;
+            $currentSubjectId = $assignment->getSubject() ? $assignment->getSubject()->getId() : null;
+            if ($submittedSubject && $submittedSubject->getId() !== $currentSubjectId) {
+                $proposedChanges['subject_id'] = $submittedSubject->getId();
+            }
+
+            if (empty($proposedChanges)) {
+                $this->addFlash('error', 'Aucune modification détectée. Veuillez modifier au moins un champ pour soumettre une suggestion.');
+                return $this->render('suggestion/suggest.html.twig', [
+                    'form' => $form->createView(),
+                    'assignment' => $assignment,
+                ]);
+            }
+
             $suggestion = new Suggestion();
             $suggestion->setAssignment($assignment);
             $suggestion->setSuggestedBy($user);
-            $suggestion->setMessage($data['message'] ?? ''); // Message facultatif
-
-            $proposedChanges = [];
-            if ($data['title'] !== $assignment->getTitle()) {
-                $proposedChanges['title'] = $data['title'];
-            }
-            if ($data['description'] !== $assignment->getDescription()) {
-                $proposedChanges['description'] = $data['description'];
-            }
-            if ($data['due_date'] != $assignment->getDueDate()) {
-                $proposedChanges['due_date'] = $data['due_date']->format('Y-m-d H:i:s');
-            }
-            if ($data['submission_type'] !== $assignment->getSubmissionType()) {
-                $proposedChanges['submission_type'] = $data['submission_type'];
-            }
-            if ($data['submission_url'] !== $assignment->getSubmissionUrl()) {
-                $proposedChanges['submission_url'] = $data['submission_url'];
-            }
-            if ($data['type'] !== $assignment->getType()) {
-                $proposedChanges['type'] = $data['type'];
-            }
+            $suggestion->setMessage($data['message'] ?? '');
             $suggestion->setProposedChanges($proposedChanges);
+            $suggestion->setIsProcessed(false);
 
             $entityManager->persist($suggestion);
             $entityManager->flush();
@@ -126,6 +163,12 @@ class SuggestionController extends AbstractController
                     case 'type':
                         $assignment->setType($value);
                         break;
+                    case 'subject_id':
+                        $subject = $entityManager->getRepository(Subject::class)->find($value);
+                        if ($subject) {
+                            $assignment->setSubject($subject);
+                        }
+                        break;
                 }
             }
             $assignment->setUpdatedAt(new \DateTime());
@@ -136,7 +179,7 @@ class SuggestionController extends AbstractController
             $this->addFlash('error', 'Erreur de sécurité lors de la validation.');
         }
 
-        return $this->redirectToRoute('manage_suggestions');
+        return $this->redirectToRoute('app_suggestions');
     }
 
     #[Route('/suggestions', name: 'app_suggestions', methods: ['GET'])]
@@ -159,8 +202,28 @@ class SuggestionController extends AbstractController
             ->getQuery()
             ->getResult();
 
+        // Préparer les données pour le template
+        $suggestionsData = [];
+        foreach ($suggestions as $suggestion) {
+            $proposedChanges = $suggestion->getProposedChanges();
+            $proposedSubject = null;
+
+            // Si une matière est proposée, la charger
+            if (isset($proposedChanges['subject_id'])) {
+                $proposedSubject = $entityManager->getRepository(Subject::class)->find($proposedChanges['subject_id']);
+            }
+
+            $suggestionsData[] = [
+                'suggestion' => $suggestion,
+                'proposedSubject' => $proposedSubject, // Passer la matière proposée au template
+            ];
+        }
+
+        dump('Groupes de l\'utilisateur (délégué) :', $userGroups->toArray());
+        dump('Suggestions récupérées :', $suggestions);
+
         return $this->render('suggestion/history.html.twig', [
-            'suggestions' => $suggestions,
+            'suggestionsData' => $suggestionsData, // Passer les données préparées
         ]);
     }
 
@@ -185,6 +248,13 @@ class SuggestionController extends AbstractController
         }
         if (!$hasAccess && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette suggestion.');
+        }
+
+        // Charger la matière proposée, si elle existe
+        $proposedChanges = $suggestion->getProposedChanges();
+        $proposedSubject = null;
+        if (isset($proposedChanges['subject_id'])) {
+            $proposedSubject = $entityManager->getRepository(Subject::class)->find($proposedChanges['subject_id']);
         }
 
         $form = $this->createFormBuilder()
@@ -222,6 +292,12 @@ class SuggestionController extends AbstractController
                         case 'type':
                             $assignment->setType($value);
                             break;
+                        case 'subject_id':
+                            $subject = $entityManager->getRepository(Subject::class)->find($value);
+                            if ($subject) {
+                                $assignment->setSubject($subject);
+                            }
+                            break;
                     }
                 }
                 $assignment->setUpdatedAt(new \DateTime());
@@ -241,42 +317,8 @@ class SuggestionController extends AbstractController
             'suggestion' => $suggestion,
             'assignment' => $assignment,
             'form' => $form->createView(),
+            'proposedSubject' => $proposedSubject, // Passer la matière proposée
         ]);
-    }
-
-    #[Route('/api/assignments/{id}/suggest-modification', name: 'api_suggest_modification', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function suggestModification(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
-    {
-        $assignment = $entityManager->getRepository(Assignment::class)->find($id);
-        if (!$assignment) {
-            throw $this->createNotFoundException('Devoir non trouvé.');
-        }
-
-        $user = $this->getUser();
-        $groups = $user->getGroups();
-        $hasAccess = false;
-        foreach ($assignment->getGroups() as $group) {
-            if ($groups->contains($group)) {
-                $hasAccess = true;
-                break;
-            }
-        }
-        if (!$hasAccess && !$this->isGranted('ROLE_ADMIN')) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce devoir.');
-        }
-
-        $data = json_decode($request->getContent(), true);
-        $message = $data['message'] ?? '';
-
-        $suggestion = new Suggestion();
-        $suggestion->setAssignment($assignment)
-            ->setSuggestedBy($user)
-            ->setMessage($message);
-        $entityManager->persist($suggestion);
-        $entityManager->flush();
-
-        return $this->json(['success' => true, 'message' => 'Suggestion envoyée aux délégués']);
     }
 
     #[Route('/api/suggestions/{id}/toggle-processed', name: 'api_toggle_suggestion_processed', methods: ['POST'])]
@@ -320,6 +362,9 @@ class SuggestionController extends AbstractController
             ->setMaxResults(5)
             ->getQuery()
             ->getResult();
+
+        dump('Groupes de l\'utilisateur (délégué) :', $userGroups->toArray());
+        dump('Suggestions récupérées :', $suggestions);
 
         $data = array_map(function ($suggestion) {
             return [

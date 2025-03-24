@@ -2,12 +2,14 @@
 namespace App\Form;
 
 use App\Entity\Assignment;
+use App\Entity\Subject;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -15,77 +17,71 @@ class SuggestionFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        /** @var Assignment $assignment */
         $assignment = $options['assignment'];
 
         $builder
             ->add('title', TextType::class, [
-                'label' => 'Titre du devoir',
-                'data' => $assignment->getTitle(),
-                'required' => true,
-                'attr' => ['placeholder' => 'Ex. : Projet Symfony'],
-            ])
-            ->add('description', TextareaType::class, [
-                'label' => 'Description',
-                'data' => $assignment->getDescription(),
+                'label' => 'Titre',
                 'required' => false,
-                'attr' => ['placeholder' => 'Détails du devoir...', 'rows' => 5],
+                'data' => $assignment->getTitle(),
+            ])
+            ->add('description', TextType::class, [
+                'label' => 'Description',
+                'required' => false,
+                'data' => $assignment->getDescription(),
             ])
             ->add('due_date', DateTimeType::class, [
                 'label' => 'Date limite',
-                'data' => $assignment->getDueDate(),
                 'widget' => 'single_text',
-                'attr' => ['class' => 'datetime-picker'],
-                'required' => true,
+                'required' => false,
+                'data' => $assignment->getDueDate(),
             ])
             ->add('submission_type', ChoiceType::class, [
-                'label' => 'Mode de rendu',
+                'label' => 'Type de rendu',
                 'choices' => [
-                    'Par mail' => 'email',
-                    'Moodle' => 'moodle',
-                    'VPS' => 'vps',
+                    'Lien' => 'Lien',
+                    'Fichier' => 'Fichier',
+                    'Texte' => 'Texte',
+                    'Autre' => 'Autre',
                 ],
-                'data' => $assignment->getSubmissionType(),
-                'placeholder' => 'Choisir un mode de rendu',
-                'required' => true,
-            ])
-            ->add('submission_url', TextType::class, [
-                'label' => 'URL de soumission (optionnel)',
-                'data' => $assignment->getSubmissionUrl(),
                 'required' => false,
-                'attr' => ['placeholder' => 'Ex. : https://vps.example.com'],
+                'data' => $assignment->getSubmissionType(),
+            ])
+            ->add('submission_url', UrlType::class, [
+                'label' => 'URL de rendu',
+                'required' => false,
+                'data' => $assignment->getSubmissionUrl(),
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Type',
                 'choices' => [
-                    'Devoir' => 'devoir',
-                    'Examen' => 'examen',
-                    'Oral' => 'oral',
+                    'Devoir' => 'Devoir',
+                    'Examen' => 'Examen',
+                    'Oral' => 'Oral',
                 ],
+                'required' => false,
                 'data' => $assignment->getType(),
-                'placeholder' => 'Choisir un type',
-                'required' => true,
             ])
-            ->add('message', TextareaType::class, [
-                'label' => 'Votre suggestion de modification',
-                'required' => false, // Changé de true à false
-                'attr' => [
-                    'placeholder' => 'Expliquez pourquoi vous suggérez ces changements (facultatif)...',
-                    'rows' => 5,
-                ],
+            ->add('subject', EntityType::class, [
+                'class' => Subject::class,
+                'choice_label' => 'name',
+                'label' => 'Matière',
+                'required' => false,
+                'data' => $assignment->getSubject(),
+                'placeholder' => 'Sélectionner une matière',
+            ])
+            ->add('message', TextType::class, [
+                'label' => 'Message (facultatif)',
+                'required' => false,
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Envoyer la suggestion',
-                'attr' => ['class' => 'btn btn-primary'],
             ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults([
-            'data_class' => null, // Pas de liaison directe à une entité
-            'assignment' => null,
-        ]);
         $resolver->setRequired('assignment');
+        $resolver->setAllowedTypes('assignment', Assignment::class);
     }
 }

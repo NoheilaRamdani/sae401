@@ -2,39 +2,118 @@
 
 {% block title %}Revoir la suggestion - {{ assignment.title }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .difference-table th, .difference-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .current-value {
+            color: #DC3545;
+            text-decoration: line-through;
+        }
+        .proposed-value {
+            color: #28A745;
+        }
+        .no-changes {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
     <div class="container">
         <h1>Revoir la suggestion pour "{{ assignment.title }}"</h1>
 
-        {# Affichage des messages flash #}
         {% for label, messages in app.flashes %}
             {% for message in messages %}
                 <div class="alert alert-{{ label }}">{{ message }}</div>
             {% endfor %}
         {% endfor %}
 
-        <h2>Valeurs actuelles</h2>
-        <ul>
-            <li><strong>Titre :</strong> {{ assignment.title }}</li>
-            <li><strong>Description :</strong> {{ assignment.description|default('Aucune') }}</li>
-            <li><strong>Date limite :</strong> {{ assignment.dueDate|date('d/m/Y H:i') }}</li>
-            <li><strong>Type de rendu :</strong> {{ assignment.submissionType }}</li>
-            <li><strong>URL de rendu :</strong> {{ assignment.submissionUrl|default('Aucune') }}</li>
-            <li><strong>Type :</strong> {{ assignment.type }}</li>
-        </ul>
+        <p><strong>Suggéré par :</strong> {{ suggestion.suggestedBy.userIdentifier }}</p>
+        <p><strong>Message :</strong> {{ suggestion.message|default('Aucun message fourni.') }}</p>
 
         <h2>Changements proposés</h2>
-        <ul>
-            <li><strong>Titre :</strong> {{ 'title' in suggestion.proposedChanges ? suggestion.proposedChanges.title : assignment.title }}</li>
-            <li><strong>Description :</strong> {{ 'description' in suggestion.proposedChanges ? suggestion.proposedChanges.description|default('Aucune') : assignment.description|default('Aucune') }}</li>
-            <li><strong>Date limite :</strong> {{ 'due_date' in suggestion.proposedChanges ? suggestion.proposedChanges.due_date|date('d/m/Y H:i') : assignment.dueDate|date('d/m/Y H:i') }}</li>
-            <li><strong>Type de rendu :</strong> {{ 'submission_type' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_type : assignment.submissionType }}</li>
-            <li><strong>URL de rendu :</strong> {{ 'submission_url' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_url|default('Aucune') : assignment.submissionUrl|default('Aucune') }}</li>
-            <li><strong>Type :</strong> {{ 'type' in suggestion.proposedChanges ? suggestion.proposedChanges.type : assignment.type }}</li>
-        </ul>
+        {% set hasChanges = false %}
+        {% set differences = [] %}
 
-        <h2>Message</h2>
-        <p>{{ suggestion.message|default('Aucun message') }}</p>
+        {% set fields = {
+            'title': {
+                'label': 'Titre',
+                'current': assignment.title|default(''),
+                'proposed': 'title' in suggestion.proposedChanges ? suggestion.proposedChanges.title|default('') : assignment.title|default('')
+            },
+            'description': {
+                'label': 'Description',
+                'current': assignment.description|default('Aucune'),
+                'proposed': 'description' in suggestion.proposedChanges ? suggestion.proposedChanges.description|default('Aucune') : assignment.description|default('Aucune')
+            },
+            'due_date': {
+                'label': 'Date limite',
+                'current': assignment.dueDate ? assignment.dueDate|date('d/m/Y H:i') : 'Non défini',
+                'proposed': 'due_date' in suggestion.proposedChanges ? (suggestion.proposedChanges.due_date ? suggestion.proposedChanges.due_date|date('d/m/Y H:i') : 'Non défini') : (assignment.dueDate ? assignment.dueDate|date('d/m/Y H:i') : 'Non défini')
+            },
+            'submission_type': {
+                'label': 'Type de rendu',
+                'current': assignment.submissionType|default('Aucun'),
+                'proposed': 'submission_type' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_type|default('Aucun') : assignment.submissionType|default('Aucun')
+            },
+            'submission_url': {
+                'label': 'URL de rendu',
+                'current': assignment.submissionUrl|default('Aucune'),
+                'proposed': 'submission_url' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_url|default('Aucune') : assignment.submissionUrl|default('Aucune')
+            },
+            'type': {
+                'label': 'Type',
+                'current': assignment.type|default('Aucun'),
+                'proposed': 'type' in suggestion.proposedChanges ? suggestion.proposedChanges.type|default('Aucun') : assignment.type|default('Aucun')
+            },
+            'subject_id': {
+                'label': 'Matière',
+                'current': assignment.subject ? assignment.subject.name : 'Non défini',
+                'proposed': proposedSubject ? proposedSubject.name : (assignment.subject ? assignment.subject.name : 'Non défini')
+            }
+        } %}
+
+        {% for field, data in fields %}
+            {% set currentNormalized = data.current == 'Aucune' or data.current == 'Non défini' ? '' : data.current %}
+            {% set proposedNormalized = data.proposed == 'Aucune' or data.proposed == 'Non défini' ? '' : data.proposed %}
+
+            {% if currentNormalized != proposedNormalized %}
+                {% set hasChanges = true %}
+                {% set differences = differences|merge([{
+                    'field': data.label,
+                    'current': data.current,
+                    'proposed': data.proposed
+                }]) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if hasChanges %}
+            <table class="difference-table">
+                <thead>
+                <tr>
+                    <th>Champ</th>
+                    <th>Valeur actuelle</th>
+                    <th>Valeur proposée</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for diff in differences %}
+                    <tr>
+                        <td>{{ diff.field }}</td>
+                        <td class="current-value">{{ diff.current }}</td>
+                        <td class="proposed-value">{{ diff.proposed }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-changes">Aucune modification détectée. Cette suggestion ne propose aucun changement par rapport aux valeurs actuelles.</p>
+        {% endif %}
 
         {{ form_start(form) }}
         {{ form_widget(form.approve) }}

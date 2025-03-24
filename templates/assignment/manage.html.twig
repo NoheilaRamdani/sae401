@@ -9,7 +9,7 @@
         {# Affichage des messages flash #}
         {% for label, messages in app.flashes %}
             {% for message in messages %}
-                <div>{{ message }}</div>
+                <div class="flash-{{ label }}">{{ message }}</div>
             {% endfor %}
         {% endfor %}
 
@@ -26,17 +26,19 @@
                     {% endfor %}
                 </select>
             </div>
-            <div>
-                <label for="group">Filtrer par groupe :</label>
-                <select name="group" id="group">
-                    <option value="">Tous les groupes</option>
-                    {% for group in groups %}
-                        <option value="{{ group.id }}" {% if current_group == group.id|default('') %}selected{% endif %}>
-                            {{ group.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
+            {% if is_granted('ROLE_ADMIN') %}
+                <div>
+                    <label for="group">Filtrer par groupe :</label>
+                    <select name="group" id="group">
+                        <option value="">Tous les groupes</option>
+                        {% for group in groups %}
+                            <option value="{{ group.id }}" {% if current_group == group.id|default('') %}selected{% endif %}>
+                                {{ group.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
             <div>
                 <button class="button-grey" type="submit">Filtrer</button>
             </div>

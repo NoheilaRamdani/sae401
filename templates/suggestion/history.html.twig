@@ -1,68 +1,173 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Toutes les suggestions{% endblock %}
+{% block title %}Historique des suggestions{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .suggestions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        .suggestions-table th, .suggestions-table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .suggestions-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .suggestions-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .suggestions-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .suggestions-table .suggested-by {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .suggestions-table .assignment-info {
+            color: #555;
+        }
+
+        .suggestions-table .message {
+            color: #666;
+            font-style: italic;
+        }
+
+        .suggestions-table .changes {
+            color: #444;
+            font-size: 13px;
+        }
+
+        .suggestions-table .status-processed {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .suggestions-table .status-pending {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .suggestions-table .action a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .suggestions-table .action a:hover {
+            text-decoration: underline;
+        }
+
+        .no-suggestions {
+            color: #666;
+            font-style: italic;
+            margin: 20px 0;
+        }
+
+        .btn-sec {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #6c757d;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .btn-sec:hover {
+            background-color: #5a6268;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <main class="padding container suggestion">
-        <h1>Toutes les suggestions</h1>
+    <div class="container">
+        <h1>Historique des suggestions</h1>
 
-        {# Affichage des messages flash #}
         {% for label, messages in app.flashes %}
             {% for message in messages %}
                 <div class="alert alert-{{ label }}">{{ message }}</div>
             {% endfor %}
         {% endfor %}
 
-        {% if suggestions|length > 0 %}
-            <table class="table table-striped">
+        {% if suggestionsData|length > 0 %}
+            <table class="suggestions-table">
                 <thead>
                 <tr>
-                    <th>Devoir</th>
                     <th>Suggéré par</th>
+                    <th>Devoir</th>
+                    <th>Message</th>
+                    <th>Changements proposés</th>
                     <th>Date</th>
                     <th>Statut</th>
                     <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
-                {% for suggestion in suggestions %}
+                {% for data in suggestionsData %}
+                    {% set suggestion = data.suggestion %}
                     <tr>
-                        <td>{{ suggestion.assignment.title }}</td>
-                        <td>{{ suggestion.suggestedBy.email }}</td>
-                        <td>{{ suggestion.createdAt|date('d/m/Y - H:i') }}</td>
-                        <td>
-                            {% if suggestion.isProcessed %}
-                                <span class="badge bg-success">Traitée</span>
+                        <td class="suggested-by">{{ suggestion.suggestedBy.userIdentifier }}</td>
+                        <td class="assignment-info">[{{ suggestion.assignment.subject.code }}] {{ suggestion.assignment.title }}</td>
+                        <td class="message">{{ suggestion.message|default('Aucun message') }}</td>
+                        <td class="changes">
+                            {% if suggestion.proposedChanges|length > 0 %}
+                                {% for field, value in suggestion.proposedChanges %}
+                                    {% if field == 'title' %}
+                                        Titre : {{ suggestion.assignment.title }} → {{ value }}<br>
+                                    {% elseif field == 'description' %}
+                                        Description : {{ suggestion.assignment.description|default('Aucune') }} → {{ value|default('Aucune') }}<br>
+                                    {% elseif field == 'due_date' %}
+                                        Date limite : {{ suggestion.assignment.dueDate ? suggestion.assignment.dueDate|date('d/m/Y H:i') : 'Non défini' }} → {{ value ? value|date('d/m/Y H:i') : 'Non défini' }}<br>
+                                    {% elseif field == 'submission_type' %}
+                                        Type de rendu : {{ suggestion.assignment.submissionType|default('Aucun') }} → {{ value|default('Aucun') }}<br>
+                                    {% elseif field == 'submission_url' %}
+                                        URL de rendu : {{ suggestion.assignment.submissionUrl|default('Aucune') }} → {{ value|default('Aucune') }}<br>
+                                    {% elseif field == 'type' %}
+                                        Type : {{ suggestion.assignment.type|default('Aucun') }} → {{ value|default('Aucun') }}<br>
+                                    {% elseif field == 'subject_id' %}
+                                        Matière : {{ suggestion.assignment.subject.name }} → {{ data.proposedSubject ? data.proposedSubject.name : 'Non défini' }}<br>
+                                    {% endif %}
+                                {% endfor %}
                             {% else %}
-                                <span class="badge bg-warning">En attente</span>
+                                Aucun changement proposé.
                             {% endif %}
                         </td>
+                        <td>{{ suggestion.createdAt|date('d/m/Y H:i') }}</td>
                         <td>
-                            <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}" class="button">Revoir</a>
+                            {% if suggestion.isProcessed %}
+                                <span class="status-processed">Traité</span>
+                            {% else %}
+                                <span class="status-pending">En attente</span>
+                            {% endif %}
+                        </td>
+                        <td class="action">
+                            {% if not suggestion.isProcessed %}
+                                <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}">Traiter</a>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         {% else %}
-            <p>Aucune suggestion trouvée.</p>
+            <p class="no-suggestions">Aucune suggestion à afficher.</p>
         {% endif %}
 
-        <div class="row-start">
-            <a href="{{ path('manage_assignments') }}" class="button">Gérer les tâches</a>
-            <a href="{{ path('app_home') }}" class="button">Retour à l'accueil</a>
-        </div>
-    </main>
-{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .btn-sm {
-            margin-right: 5px;
-        }
-        .badge {
-            font-size: 0.9em;
-        }
-    </style>
+        <a href="{{ path('app_home') }}" class="btn btn-sec">Retour à l'accueil</a>
+    </div>
 {% endblock %}

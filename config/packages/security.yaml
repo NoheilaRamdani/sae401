@@ -1,17 +1,14 @@
 security:
-    # Définir les algorithmes de hachage des mots de passe
     password_hashers:
         App\Entity\User:
-            algorithm: auto  # Utilise l'algorithme recommandé (Argon2i ou bcrypt selon ton serveur)
+            algorithm: auto
 
-    # Définir les fournisseurs d'utilisateurs
     providers:
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
 
-    # Configurer les pare-feu (firewalls)
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -19,17 +16,11 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            form_login:
-                login_path: app_login
-                check_path: app_login
-                enable_csrf: true
-                username_parameter: email
-                password_parameter: password
+            custom_authenticator: App\Security\AppAuthenticator
             logout:
                 path: app_logout
                 target: app_home
 
-    # Contrôle d'accès basé sur les routes et les rôles
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
