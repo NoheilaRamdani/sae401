@@ -640,7 +640,7 @@ table:not(#calendar table) tbody tr td span.delegate {
 }
 .home .calendar-container {
   width: 62%;
-  padding: 30px 20px 25px 4%;
+  padding: 30px 20px 85px 4%;
   min-height: 100vh;
 }
 .home .calendar-container .group-buttons-container {
@@ -656,6 +656,7 @@ table:not(#calendar table) tbody tr td span.delegate {
 .home .calendar-container #calendar .fc-today-button, .home .calendar-container #calendar .fc-next-button, .home .calendar-container #calendar .fc-prev-button {
   background-color: #4D3677 !important;
   transition: all 0.15s ease-in-out;
+  font-size: 0.9rem;
 }
 .home .calendar-container #calendar .fc-today-button:hover, .home .calendar-container #calendar .fc-next-button:hover, .home .calendar-container #calendar .fc-prev-button:hover {
   background-color: rgb(65.6502890173, 46.0404624277, 101.4595375723) !important;
@@ -666,6 +667,24 @@ table:not(#calendar table) tbody tr td span.delegate {
   height: 35px;
   line-height: normal;
   border-radius: 5px;
+}
+.home .calendar-container #calendar .fc-day {
+  overflow: hidden;
+  font-size: 0.78rem;
+}
+.home .calendar-container #calendar .fc-daygrid-event {
+  cursor: pointer;
+  padding: 0 5px;
+  width: 100%;
+}
+.home .calendar-container #calendar .fc-daygrid-event-harness {
+  right: 0 !important;
+}
+.home .calendar-container #calendar .fc-toolbar-title {
+  text-transform: capitalize;
+}
+.home .calendar-container #calendar .fc-event-time {
+  display: none;
 }
 .home .tasks-container {
   width: 38%;

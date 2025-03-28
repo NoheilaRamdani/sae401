@@ -165,16 +165,10 @@
                             console.log('Data from API:', data);
                             showEventDetails(data);
                         });
-                },
-
+                }
             });
             calendar.render();
 
-            // Après que le calendrier soit rendu, on modifie la première lettre du mois
-            const monthNames = document.querySelectorAll('.fc-toolbar-title'); // Sélecteur pour le titre du mois
-            monthNames.forEach(function(element) {
-                element.innerText = element.innerText.charAt(0).toUpperCase() + element.innerText.slice(1);
-            });
 
             document.querySelectorAll(".group-btn").forEach(button => {
                 button.addEventListener("click", function () {
