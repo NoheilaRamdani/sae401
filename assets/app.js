@@ -22,21 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-// BACK TO TOP BUTTON
-    const backToTopButton = document.getElementById("backToTop");
-
-    window.addEventListener("scroll", function () {
-        if (window.scrollY > 180) {
-            backToTopButton.classList.add("show");
-        } else {
-            backToTopButton.classList.remove("show");
-        }
-    });
-
-    backToTopButton.addEventListener("click", function () {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
 
     // FADE DES POPUPS
     const popups = document.querySelectorAll(".popup");

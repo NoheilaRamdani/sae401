@@ -153,6 +153,8 @@
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'fr',
+                buttonText: {
+                    today: 'Aujourd\'hui'},
                 events: '/api/assignments' + (new URLSearchParams(window.location.search).toString() ? '?' + new URLSearchParams(window.location.search).toString() : ''),
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
@@ -163,10 +165,59 @@
                             console.log('Data from API:', data);
                             showEventDetails(data);
                         });
-                }
+                },
+
             });
             calendar.render();
 
+            // Après que le calendrier soit rendu, on modifie la première lettre du mois
+            const monthNames = document.querySelectorAll('.fc-toolbar-title'); // Sélecteur pour le titre du mois
+            monthNames.forEach(function(element) {
+                element.innerText = element.innerText.charAt(0).toUpperCase() + element.innerText.slice(1);
+            });
+
+            document.querySelectorAll(".group-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const type = this.dataset.type;
+                    const url = new URL(window.location);
+                    if (type) {
+                        url.searchParams.set("type", type);
+                    } else {
+                        url.searchParams.delete("type"); // Supprime le filtre si "Tous" est sélectionné
+                    }
+                    window.location.href = url.toString(); // Recharge la page avec le nouveau filtre
+                });
+            });
+
+// Fonction pour ajuster la position de .tasks-container en fonction de la hauteur visible de la nav
+            function adjustTasksContainerPosition() {
+                const tasksContainer = document.querySelector('.tasks-container');
+                const nav = document.querySelector('nav');
+
+                if (tasksContainer && nav) {
+                    // Calculer la position de la nav par rapport à la fenêtre
+                    const navRect = nav.getBoundingClientRect();
+
+                    // La hauteur visible de la nav est la différence entre la position en bas de la nav et la position en haut de la fenêtre
+                    const navVisibleHeight = Math.max(0, Math.min(navRect.bottom, window.innerHeight) - Math.max(0, navRect.top));
+
+                    // Appliquer le padding-top à .tasks-container en fonction de la hauteur visible de la nav
+                    const currentPaddingTop = 30; // Valeur fixe que tu as définie pour le padding
+                    tasksContainer.style.paddingTop = (navVisibleHeight + currentPaddingTop) + 'px';
+                }
+            }
+
+// Ajouter un écouteur d'événements pour recalculer à chaque scroll
+            window.addEventListener('scroll', adjustTasksContainerPosition);
+
+// Appeler la fonction une première fois pour initialiser la position
+            adjustTasksContainerPosition();
+
+
+
+
+
+            // FONCTION POUR RAYER LES TASK DONE
             document.querySelectorAll('.event-item').forEach(item => {
                 const checkbox = item.querySelector('input[type="checkbox"]');
                 const checkEnabledElements = item.querySelectorAll('.check-enabled');
@@ -215,6 +266,8 @@
                 });
             });
 
+
+            // FONCTION POUR OUVRIR ET AFFICHER LE MODAL
             function showEventDetails(event) {
                 console.log('Event passé à showEventDetails:', event);
 
@@ -384,20 +437,20 @@
 
 {% block body %}
     <main class="home">
-        <h1>Calendrier des tâches</h1>
-
         <div class="calendar-container">
-            <form method="get">
-                <label for="type">Filtrer par type :</label>
-                <select name="type" id="type" onchange="this.form.submit()">
-                    <option value="">Tous</option>
-                    <option value="devoir" {{ type_filter == 'devoir' ? 'selected' }}>Devoir</option>
-                    <option value="examen" {{ type_filter == 'examen' ? 'selected' }}>Examen</option>
-                    <option value="oral" {{ type_filter == 'oral' ? 'selected' }}>Oral</option>
-                </select>
-            </form>
+            <h1 class="sr-only">Calendrier des tâches</h1>
+
+            <div class="group-buttons-container">
+                <div class="group-buttons">
+                    <button class="group-btn {{ type_filter == '' ? 'current' }}" data-type="">Tous</button>
+                    <button class="group-btn {{ type_filter == 'devoir' ? 'current' }}" data-type="devoir">Devoir</button>
+                    <button class="group-btn {{ type_filter == 'examen' ? 'current' }}" data-type="examen">Examen</button>
+                    <button class="group-btn {{ type_filter == 'oral' ? 'current' }}" data-type="oral">Oral</button>
+                </div>
+            </div>
             <div id="calendar"></div>
         </div>
+
         <div class="tasks-container">
             <div class="main-content column-start-start">
                 <h2><i class="fa-solid fa-calendar"></i> A venir</h2>

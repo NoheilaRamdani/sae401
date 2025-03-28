@@ -9,7 +9,7 @@
   font-family: "Poppins";
 }
 
-.manage-assignmts .row-start .button-delete, .manage-assignmts .row-start .button-modify, .home .tasks-container .button-grey, main .filter-section .button-grey, .button, .all-tasks #assignmentsContainer .task-container .status, .tag-small, .tag {
+.manage-assignmts td.row-start .button-delete, .manage-assignmts td.row-start .button-modify, .home .tasks-container .button-grey, main .filter-section .button-grey, .button, .all-tasks #assignmentsContainer .task-container .status, .tag-small, .tag {
   font-weight: 600;
   border-radius: 9px;
   text-align: center;
@@ -26,11 +26,11 @@
   gap: 10px;
 }
 
-.all-tasks .filter-section, .home .tasks-container, .column-start-start, .column-start, .delegate-page .group-buttons-container, .all-tasks, nav .links, .row-spacebtwn, .row-center, .row-baseline, .row-start {
+.all-tasks .filter-section, .home .tasks-container, .column-start-start, .column-start, .delegate-page .group-buttons-container, .all-tasks, .home .calendar-container .group-buttons-container, nav .links, .row-spacebtwn, .row-center, .row-baseline, .row-start {
   display: flex;
 }
 
-.delegate-page .group-buttons-container, .all-tasks, nav .links, .row-spacebtwn, .row-center, .row-baseline, .row-start {
+.delegate-page .group-buttons-container, .all-tasks, .home .calendar-container .group-buttons-container, nav .links, .row-spacebtwn, .row-center, .row-baseline, .row-start {
   flex-direction: row;
 }
 
@@ -112,6 +112,82 @@
   background-color: #9C36B5;
   padding: 2px 8px;
   font-size: 0.8em;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.group-buttons-container {
+  width: 100%;
+}
+.group-buttons-container .group-buttons {
+  display: flex;
+  background-color: #F0B5FF;
+  width: fit-content;
+  border-radius: 8px;
+  overflow: hidden;
+  justify-content: flex-end;
+  position: relative;
+}
+.group-buttons-container .group-buttons::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #4D3677;
+  transition: all 0.1s ease-in-out;
+  z-index: 100;
+}
+.group-buttons-container .group-buttons .group-btn {
+  flex-shrink: 0;
+  border: none;
+  background-color: rgba(27, 27, 27, 0);
+  font-size: 1em;
+  padding: 7px 15px;
+  width: fit-content;
+  height: fit-content;
+  cursor: pointer;
+  position: relative;
+  color: #4D3677;
+  font-weight: 500;
+  transition: color 0.1s ease-in-out;
+  overflow: hidden;
+}
+.group-buttons-container .group-buttons .group-btn:not(.group-btn:last-of-type) {
+  border-right: 1px solid rgb(231.7297297297, 140.2, 255);
+}
+.group-buttons-container .group-buttons .group-btn:hover {
+  color: #3d1d47;
+}
+.group-buttons-container .group-buttons .group-btn:hover::before {
+  background-color: #F7B000;
+}
+.group-buttons-container .group-buttons .group-btn::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #4D3677;
+  transition: all 0.1s ease-in-out;
+  z-index: 200;
+}
+.group-buttons-container .group-buttons .group-btn.current {
+  background-color: rgb(234.8310810811, 155.5, 255);
+}
+.group-buttons-container .group-buttons .group-btn.current::before {
+  background-color: #9C36B5;
 }
 
 input[type=checkbox] {
@@ -203,6 +279,9 @@ nav {
   padding: 0 4%;
   width: 100%;
   gap: 10px;
+  z-index: 10;
+  position: relative;
+  background: white;
 }
 nav .logo {
   height: 25px;
@@ -385,7 +464,7 @@ main .task-container .content .countdown .ontime {
 
 .modal-container {
   background-color: rgba(55, 55, 55, 0.6);
-  position: absolute;
+  position: fixed;
   width: 100%;
   height: 100%;
   top: 0;
@@ -551,10 +630,6 @@ table:not(#calendar table) tbody tr td span.delegate {
   gap: 15px;
 }
 
-.fc-today-button, .fc-next-button, .fc-prev-button {
-  background-color: #4D3677 !important;
-}
-
 .home {
   width: 100%;
   padding: 0;
@@ -563,24 +638,41 @@ table:not(#calendar table) tbody tr td span.delegate {
 .home .fa-solid {
   font-size: 1.2em;
 }
-.home h1 {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
 .home .calendar-container {
   width: 62%;
-  padding-left: 4%;
-  height: 100vh;
+  padding: 30px 20px 25px 4%;
+  min-height: 100vh;
+}
+.home .calendar-container .group-buttons-container {
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+.home .calendar-container .group-buttons-container .group-buttons {
+  margin-bottom: 20px;
+}
+.home .calendar-container #calendar .fc .fc-toolbar.fc-header-toolbar {
+  width: 100%;
+}
+.home .calendar-container #calendar .fc-today-button, .home .calendar-container #calendar .fc-next-button, .home .calendar-container #calendar .fc-prev-button {
+  background-color: #4D3677 !important;
+  transition: all 0.15s ease-in-out;
+}
+.home .calendar-container #calendar .fc-today-button:hover, .home .calendar-container #calendar .fc-next-button:hover, .home .calendar-container #calendar .fc-prev-button:hover {
+  background-color: rgb(65.6502890173, 46.0404624277, 101.4595375723) !important;
+}
+.home .calendar-container #calendar .fc .fc-button {
+  font-size: 0.9rem;
+  padding: 0 12px;
+  height: 35px;
+  line-height: normal;
+  border-radius: 5px;
 }
 .home .tasks-container {
-  height: 100vh;
   width: 38%;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  right: 0;
   padding: 30px 4% 25px 20px;
   background-color: #f5f6fa;
   gap: 20px;
@@ -672,6 +764,13 @@ table:not(#calendar table) tbody tr td span.delegate {
   margin-top: 15px;
 }
 
+.delegate-page .group-buttons-container {
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+.delegate-page .group-buttons-container .group-buttons {
+  margin-top: 50px;
+}
 .delegate-page .row-baseline {
   gap: 15px;
   margin-bottom: 10px;
@@ -694,66 +793,15 @@ table:not(#calendar table) tbody tr td span.delegate {
   background-color: #9C36B5;
   color: white;
 }
-.delegate-page .group-buttons-container {
-  width: 100%;
-  justify-content: flex-end;
-  align-items: flex-end;
-}
-.delegate-page .group-buttons-container .group-buttons {
-  display: flex;
-  background-color: #F0B5FF;
-  width: fit-content;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-top: 50px;
-  justify-content: flex-end;
-}
-.delegate-page .group-buttons-container .group-buttons .group-btn {
-  flex-shrink: 0;
-  border: none;
-  background-color: rgba(27, 27, 27, 0);
-  font-size: 1.1rem;
-  padding: 7px 15px;
-  width: fit-content;
-  height: fit-content;
-  cursor: pointer;
-  position: relative;
-  color: #4D3677;
-  font-weight: 500;
-  transition: color 0.1s ease-in-out;
-  overflow: hidden;
-}
-.delegate-page .group-buttons-container .group-buttons .group-btn:hover {
-  color: #3d1d47;
-}
-.delegate-page .group-buttons-container .group-buttons .group-btn:hover::before {
-  background-color: #F7B000;
-}
-.delegate-page .group-buttons-container .group-buttons .group-btn::before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background-color: #4D3677;
-  transition: all 0.1s ease-in-out;
-}
-.delegate-page .group-buttons-container .group-buttons .group-btn.current {
-  background-color: rgb(234.8310810811, 155.5, 255);
-}
-.delegate-page .group-buttons-container .group-buttons .group-btn.current::before {
-  background-color: #9C36B5;
-}
 
 .manage-assignmts .filter-section {
   gap: 30px;
   margin: 25px 0;
 }
-.manage-assignmts .row-start {
+.manage-assignmts td.row-start {
   gap: 10px;
 }
-.manage-assignmts .row-start .button-modify {
+.manage-assignmts td.row-start .button-modify {
   padding: 6px 14px;
   background-color: #F0B5FF;
   color: #ffffff;
@@ -765,10 +813,10 @@ table:not(#calendar table) tbody tr td span.delegate {
   width: 35px;
   height: 35px;
 }
-.manage-assignmts .row-start .button-modify:hover {
+.manage-assignmts td.row-start .button-modify:hover {
   background-color: rgb(229.6621621622, 130, 255);
 }
-.manage-assignmts .row-start .button-delete {
+.manage-assignmts td.row-start .button-delete {
   padding: 6px 14px;
   background-color: #373737;
   color: #ffffff;
@@ -779,7 +827,7 @@ table:not(#calendar table) tbody tr td span.delegate {
   width: 35px;
   height: 35px;
 }
-.manage-assignmts .row-start .button-delete:hover {
+.manage-assignmts td.row-start .button-delete:hover {
   background-color: rgb(29.5, 29.5, 29.5);
 }
 .manage-assignmts .button {
