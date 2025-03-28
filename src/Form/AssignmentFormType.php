@@ -76,7 +76,7 @@ class AssignmentFormType extends AbstractType
             ->add('course_location', TextType::class, [
                 'label' => 'Où trouver le cours (optionnel)',
                 'required' => false,
-                'attr' => ['placeholder' => 'Ex. : Moodle, Drive, salle 12...'],
+                'attr' => ['placeholder' => 'Ex. : Moodle, docs.mmi-troyes.fr...'],
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Type',

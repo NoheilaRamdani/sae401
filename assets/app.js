@@ -6,14 +6,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const activeItem = document.querySelector(".links li.active");
 
     if (activeItem) {
-        // Cacher le separator APRÈS .active
+        // Hide separator APRÈS .active
         const nextSeparator = activeItem.nextElementSibling;
         if (nextSeparator && nextSeparator.classList.contains("separator")) {
             nextSeparator.style.opacity = "0";
             nextSeparator.style.visibility = "hidden";
         }
 
-        // Cacher le separator AVANT .active
+        // Hide le separator AVANT .active
         const prevSeparator = activeItem.previousElementSibling;
         if (prevSeparator && prevSeparator.classList.contains("separator")) {
             prevSeparator.style.opacity = "0";
@@ -35,5 +35,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     backToTopButton.addEventListener("click", function () {
         window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+
+    // FADE DES POPUPS
+    const popups = document.querySelectorAll(".popup");
+
+    popups.forEach((popup) => {
+        if (popup) {
+            // Ajout de la classe pour le fade-in
+            popup.classList.add("show");
+
+            setTimeout(() => {
+                popup.classList.add("fade-out");
+
+                // Supprime la div après l'animation
+                setTimeout(() => {
+                    popup.style.display = "none";
+                }, 500); // Temps pour que le fade-out se termine
+            }, 4000); // 4 secondes d'affichage avant de commencer le fade-out
+        }
     });
 });

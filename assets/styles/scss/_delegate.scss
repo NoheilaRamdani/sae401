@@ -1,10 +1,11 @@
 .delegate-page {
   .row-baseline {
     gap: 15px;
+    margin-bottom: 10px;
   }
 
   .delegate-table {
-    margin-top: 50px;
+    margin-top: 20px;
 
     .is-delegate {
       background-color: transparentize($purplelight, 0.8) !important;
@@ -25,5 +26,67 @@
       }
     }
   }
+
+  .group-buttons-container {
+    width: 100%;
+    @include flex-row(flex-end, flex-end);
+
+    .group-buttons {
+      display: flex;
+      background-color: $purplelight;
+      width: fit-content;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 50px;
+      justify-content: flex-end;
+
+      .group-btn {
+        flex-shrink: 0;
+        border: none;
+        background-color: rgba(27, 27, 27, 0);
+        font-size: 1.1rem;
+        padding: 7px 15px;
+        width: fit-content;
+        height: fit-content;
+        cursor: pointer;
+        position: relative;
+        color: $purpledark;
+        font-weight: 500;
+        transition: color 0.1s ease-in-out;
+        overflow: hidden;
+
+        &:hover {
+          color: #3d1d47;
+
+          &::before {
+            background-color: $yellow;
+          }
+        }
+
+        &::before {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background-color: $purpledark;
+          transition: all 0.1s ease-in-out;
+        }
+
+        &.current {
+          background-color: darken($purplelight, 5);
+          &::before {
+            background-color: $purplemedium;
+
+          }
+        }
+      }
+    }
+
+  }
+
+
+
 
 }

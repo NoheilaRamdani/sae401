@@ -1,6 +1,8 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Accueil - Cahier de texte{% endblock %}
+{% block description %}Découvrez l’agenda MMI pour gérer vos devoirs et organiser vos tâches !{% endblock %}
+
 
 {% block stylesheets %}
     {{ parent() }}
@@ -16,7 +18,7 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 1001; /* Augmenter pour être au-dessus du calendrier */
+            z-index: 1001;
             padding: 10px;
             overflow-y: auto;
             opacity: 1;

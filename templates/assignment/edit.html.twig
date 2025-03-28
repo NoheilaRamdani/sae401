@@ -1,14 +1,86 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier un devoir{% endblock %}
+{% block title %}Modifier une tâche{% endblock %}
+{% block description %}Modifier une tâche de l'agenda{% endblock %}
 
 
 {% block body %}
-    <h1>Modifier "{{ assignment.title }}"</h1>
-    {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button type="submit">Enregistrer</button>
-    <a href="{{ path('manage_assignments') }}">Retour</a>
-    {{ form_end(form) }}
+    <main class="form">
+        <h1>Modifier "{{ assignment.title }}"</h1>
+        {{ form_start(form) }}
 
+        <div>
+            {{ form_label(form.title) }}
+            {{ form_widget(form.title, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_errors(form.title) }}
+        </div>
+
+        <div>
+            {{ form_label(form.description) }}
+            {{ form_widget(form.description, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div>
+            {{ form_label(form.due_date) }}
+            {{ form_widget(form.due_date, {'attr': {'class': 'my-custom-class datetime-picker'}}) }}
+            {{ form_errors(form.due_date) }}
+        </div>
+
+        <div>
+            {{ form_label(form.subject) }}
+            {{ form_widget(form.subject, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_errors(form.subject) }}
+        </div>
+
+        <div class="assignment">
+            {{ form_label(form.groups) }}
+            <div class="group row-start">
+                {% for group in form.groups %}
+                    <div class="row-start group">
+                        {{ form_widget(group, {'attr': {'class': 'my-custom-group-class'}}) }}
+                        {{ form_label(group) }}
+                    </div>
+                {% endfor %}
+            </div>
+            {{ form_errors(form.groups) }}
+        </div>
+
+        <div>
+            {{ form_label(form.submission_type) }}
+            {{ form_widget(form.submission_type, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_errors(form.submission_type) }}
+        </div>
+
+        <div id="submission_other_container" style="display: none;">
+            {{ form_label(form.submission_other) }}
+            {{ form_widget(form.submission_other, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_errors(form.submission_other) }}
+        </div>
+
+        <div>
+            {{ form_label(form.submission_url) }}
+            {{ form_widget(form.submission_url, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_errors(form.submission_url) }}
+        </div>
+
+        <div>
+            {{ form_label(form.course_location) }}
+            {{ form_widget(form.course_location, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_errors(form.course_location) }}
+        </div>
+
+        <div>
+            {{ form_label(form.type) }}
+            {{ form_widget(form.type, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_errors(form.type) }}
+        </div>
+
+        <div class="buttons row-start">
+            <a class="button" href="{{ path('manage_assignments') }}"><i class="fa-solid fa-arrow-left"></i> Retour</a>
+            <button class="button row-center" type="submit"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+        </div>
+
+        {{ form_end(form) }}
+    </main>
 {% endblock %}

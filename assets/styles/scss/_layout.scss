@@ -135,6 +135,31 @@ input[type="checkbox"] {
   }
 }
 
+.popup {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: fit-content;
+  padding: 12px 20px;
+  background-color: transparentize($purpledark, 0.1);
+  text-align: center;
+  z-index: 1000;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  color: white;
+  font-size: 0.8rem;
+
+  &.show {
+    opacity: 1;
+  }
+
+  &.fade-out {
+    opacity: 0;
+  }
+
+}
 
 nav {
   height: 50px;
@@ -439,6 +464,7 @@ table:not(#calendar table) {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 0.93rem;
 
   thead {
     background-color: $purplemedium;
@@ -446,7 +472,7 @@ table:not(#calendar table) {
     text-transform: uppercase;
 
     th {
-      padding: 12px;
+      padding: 17px 35px;
       text-align: left;
       font-weight: 600;
     }
@@ -464,7 +490,7 @@ table:not(#calendar table) {
         background-color: transparentize($purplemedium, 0.93);      }
 
       td {
-        padding: 10px;
+        padding: 15px 35px;
       }
 
       td span {
@@ -552,6 +578,10 @@ table:not(#calendar table) {
         gap: 10px;
       }
     }
+  }
+
+  .buttons {
+    gap: 15px;
   }
 }
 

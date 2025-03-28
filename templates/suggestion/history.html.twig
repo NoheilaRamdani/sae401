@@ -1,99 +1,24 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Historique des suggestions{% endblock %}
+{% block description %}Retrouvez ici toutes les suggestions qui vous ont été soumises{% endblock %}
+
 
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        .suggestions-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 14px;
+        .suggested-by {
+            max-width: 245px;
+        overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
-        .suggestions-table th, .suggestions-table td {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-
-        .suggestions-table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .suggestions-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        .suggestions-table tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        .suggestions-table .suggested-by {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .suggestions-table .assignment-info {
-            color: #555;
-        }
-
-        .suggestions-table .message {
-            color: #666;
-            font-style: italic;
-        }
-
-        .suggestions-table .changes {
-            color: #444;
-            font-size: 13px;
-        }
-
-        .suggestions-table .status-processed {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .suggestions-table .status-pending {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        .suggestions-table .action a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .suggestions-table .action a:hover {
-            text-decoration: underline;
-        }
-
-        .no-suggestions {
-            color: #666;
-            font-style: italic;
-            margin: 20px 0;
-        }
-
-        .btn-sec {
-            display: inline-block;
-            padding: 8px 15px;
-            background-color: #6c757d;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-
-        .btn-sec:hover {
-            background-color: #5a6268;
-        }
     </style>
 {% endblock %}
 
 {% block body %}
-    <div class="container">
+    <main class="padding">
         <h1>Historique des suggestions</h1>
 
         {% for label, messages in app.flashes %}
@@ -169,5 +94,5 @@
         {% endif %}
 
         <a href="{{ path('app_home') }}" class="btn btn-sec">Retour à l'accueil</a>
-    </div>
+    </main>
 {% endblock %}

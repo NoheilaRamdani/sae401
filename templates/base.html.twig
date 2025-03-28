@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Calendrier des tâches{% endblock %}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+    <link rel="icon" type="image/png" href="{{ asset('img/logo_intranet_iut_troyes.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('img/favicon-96x96.png') }}" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="{{ asset('img/favicon.svg') }}" />
+    <link rel="shortcut icon" href="{{ asset('img/favicon.ico') }}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('img/apple-touch-icon.png') }}" />
+    <meta name="apple-mobile-web-app-title" content="Agenda MMI" />
+    <link rel="manifest" href="{{ asset('img/site.webmanifest') }}" />
+    <meta name="description" content="{% block description %}Découvrez l’agenda MMI pour gérer vos devoirs et organiser vos tâches !{% endblock %}">
+
 
     {% block stylesheets %}
         <link rel="stylesheet" href="{{ asset('styles/css/app.css') }}">
@@ -29,7 +37,7 @@
 </head>
 <body>
 <nav class="row-spacebtwn">
-    <img class="logo" src="{{ asset('img/logo_intranet_iut_troyes.svg') }}" alt="Logo de l'Intranet de Troyes">
+    <a class="logo" href="{{ path('app_home') }}"><img class="logo" src="{{ asset('img/logo_intranet_iut_troyes.svg') }}" alt="Logo de l'Intranet de Troyes"></a>
     <ul class="links">
         <li class="row-center {{ app.request.get('_route') == 'app_home' ? 'active' : '' }}">
             <a class="row-center" href="{{ path('app_home') }}"><i class="fa-solid fa-calendar-days"></i> Calendrier</a></a>
@@ -97,7 +105,7 @@
 <div>
     {% for label, messages in app.flashes %}
         {% for message in messages %}
-            <div>
+            <div class="popup">
                 {{ message }}
             </div>
         {% endfor %}
