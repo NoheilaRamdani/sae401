@@ -20,7 +20,31 @@ $urgent : #DC3545;
 $soon : #FFA600;
 $ontime : #9BDC33;
 
-//PALETTE
+// Font-sizes pour small screens
+$font-sizes-small: (
+        "extra-large": clamp(2.1rem, calc(0.8vw + 1.5rem), 3rem),
+        "large": clamp(1.8rem, max(3vh, 1.5vw), 3.5rem),
+        "base": clamp(0.85rem, calc(0.35vw + 0.65rem), 1.2rem),
+        "small": clamp(0.85rem, calc(0.45vw + 0.5rem), 1.2rem),
+        "extra-small": clamp(0.73rem, calc(0.7vw + 0.15rem), 1.2rem)
+);
+
+// Font sizes pour large screens
+$font-sizes-large: (
+        "large": clamp(1.5rem, calc(0.6vw + 1rem), 2.5rem),
+        "base": clamp(0.9rem, calc(0.35vw + 0.65rem), 1.2rem),
+        "small": clamp(0.85rem, calc(0.45vw + 0.5rem), 1.2rem),
+        "extra-small": clamp(0.73rem, calc(0.7vw + 0.15rem), 1.2rem)
+);
+
+// Breakpoints
+$breakpoints: (
+        sm: 576px,
+        md: 768px,
+        lg: 992px,
+        xl: 1200px,
+        xxl: 1400px
+);
 
 
 * {
@@ -32,9 +56,3 @@ $ontime : #9BDC33;
   scroll-behavior: smooth;
   font-family: $mainfont;
 }
-
-$mobile: 480px;
-$small-tablet : 576px;
-$large-tablet: 768px;
-$computer: 960px;
-$large-computer : 1240px;

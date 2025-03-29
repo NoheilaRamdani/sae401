@@ -14,11 +14,11 @@ class SuggestionReviewType extends AbstractType
         $builder
             ->add('approve', SubmitType::class, [
                 'label' => 'Valider les modifications',
-                'attr' => ['class' => 'btn btn-success'],
+                'attr' => ['class' => 'button btn btn-success'],
             ])
             ->add('reject', SubmitType::class, [
                 'label' => 'Rejeter la suggestion',
-                'attr' => ['class' => 'btn btn-danger'],
+                'attr' => ['class' => 'button btn btn-danger'],
             ]);
     }
 

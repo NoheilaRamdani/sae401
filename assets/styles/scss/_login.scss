@@ -18,7 +18,7 @@
       margin-bottom: 5px;
       color: #555;
       margin-top: 10px;
-      font-size: 0.75em;
+      @extend .font-extra-small;
     }
 
     input {
@@ -27,7 +27,7 @@
       margin-bottom: 10px;
       border-radius: 5px;
       border: 2px solid $lightgrey;
-      font-size: 0.8em;
+      @extend .font-base;
     }
 
     input[type="checkbox"] {
@@ -48,7 +48,7 @@
 
     select {
       padding: 7px 10px;
-      font-size: 0.84rem;
+      @extend .font-base;
       border: 1px solid #ccc;
       border-radius: 4px;
       background-color: white;

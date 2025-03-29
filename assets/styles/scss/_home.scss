@@ -29,7 +29,7 @@
       .fc-today-button, .fc-next-button, .fc-prev-button {
         background-color: $purpledark !important;
         transition: all 0.15s ease-in-out;
-        font-size: 0.9rem;
+        @extend .font-small;
 
         &:hover {
           background-color: darken($purpledark, 5) !important;
@@ -37,24 +37,35 @@
       }
 
       .fc .fc-button {
-        font-size: 0.9rem;
         padding: 0 12px;
         height: 35px;
         line-height: normal;
         border-radius: 5px;
       }
 
+      a.fc-col-header-cell-cushion {
+        @extend .font-base;
+
+      }
+
       .fc-day {
         overflow: hidden ;
-        font-size: 0.78rem ;
-
       }
 
       .fc-daygrid-event {
         cursor: pointer;
         padding: 0 5px;
         width: 100%;
+        font-weight: 500;
+        font-size: clamp(0.6rem, calc(0.4vw + 0.35rem), 0.8rem);
+
       }
+
+      .fc-daygrid-day-number {
+        @extend .font-extra-small;
+
+      }
+
 
       .fc-daygrid-event-harness {
         right: 0 !important;
@@ -112,5 +123,169 @@
       }
     }
   }
+
+@keyframes tintement {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg); /* Balancement à gauche */
+  }
+  50% {
+    transform: rotate(10deg); /* Balancement à droite */
+  }
+  75% {
+    transform: rotate(-5deg); /* Reviens un peu à gauche */
+  }
+  100% {
+    transform: rotate(0deg); /* Retour à la position initiale */
+  }
+}
+.notif-button {
+    position: fixed;
+    bottom: 25px;
+    left: 3%;
+    background-color: $purpledark;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 205;
+    @extend .font-base;
+    transition: all 0.2s ease;
+
+  i {
+    transition: transform 0.3s ease;
+
+  }
+
+  &:hover {
+    background-color: $purplelight;
+    color: $purpledark;
+
+    i {
+      animation: tintement 0.6s ease;
+    }
+  }
+
+  &::after {
+    content: "🔔"; /* Emoji de cloche comme secours */
+    display: none;
+  }
+  &.no-icon::after {
+    display: block;
+  }
+
+  }
+
+
+/* Style pour le pop-up des suggestions */
+.notif-container {
+  position: fixed;
+  bottom: 20px;
+  left: 3%;
+  width: 300px;
+  max-height: 250px;
+  background-color: $purplelight;
+  color: $purpledark;
+  border-radius: 8px;
+  z-index: 305;
+  overflow-y: auto;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+
+  h4 {
+    margin: 0 0 8px;
+    @extend .font-small;
+    font-weight: 500;
+    padding: 16px 16px 7px 16px;
+
+  }
+
+  ul {
+li {
+  @extend .font-extra-small;
+  width: 100%;
+  display: flex;
+
+  a {
+    display: block;
+    width: 100%;
+    margin: 0 8px;
+    padding: 4px 8px 4px;
+    border-bottom: 1px solid darken($purplelight, 8);
+    color: $purpledark;
+    transition: all 0.15s ease-in-out;
+    flex-grow: 1;
+    border-radius: 8px;
+
+    &:hover {
+      background-color: darken($purplelight, 3);
+      cursor: pointer;
+    }
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+}
+  }
+
+  .link {
+    padding: 10px 16px 16px 16px;
+    width: 100%;
+
+    .row-end {
+      @extend .font-extra-small;
+      gap: 7px;
+      width: fit-content;
+      position: relative;
+
+      &::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 0.07rem;
+        background-color: currentColor;
+        transition: width 0.2s ease-in-out;
+      }
+
+      &:hover::before {
+        width: 100%;
+      }
+    }
+
+  }
+
+  #closeSuggestions {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $purpledark;
+    transition: all 0.15s ease-in-out;
+
+    &:hover {
+      color: darken($purpledark, 15);
+    }
+  }
+
+  a:active {
+    color: currentColor;
+  }
+}
+
+
+
+
+
+
+
 
 

@@ -1,141 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Accueil - Cahier de texte{% endblock %}
+{% block title %}Calendrier{% endblock %}
 {% block description %}Découvrez l’agenda MMI pour gérer vos devoirs et organiser vos tâches !{% endblock %}
 
 
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        /* Style pour le pop-up des suggestions */
-        div[data-suggestions] {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            width: 300px;
-            max-height: 250px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 1001;
-            padding: 10px;
-            overflow-y: auto;
-            opacity: 1;
-            transition: opacity 0.3s ease-in-out;
-        }
 
-
-
-        div[data-suggestions] h4 {
-            margin: 0 0 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            color: #333;
-        }
-
-        div[data-suggestions] h4 span {
-            font-weight: bold;
-        }
-
-        div[data-suggestions] ul {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 8px;
-        }
-
-        div[data-suggestions] ul li {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 12px;
-            color: #555;
-        }
-
-        div[data-suggestions] ul li:last-child {
-            border-bottom: none;
-        }
-
-        div[data-suggestions] ul li strong {
-            color: #333;
-        }
-
-        div[data-suggestions] ul li a {
-            color: #007bff;
-            text-decoration: none;
-            margin-left: 8px;
-            font-size: 11px;
-        }
-
-        div[data-suggestions] ul li a:hover {
-            text-decoration: underline;
-        }
-
-        div[data-suggestions] > a {
-            display: block;
-            text-align: center;
-            color: #007bff;
-            text-decoration: none;
-            font-size: 12px;
-        }
-
-        div[data-suggestions] > a:hover {
-            text-decoration: underline;
-        }
-
-        /* Style pour le bouton "Afficher les suggestions" */
-        button[data-show-suggestions] {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background-color: #007bff !important;
-            color: #fff !important;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 1002 !important; /* Augmenter pour être au-dessus du calendrier */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        button[data-show-suggestions]:hover {
-            background-color: #0056b3 !important;
-        }
-
-        button[data-show-suggestions] i {
-            margin: 0;
-        }
-
-        /* Style de secours si l'icône ne se charge pas */
-        button[data-show-suggestions]::after {
-            content: "🔔"; /* Emoji de cloche comme secours */
-            font-size: 16px;
-            display: none;
-        }
-
-        /* Si Font Awesome échoue, afficher le contenu de secours */
-        button[data-show-suggestions].no-icon::after {
-            display: block;
-        }
-
-        #closeSuggestions {
-            background: none;
-            border: none;
-            color: #dc3545;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        #closeSuggestions:hover {
-            text-decoration: underline;
-        }
 
         /* S'assurer que le calendrier ne dépasse pas le z-index du bouton */
         .calendar-container, #calendar {
@@ -297,8 +169,10 @@
                     submissionOtherContainer.style.display = 'none';
                 }
 
-                document.getElementById('modalType').textContent = event.type || 'Non spécifié';
-                document.getElementById('modalCompleted').checked = event.isCompleted || false;
+                document.getElementById('modalType').textContent = (event.type || 'Non spécifié')
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' ');                document.getElementById('modalCompleted').checked = event.isCompleted || false;
                 document.getElementById('eventModal').dataset.id = event.id;
 
                 const editAssignmentLink = document.getElementById('editAssignment');
@@ -353,13 +227,15 @@
             notifications.forEach(notification => {
                 const div = document.createElement('div');
                 div.textContent = `Attention : "${notification.title}" dans ${notification.hoursUntilDue}h !`;
+                div.classList.add('popup');
                 document.body.appendChild(div);
-                setTimeout(() => div.remove(), 5000);
+                setTimeout(() => div.remove(), 3000);
             });
 
             const suggestionsBox = document.querySelector('div[data-suggestions]');
             const showSuggestionsBtn = document.querySelector('button[data-show-suggestions]');
             if (suggestionsBox && showSuggestionsBtn) {
+
                 const isHidden = localStorage.getItem('suggestionsBoxHidden') === 'true';
                 if (isHidden) {
                     suggestionsBox.style.display = 'none';
@@ -397,8 +273,7 @@
                                 const li = document.createElement('li');
                                 li.dataset.id = suggestion.id;
                                 li.innerHTML = `
-                                <strong>${suggestion.suggestedBy}</strong> pour "[${suggestion.assignment.subjectCode}] ${suggestion.assignment.title}" : ${suggestion.message || 'Aucun message'}
-                                <a href="/suggestions/${suggestion.id}/review" style="margin-left: 10px;">Voir la suggestion</a>
+                                <a href="/suggestions/${suggestion.id}/review""><strong>${suggestion.suggestedBy}</strong> pour "[${suggestion.assignment.subjectCode}] ${suggestion.assignment.title}" : ${suggestion.message || 'Aucun message'}</a>
                             `;
                                 suggestionsList.appendChild(li);
                             });
@@ -470,7 +345,7 @@
                                         <p class="check-enabled name">
                                             {{ assignment.title }}
                                         </p>
-                                        <p class="check-enabled subject">[{{ data.subjectCode }}] - {{ assignment.subject.name }}</p>
+                                        <p class="check-enabled subject">[{{ data.subjectCode }}] {{ assignment.subject.name }}</p>
                                     </div>
                                 </div>
                                 <div class="countdown row-start">
@@ -531,15 +406,17 @@
         </div>
 
         {% if is_granted('ROLE_DELEGATE') %}
-            <div data-suggestions>
-                <h4>
+            <div class="notif-container" data-suggestions>
+                <h4 class="row-spacebtwn">
                     <span>Suggestions de modifications</span>
-                    <button id="closeSuggestions">Fermer</button>
+                    <button id="closeSuggestions"><i class="fa-solid fa-xmark"></i></button>
                 </h4>
                 <ul></ul>
-                <a href="{{ path('app_suggestions') }}">Voir l'historique complet</a>
+                <div class="link row-end">
+                    <a class="row-end" href="{{ path('app_suggestions') }}"><i class="fa-solid fa-arrow-right"></i> Voir l'historique complet</a>
+                </div>
             </div>
-            <button data-show-suggestions title="Afficher les suggestions">
+            <button class="notif-button" data-show-suggestions title="Afficher les suggestions">
                 <i class="fa-solid fa-bell"></i>
                 <span class="sr-only">Afficher les suggestions</span>
             </button>

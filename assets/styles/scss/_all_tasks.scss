@@ -35,6 +35,10 @@
 
 
     .task-container {
+
+      .task {
+        gap: 2px;
+      }
       .status {
         @include tag($purplelight, 0.9em, 10px 20px);
         color: $purpledark;
@@ -45,15 +49,16 @@
       }
 
       .description {
-        font-size: 0.9em;
+        @extend .font-small;
       }
 
       .groupes {
-        font-size: 0.79em;
+        @extend .font-extra-small;
+        margin-top: 11px;
+
         .title {
           font-weight: 600;
           font-size: 0.8em;
-          margin-top: 15px;
         }
       }
     }

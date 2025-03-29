@@ -5,7 +5,7 @@
 
 
 {% block body %}
-    <main class="suggest-assignment padding">
+    <main class="suggest-assignment padding form">
         <h1>Suggérer une modification pour "[{{ assignment.subject.code }}] {{ assignment.title }}"</h1>
 
         {% for label, messages in app.flashes %}
@@ -55,9 +55,9 @@
             {{ form_widget(form.message) }}
             {{ form_errors(form.message) }}
         </div>
-        <div>
+        <div class="row-center">
+            <a class="button" href="{{ path('app_home') }}">Annuler</a>
             {{ form_widget(form.submit) }}
-            <a href="{{ path('app_home') }}">Annuler</a>
         </div>
         {{ form_end(form) }}
     </main>

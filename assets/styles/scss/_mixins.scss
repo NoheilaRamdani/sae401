@@ -1,3 +1,16 @@
+// MIXINS BREAKPOINTS
+@mixin media-breakpoint-up($size) {
+  @if map-has-key($breakpoints, $size) {
+    @media (min-width: #{map-get($breakpoints, $size)}) {
+      @content;
+    }
+  } @else {
+    @warn "⚠️ Breakpoint #{$size} not found in map.";
+  }
+}
+
+
+
 // MIXINS BUTTON ET TAGS //
 %btn-base {
   font-weight: 600;
@@ -77,12 +90,13 @@
   font-size: $font-size;
 }
 
-@mixin tag-small($bg-color: $purplemedium, $font-size: 0.8em, $padding : 2px 8px) {
+@mixin tag-small($font-size-key: "extra-small", $bg-color: $purplemedium, $padding : 2px 8px) {
   @extend %tag-base;
 
   background-color: $bg-color;
   padding: $padding;
-  font-size: $font-size;
+  font-size: map-get($font-sizes-small, $font-size-key);
+
 }
 
 // MIXINS FLEXBOX //
@@ -115,4 +129,24 @@
 
   justify-content: $justify-content;
   align-items: $align-items;
+}
+
+
+
+
+
+// 🎯 Génération automatique des classes avec les tailles pour petits écrans
+@each $name, $size in $font-sizes-small {
+  .font-#{$name} {
+    font-size: $size;
+  }
+}
+
+// 🎯 Mise à jour des classes pour grands écrans
+@include media-breakpoint-up(md) {
+  @each $name, $size in $font-sizes-large {
+    .font-#{$name} {
+      font-size: $size;
+    }
+  }
 }
