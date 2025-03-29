@@ -155,7 +155,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 205;
+    z-index: 100;
     @extend .font-base;
     transition: all 0.2s ease;
 
@@ -194,7 +194,7 @@
   background-color: $purplelight;
   color: $purpledark;
   border-radius: 8px;
-  z-index: 305;
+  z-index: 100;
   overflow-y: auto;
   opacity: 1;
   transition: opacity 0.3s ease-in-out;
