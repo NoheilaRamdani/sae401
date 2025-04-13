@@ -1,10 +1,19 @@
 .delegate-page {
+
+  .group-buttons-container {
+    @include flex-row(flex-end, flex-end);
+  .group-buttons {
+    margin-top: 50px;
+  }
+}
+
   .row-baseline {
     gap: 15px;
+    margin-bottom: 10px;
   }
 
   .delegate-table {
-    margin-top: 50px;
+    margin-top: 20px;
 
     .is-delegate {
       background-color: transparentize($purplelight, 0.8) !important;
@@ -25,5 +34,8 @@
       }
     }
   }
+
+
+
 
 }

@@ -1,9 +1,11 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Log in!{% endblock %}
+{% block title %}Connexion{% endblock %}
+{% block description %}Connectez-vous à l’agenda MMI pour accéder à vos tâches et rendus{% endblock %}
+
 
 {% block body %}
-    <main class="login">
+    <main class="login padding">
         <form method="post">
             {% if error %}
                 <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
@@ -25,6 +27,7 @@
                 </label>
             </div>
             <button class="button" type="submit">Se connecter</button>
+            <p class="link">Pas encore de compte ? <a href="{{ path('app_register') }}">Inscrivez-vous</a></p>
         </form>
     </main>
 

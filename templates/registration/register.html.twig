@@ -1,65 +1,71 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Inscription{% endblock %}
+{% block description %}Créez votre compte pour accéder à l’agenda MMI{% endblock %}
+
 
 {% block body %}
-    <main class="login">
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div>
-                    {{ message }}
-                </div>
+    <main class="login padding">
+
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div>
+                        {{ message }}
+                    </div>
+                {% endfor %}
             {% endfor %}
-        {% endfor %}
-        {{ form_start(registrationForm) }}
-        <h1>Inscription</h1>
-        <div>
-            {{ form_label(registrationForm.email) }}
-            {{ form_widget(registrationForm.email) }}
+            {{ form_start(registrationForm) }}
+            <h1>Inscription</h1>
             <div>
-                {{ form_errors(registrationForm.email) }}
+                {{ form_label(registrationForm.email) }}
+                {{ form_widget(registrationForm.email) }}
+                <div>
+                    {{ form_errors(registrationForm.email) }}
+                </div>
             </div>
-        </div>
-        <div>
-            {{ form_label(registrationForm.firstName) }}
-            {{ form_widget(registrationForm.firstName) }}
             <div>
-                {{ form_errors(registrationForm.firstName) }}
+                {{ form_label(registrationForm.firstName) }}
+                {{ form_widget(registrationForm.firstName) }}
+                <div>
+                    {{ form_errors(registrationForm.firstName) }}
+                </div>
             </div>
-        </div>
-        <div>
-            {{ form_label(registrationForm.lastName) }}
-            {{ form_widget(registrationForm.lastName) }}
             <div>
-                {{ form_errors(registrationForm.lastName) }}
+                {{ form_label(registrationForm.lastName) }}
+                {{ form_widget(registrationForm.lastName) }}
+                <div>
+                    {{ form_errors(registrationForm.lastName) }}
+                </div>
             </div>
-        </div>
-        <div>
-            {{ form_label(registrationForm.plainPassword) }}
-            {{ form_widget(registrationForm.plainPassword) }}
             <div>
-                {{ form_errors(registrationForm.plainPassword) }}
+                {{ form_label(registrationForm.plainPassword) }}
+                {{ form_widget(registrationForm.plainPassword) }}
+                <div>
+                    {{ form_errors(registrationForm.plainPassword) }}
+                </div>
             </div>
-        </div>
-        <div class="column-start">
-            {{ form_label(registrationForm.group) }}
-            {{ form_widget(registrationForm.group) }}
+            <div class="column-start">
+                {{ form_label(registrationForm.group) }}
+                {{ form_widget(registrationForm.group) }}
+                <div>
+                    {{ form_errors(registrationForm.group) }}
+                </div>
+            </div>
+            <div class="row-start">
+                {{ form_widget(registrationForm.agreeTerms) }}
+                {{ form_label(registrationForm.agreeTerms) }}
+                <div >
+                    {{ form_errors(registrationForm.agreeTerms) }}
+                </div>
+            </div>
             <div>
-                {{ form_errors(registrationForm.group) }}
+                <button class="button" type="submit">S'inscrire</button>
             </div>
-        </div>
-        <div class="row-start">
-            {{ form_widget(registrationForm.agreeTerms) }}
-            {{ form_label(registrationForm.agreeTerms) }}
-            <div >
-                {{ form_errors(registrationForm.agreeTerms) }}
-            </div>
-        </div>
-        <div>
-            <button class="button" type="submit">S'inscrire</button>
-        </div>
-        {{ form_end(registrationForm) }}
-        <p>Déjà inscrit ? <a href="{{ path('app_login') }}">Connectez-vous</a></p>
+            <p class="link">Déjà inscrit ? <a href="{{ path('app_login') }}">Connectez-vous</a></p>
+
+            {{ form_end(registrationForm) }}
+
+
     </main>
 
 

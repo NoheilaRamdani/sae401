@@ -1,6 +1,8 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Tâches{% endblock %}
+{% block description %}Retrouvez ici toutes vos tâches et suivez votre progression.{% endblock %}
+
 
 {% block javascripts %}
     {{ parent() }}
@@ -71,8 +73,10 @@
                     submissionOtherContainer.style.display = 'none';
                 }
 
-                document.getElementById('modalType').textContent = event.type || 'Non spécifié';
-                document.getElementById('modalCompleted').checked = event.isCompleted || false;
+                document.getElementById('modalType').textContent = (event.type || 'Non spécifié')
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' ');                document.getElementById('modalCompleted').checked = event.isCompleted || false;
                 document.getElementById('eventModal').dataset.id = event.id;
 
                 const editAssignmentLink = document.getElementById('editAssignment');
@@ -191,7 +195,7 @@
                                 </div>
                                 <p class="description">{{ assignment.description }}</p>
                                 <p class="groupes">
-                                    <span class="title">Groupes :</span>
+                                    <span class="title">Groupe(s) :</span>
                                     {% if assignment.groups|length > 0 %}
                                         {% for group in assignment.groups %}
                                             {{ group.name }}{% if not loop.last %} - {% endif %}

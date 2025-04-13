@@ -9,6 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -70,12 +71,19 @@ class SuggestionFormType extends AbstractType
                 'data' => $assignment->getSubject(),
                 'placeholder' => 'Sélectionner une matière',
             ])
-            ->add('message', TextType::class, [
+            ->add('message', TextareaType::class, [
                 'label' => 'Message (facultatif)',
                 'required' => false,
+                'attr' => [
+                    'rows' => 4,  // Nombre de lignes du textarea
+                    'placeholder' => 'Écrivez votre message ici...' // Optionnel : placeholder
+                ],
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Envoyer la suggestion',
+                'attr' => [
+                    'class' => 'button',
+                ],
             ]);
     }
 

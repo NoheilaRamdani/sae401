@@ -1,6 +1,8 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Revoir la suggestion - {{ assignment.title }}{% endblock %}
+{% block description %}Une erreur potentielle dans un tâche ? Consulter la suggestion de modification{% endblock %}
+
 
 {% block stylesheets %}
     {{ parent() }}
@@ -24,102 +26,111 @@
 {% endblock %}
 
 {% block body %}
-    <div class="container">
-        <h1>Revoir la suggestion pour "{{ assignment.title }}"</h1>
+    <main class="modal-container padding container row-center">
+        <div class="modal">
+            <h1>Revoir la suggestion pour "{{ assignment.title }}"</h1>
 
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="alert alert-{{ label }}">{{ message }}</div>
-            {% endfor %}
-        {% endfor %}
-
-        <p><strong>Suggéré par :</strong> {{ suggestion.suggestedBy.userIdentifier }}</p>
-        <p><strong>Message :</strong> {{ suggestion.message|default('Aucun message fourni.') }}</p>
-
-        <h2>Changements proposés</h2>
-        {% set hasChanges = false %}
-        {% set differences = [] %}
-
-        {% set fields = {
-            'title': {
-                'label': 'Titre',
-                'current': assignment.title|default(''),
-                'proposed': 'title' in suggestion.proposedChanges ? suggestion.proposedChanges.title|default('') : assignment.title|default('')
-            },
-            'description': {
-                'label': 'Description',
-                'current': assignment.description|default('Aucune'),
-                'proposed': 'description' in suggestion.proposedChanges ? suggestion.proposedChanges.description|default('Aucune') : assignment.description|default('Aucune')
-            },
-            'due_date': {
-                'label': 'Date limite',
-                'current': assignment.dueDate ? assignment.dueDate|date('d/m/Y H:i') : 'Non défini',
-                'proposed': 'due_date' in suggestion.proposedChanges ? (suggestion.proposedChanges.due_date ? suggestion.proposedChanges.due_date|date('d/m/Y H:i') : 'Non défini') : (assignment.dueDate ? assignment.dueDate|date('d/m/Y H:i') : 'Non défini')
-            },
-            'submission_type': {
-                'label': 'Type de rendu',
-                'current': assignment.submissionType|default('Aucun'),
-                'proposed': 'submission_type' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_type|default('Aucun') : assignment.submissionType|default('Aucun')
-            },
-            'submission_url': {
-                'label': 'URL de rendu',
-                'current': assignment.submissionUrl|default('Aucune'),
-                'proposed': 'submission_url' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_url|default('Aucune') : assignment.submissionUrl|default('Aucune')
-            },
-            'type': {
-                'label': 'Type',
-                'current': assignment.type|default('Aucun'),
-                'proposed': 'type' in suggestion.proposedChanges ? suggestion.proposedChanges.type|default('Aucun') : assignment.type|default('Aucun')
-            },
-            'subject_id': {
-                'label': 'Matière',
-                'current': assignment.subject ? assignment.subject.name : 'Non défini',
-                'proposed': proposedSubject ? proposedSubject.name : (assignment.subject ? assignment.subject.name : 'Non défini')
-            }
-        } %}
-
-        {% for field, data in fields %}
-            {% set currentNormalized = data.current == 'Aucune' or data.current == 'Non défini' ? '' : data.current %}
-            {% set proposedNormalized = data.proposed == 'Aucune' or data.proposed == 'Non défini' ? '' : data.proposed %}
-
-            {% if currentNormalized != proposedNormalized %}
-                {% set hasChanges = true %}
-                {% set differences = differences|merge([{
-                    'field': data.label,
-                    'current': data.current,
-                    'proposed': data.proposed
-                }]) %}
-            {% endif %}
-        {% endfor %}
-
-        {% if hasChanges %}
-            <table class="difference-table">
-                <thead>
-                <tr>
-                    <th>Champ</th>
-                    <th>Valeur actuelle</th>
-                    <th>Valeur proposée</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for diff in differences %}
-                    <tr>
-                        <td>{{ diff.field }}</td>
-                        <td class="current-value">{{ diff.current }}</td>
-                        <td class="proposed-value">{{ diff.proposed }}</td>
-                    </tr>
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label }}">{{ message }}</div>
                 {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p class="no-changes">Aucune modification détectée. Cette suggestion ne propose aucun changement par rapport aux valeurs actuelles.</p>
-        {% endif %}
+            {% endfor %}
+            <ul>
+                <li class="title">Suggéré par : </li>
+                <li>{{ suggestion.suggestedBy.userIdentifier }}</li>
+                <li class="title">Message : </li>
+                <li>{{ suggestion.message|default('Aucun message fourni.') }}</li>
+            </ul>
 
-        {{ form_start(form) }}
-        {{ form_widget(form.approve) }}
-        {{ form_widget(form.reject) }}
-        {{ form_end(form) }}
+            <h2>Changements proposés</h2>
+            {% set hasChanges = false %}
+            {% set differences = [] %}
 
-        <a href="{{ path('app_suggestions') }}" class="btn btn-sec">Retour à l’historique</a>
-    </div>
+            {% set fields = {
+                'title': {
+                    'label': 'Titre',
+                    'current': assignment.title|default(''),
+                    'proposed': 'title' in suggestion.proposedChanges ? suggestion.proposedChanges.title|default('') : assignment.title|default('')
+                },
+                'description': {
+                    'label': 'Description',
+                    'current': assignment.description|default('Aucune'),
+                    'proposed': 'description' in suggestion.proposedChanges ? suggestion.proposedChanges.description|default('Aucune') : assignment.description|default('Aucune')
+                },
+                'due_date': {
+                    'label': 'Date limite',
+                    'current': assignment.dueDate ? assignment.dueDate|date('d/m/Y H:i') : 'Non défini',
+                    'proposed': 'due_date' in suggestion.proposedChanges ? (suggestion.proposedChanges.due_date ? suggestion.proposedChanges.due_date|date('d/m/Y H:i') : 'Non défini') : (assignment.dueDate ? assignment.dueDate|date('d/m/Y H:i') : 'Non défini')
+                },
+                'submission_type': {
+                    'label': 'Type de rendu',
+                    'current': assignment.submissionType|default('Aucun'),
+                    'proposed': 'submission_type' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_type|default('Aucun') : assignment.submissionType|default('Aucun')
+                },
+                'submission_url': {
+                    'label': 'URL de rendu',
+                    'current': assignment.submissionUrl|default('Aucune'),
+                    'proposed': 'submission_url' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_url|default('Aucune') : assignment.submissionUrl|default('Aucune')
+                },
+                'type': {
+                    'label': 'Type',
+                    'current': assignment.type|default('Aucun'),
+                    'proposed': 'type' in suggestion.proposedChanges ? suggestion.proposedChanges.type|default('Aucun') : assignment.type|default('Aucun')
+                },
+                'subject_id': {
+                    'label': 'Matière',
+                    'current': assignment.subject ? assignment.subject.name : 'Non défini',
+                    'proposed': proposedSubject ? proposedSubject.name : (assignment.subject ? assignment.subject.name : 'Non défini')
+                }
+            } %}
+
+            {% for field, data in fields %}
+                {% set currentNormalized = data.current == 'Aucune' or data.current == 'Non défini' ? '' : data.current %}
+                {% set proposedNormalized = data.proposed == 'Aucune' or data.proposed == 'Non défini' ? '' : data.proposed %}
+
+                {% if currentNormalized != proposedNormalized %}
+                    {% set hasChanges = true %}
+                    {% set differences = differences|merge([{
+                        'field': data.label,
+                        'current': data.current,
+                        'proposed': data.proposed
+                    }]) %}
+                {% endif %}
+            {% endfor %}
+
+            {% if hasChanges %}
+                <table class="difference-table">
+                    <thead>
+                    <tr>
+                        <th>Champ</th>
+                        <th>Valeur actuelle</th>
+                        <th>Valeur proposée</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for diff in differences %}
+                        <tr>
+                            <td>{{ diff.field }}</td>
+                            <td class="current-value">{{ diff.current }}</td>
+                            <td class="proposed-value">{{ diff.proposed }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="no-changes">Aucune modification détectée. Cette suggestion ne propose aucun changement par rapport aux valeurs actuelles.</p>
+            {% endif %}
+
+            {{ form_start(form) }}
+            <div class="row-start">
+                {{ form_widget(form.approve) }}
+                {{ form_widget(form.reject) }}
+            </div>
+
+            {{ form_end(form) }}
+
+            <a href="{{ path('app_suggestions') }}" class="button btn btn-sec">Retour à l’historique</a>
+        </div>
+
+    </main>
 {% endblock %}

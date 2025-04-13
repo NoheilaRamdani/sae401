@@ -1,6 +1,8 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Gestion des délégués{% endblock %}
+{% block description %}Gérez les délégués pour chaque TP en MMI{% endblock %}
+
 
 {% block body %}
 
@@ -16,10 +18,20 @@
         <div>
             <p>En tant qu'administrateur, vous pouvez désigner et changer les délégués pour chaque groupe.
                 Chaque groupe peut avoir jusqu'à 2 délégués actifs à la fois.</p>
-
         </div>
+
+        <!-- Boutons de sélection des groupes -->
+        <div class="group-buttons-container">
+            <div class="group-buttons">
+                {% for groupData in groupsData %}
+                    <button class="group-btn" data-group="group-{{ groupData.group.id }}">{{ groupData.group.name }}</button>
+                {% endfor %}
+            </div>
+        </div>
+
+
         {% for groupData in groupsData %}
-            <div class="delegate-table">
+            <div class="delegate-table group-container" id="group-{{ groupData.group.id }}">
                 <div class="row-baseline">
                     <h3>{{ groupData.group.name }}</h3>
                     <span>-</span>
@@ -69,9 +81,56 @@
                 </table>
             </div>
         {% endfor %}
-        <button id="backToTop" class="back-to-top"><i class="fa-solid fa-circle-chevron-up"></i></button>
 
     </main>
 
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const groupButtons = document.querySelectorAll(".group-btn");
+            const groupContainers = document.querySelectorAll(".group-container");
+
+            // Stocker et récupérer l'onglet actif comme expliqué précédemment
+            let activeGroup = localStorage.getItem("activeGroup") || groupButtons[0].getAttribute("data-group");
+            groupContainers.forEach(container => container.style.display = (container.id === activeGroup) ? "block" : "none");
+            groupButtons.forEach(button => button.classList.toggle("current", button.getAttribute("data-group") === activeGroup));
+
+            groupButtons.forEach(button => {
+                button.addEventListener("click", function () {
+                    const targetGroup = this.getAttribute("data-group");
+                    localStorage.setItem("activeGroup", targetGroup);
+                    groupContainers.forEach(container => container.style.display = (container.id === targetGroup) ? "block" : "none");
+                    groupButtons.forEach(btn => btn.classList.remove("current"));
+                    this.classList.add("current");
+                });
+            });
+
+            // Gestion des actions "Désigner" et "Retirer" via AJAX
+            document.querySelectorAll(".delegate-btn").forEach(button => {
+                button.addEventListener("click", function (event) {
+                    event.preventDefault(); // Empêcher le rechargement de la page
+
+                    const url = this.href; // URL de l'action Symfony
+                    fetch(url, {
+                        method: "GET"
+                    }).then(response => {
+                        if (response.ok) {
+                            return response.text();
+                        } else {
+                            throw new Error("Erreur lors de la mise à jour.");
+                        }
+                    }).then(() => {
+                        location.reload(); // Rafraîchir uniquement la page, mais conserver l'onglet actif grâce à localStorage
+                    }).catch(error => console.error(error));
+                });
+
+
+            });
+
+
+
+        });
+
+    </script>
 
 {% endblock %}
