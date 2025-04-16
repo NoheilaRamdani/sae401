@@ -30,6 +30,9 @@ class DelegateManagementController extends AbstractController
                 ->createQueryBuilder('ug')
                 ->where('ug.group = :group')
                 ->setParameter('group', $group)
+                ->leftJoin('ug.user', 'u')
+                ->orderBy('u.lastName', 'ASC') // Trier par nom de famille
+                ->addOrderBy('u.firstName', 'ASC') // Optionnel : trier par prénom en cas d'égalité
                 ->getQuery()
                 ->getResult();
 
@@ -73,6 +76,7 @@ class DelegateManagementController extends AbstractController
         ]);
     }
 
+    // La méthode toggleDelegateStatus reste inchangée
     #[Route('/delegate/toggle/{userId}/{groupId}', name: 'delegate_toggle')]
     #[IsGranted('ROLE_ADMIN')]
     public function toggleDelegateStatus(int $userId, int $groupId, EntityManagerInterface $entityManager): Response

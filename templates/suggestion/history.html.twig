@@ -3,17 +3,26 @@
 {% block title %}Historique des suggestions{% endblock %}
 {% block description %}Retrouvez ici toutes les suggestions qui vous ont été soumises{% endblock %}
 
-
 {% block stylesheets %}
     {{ parent() }}
     <style>
         .suggested-by {
             max-width: 245px;
-        overflow: hidden;
-            white-space: nowrap;
+            overflow: hidden fotovolta
+
+            System: white-space: nowrap;
             text-overflow: ellipsis;
         }
-
+        .btn-review {
+            background-color: #17a2b8;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .btn-review:hover {
+            background-color: #138496;
+        }
     </style>
 {% endblock %}
 
@@ -51,19 +60,23 @@
                             {% if suggestion.proposedChanges|length > 0 %}
                                 {% for field, value in suggestion.proposedChanges %}
                                     {% if field == 'title' %}
-                                        Titre : {{ suggestion.assignment.title }} → {{ value }}<br>
+                                        Titre : {{ suggestion.assignment.title|default('Aucun') }} → {{ value|default('Aucun') }}<br>
                                     {% elseif field == 'description' %}
                                         Description : {{ suggestion.assignment.description|default('Aucune') }} → {{ value|default('Aucune') }}<br>
                                     {% elseif field == 'due_date' %}
-                                        Date limite : {{ suggestion.assignment.dueDate ? suggestion.assignment.dueDate|date('d/m/Y H:i') : 'Non défini' }} → {{ value ? value|date('d/m/Y H:i') : 'Non défini' }}<br>
-                                    {% elseif field == 'submission_type' %}
-                                        Type de rendu : {{ suggestion.assignment.submissionType|default('Aucun') }} → {{ value|default('Aucun') }}<br>
-                                    {% elseif field == 'submission_url' %}
-                                        URL de rendu : {{ suggestion.assignment.submissionUrl|default('Aucune') }} → {{ value|default('Aucune') }}<br>
+                                        Date limite : {{ suggestion.assignment.dueDate ? suggestion.assignment.dueDate|date('d/m/Y H:i') : 'Non défini' }} → {{ value ? (value|date('d/m/Y H:i')) : 'Non défini' }}<br>
                                     {% elseif field == 'type' %}
                                         Type : {{ suggestion.assignment.type|default('Aucun') }} → {{ value|default('Aucun') }}<br>
+                                    {% elseif field == 'submission_type' %}
+                                        Mode de rendu : {{ suggestion.assignment.submissionType|default('Aucun') }} → {{ value|default('Aucun') }}<br>
+                                    {% elseif field == 'submission_url' %}
+                                        URL de rendu : {{ suggestion.assignment.submissionUrl|default('Aucune') }} → {{ value|default('Aucune') }}<br>
+                                    {% elseif field == 'submission_other' %}
+                                        Autres instructions : {{ suggestion.assignment.submissionOther|default('Aucune') }} → {{ value|default('Aucune') }}<br>
+                                    {% elseif field == 'course_location' %}
+                                        Lieu du cours : {{ suggestion.assignment.courseLocation|default('Aucun') }} → {{ value|default('Aucun') }}<br>
                                     {% elseif field == 'subject_id' %}
-                                        Matière : {{ suggestion.assignment.subject.name }} → {{ data.proposedSubject ? data.proposedSubject.name : 'Non défini' }}<br>
+                                        Matière : {{ suggestion.assignment.subject.name|default('Non défini') }} → {{ data.proposedSubject ? data.proposedSubject.name : 'Non défini' }}<br>
                                     {% endif %}
                                 {% endfor %}
                             {% else %}
@@ -80,9 +93,8 @@
                         </td>
                         <td class="action">
                             {% if not suggestion.isProcessed %}
-                                <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}">Traiter</a>
+                                <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}" class="btn btn-primary">Traiter</a>
                             {% else %}
-                                -
                             {% endif %}
                         </td>
                     </tr>

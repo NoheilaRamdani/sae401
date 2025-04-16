@@ -1,90 +1,118 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier une tâche{% endblock %}
-{% block description %}Modifier une tâche de l'agenda{% endblock %}
-
+{% block title %}Modifier le devoir - {{ assignment.title }}{% endblock %}
+{% block description %}Modifier les détails d'un devoir existant{% endblock %}
 
 {% block body %}
     <main class="form">
-        <h1>Modifier "{{ assignment.title }}"</h1>
-        {{ form_start(form) }}
+        <h1>Modifier le devoir "{{ assignment.title }}"</h1>
 
+        {{ form_start(form) }}
         <div>
             {{ form_label(form.title) }}
-            {{ form_widget(form.title, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_widget(form.title, {'attr': {'class': 'form-input'}}) }}
             {{ form_errors(form.title) }}
         </div>
 
         <div>
             {{ form_label(form.description) }}
-            {{ form_widget(form.description, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-input'}}) }}
             {{ form_errors(form.description) }}
         </div>
 
         <div class="container row-start">
-        <div>
-            {{ form_label(form.due_date) }}
-            {{ form_widget(form.due_date, {'attr': {'class': 'my-custom-class datetime-picker'}}) }}
-            {{ form_errors(form.due_date) }}
-        </div>
-
+            <div>
+                {{ form_label(form.due_date) }}
+                {{ form_widget(form.due_date, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.due_date) }}
+            </div>
             <div class="assignment">
                 {{ form_label(form.groups) }}
                 <div class="group row-start">
                     {% for group in form.groups %}
                         <div class="row-start group">
-                            {{ form_widget(group, {'attr': {'class': 'my-custom-group-class'}}) }}
+                            {{ form_widget(group) }}
                             {{ form_label(group) }}
                         </div>
                     {% endfor %}
                 </div>
                 {{ form_errors(form.groups) }}
             </div>
-
         </div>
 
         <div>
             {{ form_label(form.subject) }}
-            {{ form_widget(form.subject, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_widget(form.subject, {'attr': {'class': 'form-input'}}) }}
             {{ form_errors(form.subject) }}
-        </div>
-
-
-        <div>
-            {{ form_label(form.submission_type) }}
-            {{ form_widget(form.submission_type, {'attr': {'class': 'my-custom-class'}}) }}
-            {{ form_errors(form.submission_type) }}
-        </div>
-
-        <div id="submission_other_container" style="display: none;">
-            {{ form_label(form.submission_other) }}
-            {{ form_widget(form.submission_other, {'attr': {'class': 'my-custom-class'}}) }}
-            {{ form_errors(form.submission_other) }}
-        </div>
-
-        <div>
-            {{ form_label(form.submission_url) }}
-            {{ form_widget(form.submission_url, {'attr': {'class': 'my-custom-class'}}) }}
-            {{ form_errors(form.submission_url) }}
-        </div>
-
-        <div>
-            {{ form_label(form.course_location) }}
-            {{ form_widget(form.course_location, {'attr': {'class': 'my-custom-class'}}) }}
-            {{ form_errors(form.course_location) }}
         </div>
 
         <div>
             {{ form_label(form.type) }}
-            {{ form_widget(form.type, {'attr': {'class': 'my-custom-class'}}) }}
+            {{ form_widget(form.type, {'attr': {'class': 'form-input'}}) }}
             {{ form_errors(form.type) }}
         </div>
 
-        <div class="buttons row-start">
-            <a class="button" href="{{ path('manage_assignments') }}"><i class="fa-solid fa-arrow-left"></i> Retour</a>
-            <button class="button row-center" type="submit"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+        <div>
+            {{ form_label(form.submission_url) }}
+            {{ form_widget(form.submission_url, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.submission_url) }}
+        </div>
+
+        <div id="submission_other_container" style="display: none;">
+            {{ form_label(form.submission_other) }}
+            {{ form_widget(form.submission_other, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.submission_other) }}
+        </div>
+
+        <div>
+            {{ form_label(form.course_location) }}
+            {{ form_widget(form.course_location, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.course_location) }}
+        </div>
+
+        <div class="row-start">
+            <button class="button" type="submit">Modifier</button>
         </div>
 
         {{ form_end(form) }}
+
+        <a href="{{ path('app_home') }}" class="button btn btn-sec">Retour</a>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const typeSelect = document.querySelector('#assignment_form_type');
+            const submissionOtherContainer = document.querySelector('#submission_other_container');
+            const submissionOtherInput = document.querySelector('#assignment_form_submission_other');
+
+            // Vérifie si les éléments existent
+            if (!typeSelect) {
+                console.error("Erreur : l'élément #assignment_form_type n'a pas été trouvé !");
+                return;
+            }
+            if (!submissionOtherContainer) {
+                console.error("Erreur : l'élément #submission_other_container n'a pas été trouvé !");
+                return;
+            }
+            if (!submissionOtherInput) {
+                console.error("Erreur : l'élément #assignment_form_submission_other n'a pas été trouvé !");
+                return;
+            }
+
+            function toggleSubmissionOther() {
+                console.log("Valeur actuelle de type :", typeSelect.value);
+                if (typeSelect.value === 'devoir') {
+                    submissionOtherContainer.style.display = 'block';
+                    submissionOtherInput.required = true;
+                } else {
+                    submissionOtherContainer.style.display = 'none';
+                    submissionOtherInput.required = false;
+                    submissionOtherInput.value = '';
+                }
+            }
+
+            toggleSubmissionOther(); // Vérifie l'état initial
+            typeSelect.addEventListener('change', toggleSubmissionOther); // Écoute les changements
+        });
+    </script>
 {% endblock %}

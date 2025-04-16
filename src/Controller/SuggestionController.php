@@ -43,51 +43,77 @@ class SuggestionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
-            // Construire les changements proposés
+            // Construire les changements proposés et les valeurs originales
             $proposedChanges = [];
+            $originalValues = [];
 
-            // Normaliser les valeurs pour la comparaison
-            $submittedTitle = $data['title'] ?? '';
-            $currentTitle = $assignment->getTitle() ?? '';
+            // Normalisation pour éviter les problèmes avec null ou chaînes vides
+            $normalize = function ($value) {
+                return $value === null ? '' : $value;
+            };
+
+            // Titre
+            $submittedTitle = $normalize($data['title']);
+            $currentTitle = $normalize($assignment->getTitle());
             if ($submittedTitle !== $currentTitle) {
-                $proposedChanges['title'] = $submittedTitle;
+                $proposedChanges['title'] = $data['title'];
+                $originalValues['title'] = $currentTitle;
             }
 
-            $submittedDescription = $data['description'] ?? '';
-            $currentDescription = $assignment->getDescription() ?? '';
+            // Description
+            $submittedDescription = $normalize($data['description']);
+            $currentDescription = $normalize($assignment->getDescription());
             if ($submittedDescription !== $currentDescription) {
-                $proposedChanges['description'] = $submittedDescription;
+                $proposedChanges['description'] = $data['description'];
+                $originalValues['description'] = $currentDescription;
             }
 
-            $submittedDueDate = $data['due_date'] ? $data['due_date']->format('Y-m-d H:i:s') : null;
-            $currentDueDate = $assignment->getDueDate() ? $assignment->getDueDate()->format('Y-m-d H:i:s') : null;
-            if ($submittedDueDate !== $currentDueDate) {
-                $proposedChanges['due_date'] = $submittedDueDate;
+            // Date limite
+            $submittedDueDate = $data['due_date'];
+            $currentDueDate = $assignment->getDueDate();
+            if ($submittedDueDate != $currentDueDate) {
+                $proposedChanges['due_date'] = $submittedDueDate ? $submittedDueDate->format('Y-m-d H:i:s') : null;
+                $originalValues['due_date'] = $currentDueDate ? $currentDueDate->format('Y-m-d H:i:s') : null;
             }
 
-            $submittedSubmissionType = $data['submission_type'] ?? '';
-            $currentSubmissionType = $assignment->getSubmissionType() ?? '';
-            if ($submittedSubmissionType !== $currentSubmissionType) {
-                $proposedChanges['submission_type'] = $submittedSubmissionType;
-            }
-
-            $submittedSubmissionUrl = $data['submission_url'] ?? '';
-            $currentSubmissionUrl = $assignment->getSubmissionUrl() ?? '';
-            if ($submittedSubmissionUrl !== $currentSubmissionUrl) {
-                $proposedChanges['submission_url'] = $submittedSubmissionUrl;
-            }
-
-            $submittedType = $data['type'] ?? '';
-            $currentType = $assignment->getType() ?? '';
+            // Type
+            $submittedType = $normalize($data['type']);
+            $currentType = $normalize($assignment->getType());
             if ($submittedType !== $currentType) {
-                $proposedChanges['type'] = $submittedType;
+                $proposedChanges['type'] = $data['type'];
+                $originalValues['type'] = $currentType;
             }
 
-            // Ajout de la matière
-            $submittedSubject = $data['subject'] ?? null;
+            // URL de rendu
+            $submittedSubmissionUrl = $normalize($data['submission_url']);
+            $currentSubmissionUrl = $normalize($assignment->getSubmissionUrl());
+            if ($submittedSubmissionUrl !== $currentSubmissionUrl) {
+                $proposedChanges['submission_url'] = $data['submission_url'];
+                $originalValues['submission_url'] = $currentSubmissionUrl;
+            }
+
+            // Autres instructions de rendu
+            $submittedSubmissionOther = $normalize($data['submission_other']);
+            $currentSubmissionOther = $normalize($assignment->getSubmissionOther());
+            if ($submittedSubmissionOther !== $currentSubmissionOther) {
+                $proposedChanges['submission_other'] = $data['submission_other'];
+                $originalValues['submission_other'] = $currentSubmissionOther;
+            }
+
+            // Lieu du cours
+            $submittedCourseLocation = $normalize($data['course_location']);
+            $currentCourseLocation = $normalize($assignment->getCourseLocation());
+            if ($submittedCourseLocation !== $currentCourseLocation) {
+                $proposedChanges['course_location'] = $data['course_location'];
+                $originalValues['course_location'] = $currentCourseLocation;
+            }
+
+            // Matière
+            $submittedSubjectId = $data['subject'] ? $data['subject']->getId() : null;
             $currentSubjectId = $assignment->getSubject() ? $assignment->getSubject()->getId() : null;
-            if ($submittedSubject && $submittedSubject->getId() !== $currentSubjectId) {
-                $proposedChanges['subject_id'] = $submittedSubject->getId();
+            if ($submittedSubjectId !== $currentSubjectId) {
+                $proposedChanges['subject_id'] = $submittedSubjectId;
+                $originalValues['subject_id'] = $currentSubjectId;
             }
 
             if (empty($proposedChanges)) {
@@ -101,9 +127,11 @@ class SuggestionController extends AbstractController
             $suggestion = new Suggestion();
             $suggestion->setAssignment($assignment);
             $suggestion->setSuggestedBy($user);
-            $suggestion->setMessage($data['message'] ?? '');
+            $suggestion->setMessage($normalize($data['message']));
             $suggestion->setProposedChanges($proposedChanges);
+            $suggestion->setOriginalValues($originalValues);
             $suggestion->setIsProcessed(false);
+            $suggestion->setCreatedAt(new \DateTime());
 
             $entityManager->persist($suggestion);
             $entityManager->flush();
@@ -152,16 +180,19 @@ class SuggestionController extends AbstractController
                         $assignment->setDescription($value);
                         break;
                     case 'due_date':
-                        $assignment->setDueDate(new \DateTime($value));
+                        $assignment->setDueDate($value ? new \DateTime($value) : null);
                         break;
-                    case 'submission_type':
-                        $assignment->setSubmissionType($value);
+                    case 'type':
+                        $assignment->setType($value);
                         break;
                     case 'submission_url':
                         $assignment->setSubmissionUrl($value);
                         break;
-                    case 'type':
-                        $assignment->setType($value);
+                    case 'submission_other':
+                        $assignment->setSubmissionOther($value);
+                        break;
+                    case 'course_location':
+                        $assignment->setCourseLocation($value);
                         break;
                     case 'subject_id':
                         $subject = $entityManager->getRepository(Subject::class)->find($value);
@@ -215,19 +246,16 @@ class SuggestionController extends AbstractController
 
             $suggestionsData[] = [
                 'suggestion' => $suggestion,
-                'proposedSubject' => $proposedSubject, // Passer la matière proposée au template
+                'proposedSubject' => $proposedSubject,
             ];
         }
 
-        dump('Groupes de l\'utilisateur (délégué) :', $userGroups->toArray());
-        dump('Suggestions récupérées :', $suggestions);
-
         return $this->render('suggestion/history.html.twig', [
-            'suggestionsData' => $suggestionsData, // Passer les données préparées
+            'suggestionsData' => $suggestionsData,
         ]);
     }
 
-    #[Route('/suggestions/{id}/review', name: 'review_suggestion', methods: ['GET', 'POST'])]
+    #[Route('/suggestion/{id}/review', name: 'review_suggestion', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_DELEGATE')]
     public function reviewSuggestion(int $id, Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -281,16 +309,19 @@ class SuggestionController extends AbstractController
                             $assignment->setDescription($value);
                             break;
                         case 'due_date':
-                            $assignment->setDueDate(new \DateTime($value));
+                            $assignment->setDueDate($value ? new \DateTime($value) : null);
                             break;
-                        case 'submission_type':
-                            $assignment->setSubmissionType($value);
+                        case 'type':
+                            $assignment->setType($value);
                             break;
                         case 'submission_url':
                             $assignment->setSubmissionUrl($value);
                             break;
-                        case 'type':
-                            $assignment->setType($value);
+                        case 'submission_other':
+                            $assignment->setSubmissionOther($value);
+                            break;
+                        case 'course_location':
+                            $assignment->setCourseLocation($value);
                             break;
                         case 'subject_id':
                             $subject = $entityManager->getRepository(Subject::class)->find($value);
@@ -317,7 +348,7 @@ class SuggestionController extends AbstractController
             'suggestion' => $suggestion,
             'assignment' => $assignment,
             'form' => $form->createView(),
-            'proposedSubject' => $proposedSubject, // Passer la matière proposée
+            'proposedSubject' => $proposedSubject,
         ]);
     }
 
@@ -363,9 +394,6 @@ class SuggestionController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        dump('Groupes de l\'utilisateur (délégué) :', $userGroups->toArray());
-        dump('Suggestions récupérées :', $suggestions);
-
         $data = array_map(function ($suggestion) {
             return [
                 'id' => $suggestion->getId(),
@@ -380,4 +408,5 @@ class SuggestionController extends AbstractController
 
         return $this->json($data);
     }
+
 }

@@ -212,6 +212,9 @@ class AssignmentController extends AbstractController
         }
 
         $typeFilter = $request->query->get('type');
+        // Ajouter un filtrage optionnel par date
+        $startDate = $request->query->get('start') ? new \DateTime($request->query->get('start')) : null;
+        $endDate = $request->query->get('end') ? new \DateTime($request->query->get('end')) : null;
 
         $queryBuilder = $entityManager->getRepository(Assignment::class)
             ->createQueryBuilder('a');
@@ -231,6 +234,16 @@ class AssignmentController extends AbstractController
             }
         }
 
+        // Ajouter le filtrage par date si start et end sont fournis
+        if ($startDate) {
+            $queryBuilder->andWhere('a.due_date >= :start')
+                ->setParameter('start', $startDate);
+        }
+        if ($endDate) {
+            $queryBuilder->andWhere('a.due_date <= :end')
+                ->setParameter('end', $endDate);
+        }
+
         $assignments = $queryBuilder->getQuery()->getResult();
 
         $events = [];
@@ -238,7 +251,7 @@ class AssignmentController extends AbstractController
         foreach ($assignments as $assignment) {
             $dueDate = $assignment->getDueDate();
             $daysUntilDue = $now->diff($dueDate)->days * ($dueDate >= $now ? 1 : -1);
-            $color = $assignment->getSubject()->getColor() ?? '#3788d8';
+            $color = $assignment->getSubject() ? $assignment->getSubject()->getColor() : '#3788d8';
 
             $events[] = [
                 'id' => $assignment->getId(),
@@ -252,14 +265,58 @@ class AssignmentController extends AbstractController
                     'description' => $assignment->getDescription() ?? 'Lorem ipsum...',
                     'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
                     'isCompleted' => $assignment->isCompleted(),
-                    'type' => $assignment->getType(),
+                    'type' => $assignment->getType() ?? 'devoir', // Valeur par défaut si type est vide
                 ]
             ];
         }
 
         return $this->json($events);
     }
+    #[Route('/api/assignments/{id}', name: 'api_assignment_details', methods: ['GET'])]
+    public function getAssignmentDetails(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Vous devez être connecté'], 401);
+        }
 
+        $assignment = $entityManager->getRepository(Assignment::class)->find($id);
+        if (!$assignment) {
+            return $this->json(['error' => 'Devoir non trouvé'], 404);
+        }
+
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $groups = $user->getGroups();
+            $hasAccess = false;
+            foreach ($assignment->getGroups() as $group) {
+                if ($groups->contains($group)) {
+                    $hasAccess = true;
+                    break;
+                }
+            }
+            if (!$hasAccess) {
+                return $this->json(['error' => 'Accès refusé'], 403);
+            }
+        }
+
+        return $this->json([
+            'id' => $assignment->getId(),
+            'title' => $assignment->getTitle(),
+            'start' => $assignment->getDueDate()->setTimezone(new \DateTimeZone('Europe/Paris'))->format('c'),
+            'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
+            'description' => $assignment->getDescription() ?? 'Aucune description',
+            'submissionOther' => $assignment->getSubmissionOther() ?? null,
+            'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
+            'submissionType' => $assignment->getSubmissionType() ?? null,
+            'courseLocation' => $assignment->getCourseLocation() ?? null,
+            'isCompleted' => $assignment->isCompleted(),
+            'type' => $assignment->getType() ?? 'devoir',
+            'subject' => $assignment->getSubject() ? [
+                'code' => $assignment->getSubject()->getCode(),
+                'name' => $assignment->getSubject()->getName(),
+            ] : null,
+        ]);
+    }
     #[Route('/api/assignments/{id}/toggle-complete', name: 'api_toggle_complete', methods: ['POST'])]
     public function toggleComplete(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -291,51 +348,5 @@ class AssignmentController extends AbstractController
         $entityManager->flush();
 
         return $this->json(['success' => true, 'isCompleted' => $assignment->isCompleted()]);
-    }
-
-    #[Route('/api/assignments/{id}', name: 'api_assignment_details', methods: ['GET'])]
-    public function getAssignmentDetails(int $id, EntityManagerInterface $entityManager): JsonResponse
-    {
-        $user = $this->getUser();
-        if (!$user) {
-            throw $this->createAccessDeniedException('Vous devez être connecté.');
-        }
-
-        $assignment = $entityManager->getRepository(Assignment::class)->find($id);
-        if (!$assignment) {
-            return $this->json(['error' => 'Devoir non trouvé'], 404);
-        }
-
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $groups = $user->getGroups();
-            $hasAccess = false;
-            foreach ($assignment->getGroups() as $group) {
-                if ($groups->contains($group)) {
-                    $hasAccess = true;
-                    break;
-                }
-            }
-            if (!$hasAccess) {
-                return $this->json(['error' => 'Accès refusé'], 403);
-            }
-        }
-
-        return $this->json([
-            'id' => $assignment->getId(),
-            'title' => $assignment->getTitle(),
-            'start' => $assignment->getDueDate()->setTimezone(new \DateTimeZone('Europe/Paris'))->format('c'),
-            'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
-            'description' => $assignment->getDescription() ?? 'Aucune description',
-            'submissionType' => $assignment->getSubmissionType(),
-            'submissionOther' => $assignment->getSubmissionOther(),
-            'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
-            'courseLocation' => $assignment->getCourseLocation() ?? 'Non spécifié',
-            'isCompleted' => $assignment->isCompleted(),
-            'type' => $assignment->getType(),
-            'subject' => [
-                'code' => $assignment->getSubject()->getCode(),
-                'name' => $assignment->getSubject()->getName(),
-            ],
-        ]);
     }
 }

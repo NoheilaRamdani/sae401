@@ -3,12 +3,9 @@
 {% block title %}Calendrier{% endblock %}
 {% block description %}Découvrez l’agenda MMI pour gérer vos devoirs et organiser vos tâches !{% endblock %}
 
-
 {% block stylesheets %}
     {{ parent() }}
     <style>
-
-
         /* S'assurer que le calendrier ne dépasse pas le z-index du bouton */
         .calendar-container, #calendar {
             position: relative;
@@ -26,21 +23,30 @@
                 initialView: 'dayGridMonth',
                 locale: 'fr',
                 buttonText: {
-                    today: 'Aujourd\'hui'},
+                    today: 'Aujourd\'hui'
+                },
                 events: '/api/assignments' + (new URLSearchParams(window.location.search).toString() ? '?' + new URLSearchParams(window.location.search).toString() : ''),
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
                     fetch(`/api/assignments/${info.event.id}`)
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erreur API: ' + response.status);
+                            }
+                            return response.json();
+                        })
                         .then(data => {
                             console.log('ID cliqué:', info.event.id);
                             console.log('Data from API:', data);
                             showEventDetails(data);
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de la récupération des détails:', error);
+                            alert('Impossible de charger les détails de l\'événement.');
                         });
                 }
             });
             calendar.render();
-
 
             document.querySelectorAll(".group-btn").forEach(button => {
                 button.addEventListener("click", function () {
@@ -49,41 +55,29 @@
                     if (type) {
                         url.searchParams.set("type", type);
                     } else {
-                        url.searchParams.delete("type"); // Supprime le filtre si "Tous" est sélectionné
+                        url.searchParams.delete("type");
                     }
-                    window.location.href = url.toString(); // Recharge la page avec le nouveau filtre
+                    window.location.href = url.toString();
                 });
             });
 
-// Fonction pour ajuster la position de .tasks-container en fonction de la hauteur visible de la nav
+            // Fonction pour ajuster la position de .tasks-container
             function adjustTasksContainerPosition() {
                 const tasksContainer = document.querySelector('.tasks-container');
                 const nav = document.querySelector('nav');
 
                 if (tasksContainer && nav) {
-                    // Calculer la position de la nav par rapport à la fenêtre
                     const navRect = nav.getBoundingClientRect();
-
-                    // La hauteur visible de la nav est la différence entre la position en bas de la nav et la position en haut de la fenêtre
                     const navVisibleHeight = Math.max(0, Math.min(navRect.bottom, window.innerHeight) - Math.max(0, navRect.top));
-
-                    // Appliquer le padding-top à .tasks-container en fonction de la hauteur visible de la nav
-                    const currentPaddingTop = 30; // Valeur fixe que tu as définie pour le padding
+                    const currentPaddingTop = 30;
                     tasksContainer.style.paddingTop = (navVisibleHeight + currentPaddingTop) + 'px';
                 }
             }
 
-// Ajouter un écouteur d'événements pour recalculer à chaque scroll
             window.addEventListener('scroll', adjustTasksContainerPosition);
-
-// Appeler la fonction une première fois pour initialiser la position
             adjustTasksContainerPosition();
 
-
-
-
-
-            // FONCTION POUR RAYER LES TASK DONE
+            // Gestion des tâches complétées
             document.querySelectorAll('.event-item').forEach(item => {
                 const checkbox = item.querySelector('input[type="checkbox"]');
                 const checkEnabledElements = item.querySelectorAll('.check-enabled');
@@ -123,29 +117,34 @@
                     }
                     const eventId = this.dataset.id;
                     fetch(`/api/assignments/${eventId}`)
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erreur API: ' + response.status);
+                            }
+                            return response.json();
+                        })
                         .then(data => {
                             console.log('ID cliqué:', eventId);
                             console.log('Data from API:', data);
                             showEventDetails(data);
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de la récupération des détails:', error);
+                            alert('Impossible de charger les détails de l\'événement.');
                         });
                 });
             });
 
-
-            // FONCTION POUR OUVRIR ET AFFICHER LE MODAL
+            // Fonction pour afficher les détails dans le modal
             function showEventDetails(event) {
                 console.log('Event passé à showEventDetails:', event);
 
                 document.getElementById('modalTitle').textContent = event.title || 'Sans titre';
 
-                const dueDate = new Date(event.start);
-                const day = String(dueDate.getUTCDate()).padStart(2, '0');
-                const month = String(dueDate.getUTCMonth() + 1).padStart(2, '0');
-                const year = dueDate.getUTCFullYear();
-                const hours = String(dueDate.getUTCHours()).padStart(2, '0');
-                const minutes = String(dueDate.getUTCMinutes()).padStart(2, '0');
-                document.getElementById('modalDate').textContent = `${day}/${month}/${year} - ${hours}:${minutes}` || 'Date inconnue';
+                const dueDate = event.start ? new Date(event.start) : null;
+                document.getElementById('modalDate').textContent = dueDate ?
+                    `${String(dueDate.getUTCDate()).padStart(2, '0')}/${String(dueDate.getUTCMonth() + 1).padStart(2, '0')}/${dueDate.getUTCFullYear()} - ${String(dueDate.getUTCHours()).padStart(2, '0')}:${String(dueDate.getUTCMinutes()).padStart(2, '0')}` :
+                    'Date inconnue';
 
                 document.getElementById('modalDescription').textContent = event.description || 'Aucune description';
                 document.getElementById('modalSubjectCode').textContent = event.subject?.code || 'Non spécifié';
@@ -158,21 +157,30 @@
                     submissionUrlEl.textContent = 'Aucune URL de rendu';
                 }
 
-                const submissionTypeDisplay = (event.submissionType && event.submissionType.toLowerCase() === 'other') ? 'Autre' : event.submissionType || 'Non spécifié';
-                document.getElementById('modalSubmissionType').textContent = submissionTypeDisplay;
+                // Afficher le type (examen, oral, devoir)
+                document.getElementById('modalType').textContent = event.type ?
+                    event.type.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') :
+                    'Non spécifié';
 
+                // Afficher submissionOther si présent
                 const submissionOtherContainer = document.getElementById('modalSubmissionOtherContainer');
-                if (event.submissionType && event.submissionType.toLowerCase() === 'other' && event.submissionOther) {
+                if (event.submissionOther) {
                     document.getElementById('modalSubmissionOther').textContent = event.submissionOther;
                     submissionOtherContainer.style.display = 'block';
                 } else {
                     submissionOtherContainer.style.display = 'none';
                 }
 
-                document.getElementById('modalType').textContent = (event.type || 'Non spécifié')
-                    .split(' ')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                    .join(' ');                document.getElementById('modalCompleted').checked = event.isCompleted || false;
+                // Afficher courseLocation si présent
+                const courseLocationContainer = document.getElementById('modalCourseLocationContainer');
+                if (event.courseLocation) {
+                    document.getElementById('modalCourseLocation').textContent = event.courseLocation;
+                    courseLocationContainer.style.display = 'block';
+                } else {
+                    courseLocationContainer.style.display = 'none';
+                }
+
+                document.getElementById('modalCompleted').checked = event.isCompleted || false;
                 document.getElementById('eventModal').dataset.id = event.id;
 
                 const editAssignmentLink = document.getElementById('editAssignment');
@@ -181,34 +189,6 @@
                 }
 
                 document.getElementById('eventModal').style.display = 'flex';
-
-                const modalCheckbox = document.getElementById('modalCompleted');
-                modalCheckbox.addEventListener('change', function() {
-                    const eventId = document.getElementById('eventModal').dataset.id;
-                    const isCompleted = this.checked;
-
-                    fetch(`/api/assignments/${eventId}/toggle-complete`, {
-                        method: 'POST'
-                    }).then(response => response.json())
-                        .then(data => {
-                            const listItem = document.querySelector(`div[data-id="${eventId}"]`);
-                            if (listItem) {
-                                listItem.querySelector('input[type="checkbox"]').checked = isCompleted;
-                                const calendarEvent = calendar.getEventById(eventId);
-                                if (calendarEvent) {
-                                    calendarEvent.setProp('classNames', isCompleted ? ['completed-event'] : []);
-                                }
-                                const checkEnabledElements = listItem.querySelectorAll('.check-enabled');
-                                checkEnabledElements.forEach(element => {
-                                    if (data.isCompleted) {
-                                        element.classList.add('completed-task');
-                                    } else {
-                                        element.classList.remove('completed-task');
-                                    }
-                                });
-                            }
-                        });
-                });
             }
 
             const suggestModificationBtn = document.getElementById('suggestModification');
@@ -235,7 +215,6 @@
             const suggestionsBox = document.querySelector('div[data-suggestions]');
             const showSuggestionsBtn = document.querySelector('button[data-show-suggestions]');
             if (suggestionsBox && showSuggestionsBtn) {
-
                 const isHidden = localStorage.getItem('suggestionsBoxHidden') === 'true';
                 if (isHidden) {
                     suggestionsBox.style.display = 'none';
@@ -273,8 +252,8 @@
                                 const li = document.createElement('li');
                                 li.dataset.id = suggestion.id;
                                 li.innerHTML = `
-                                <a href="/suggestions/${suggestion.id}/review""><strong>${suggestion.suggestedBy}</strong> pour "[${suggestion.assignment.subjectCode}] ${suggestion.assignment.title}" : ${suggestion.message || 'Aucun message'}</a>
-                            `;
+                                    <a href="/suggestion/${suggestion.id}/review"><strong>${suggestion.suggestedBy}</strong> pour "[${suggestion.assignment.subjectCode}] ${suggestion.assignment.title}" : ${suggestion.message || 'Aucun message'}</a>
+                                `;
                                 suggestionsList.appendChild(li);
                             });
 
@@ -291,7 +270,6 @@
                         .catch(error => console.error('Erreur lors du chargement des suggestions :', error));
                 }
 
-                // Vérifier si Font Awesome est chargé
                 const fontAwesomeLoaded = document.querySelector('link[href*="font-awesome"]') || document.querySelector('link[href*="fontawesome"]');
                 if (!fontAwesomeLoaded) {
                     showSuggestionsBtn.classList.add('no-icon');
@@ -385,10 +363,9 @@
                     <li class="plateformes">
                         <span class="title"><i class="fa-solid fa-layer-group"></i> Consignes et rendu</span>
                         <ul>
-                            <li>- <span class="subtitle">Sujet</span> : <span id="modalSubmissionType"></span></li>
-                            <li>- <span class="subtitle">Mode de rendu</span> : <span id="modalSubmissionInstruction"></span></li>
-                            <li id="modalSubmissionOtherContainer" style="display: none;"><span class="subtitle">Précision</span> : <span id="modalSubmissionOther"></span></li>
                             <li>- <span class="subtitle">URL de rendu</span> : <span id="modalSubmissionUrl"></span></li>
+                            <li id="modalSubmissionOtherContainer" style="display: none;">- <span class="subtitle">Instructions supplémentaires</span> : <span id="modalSubmissionOther"></span></li>
+                            <li id="modalCourseLocationContainer" style="display: none;">- <span class="subtitle">Lieu</span> : <span id="modalCourseLocation"></span></li>
                         </ul>
                     </li>
                     <div class="done">

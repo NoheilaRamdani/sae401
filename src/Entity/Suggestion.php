@@ -1,103 +1,120 @@
 <?php
 namespace App\Entity;
 
+use App\Repository\SuggestionRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SuggestionRepository::class)]
 class Suggestion
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Assignment::class)]
+    #[ORM\ManyToOne(inversedBy: 'suggestions')]
     #[ORM\JoinColumn(nullable: false)]
-    private Assignment $assignment;
+    private ?Assignment $assignment = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private User $suggestedBy;
+    private ?User $suggestedBy = null;
 
-    #[ORM\Column(type: 'json', nullable: true)]
-    private ?array $proposedChanges = [];
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $message = null;
 
-    #[ORM\Column(type: 'text', nullable: true)] // Rendre nullable dans la base
-    private ?string $message = null; // Rendre nullable en PHP
+    #[ORM\Column(type: Types::JSON)]
+    private array $proposedChanges = [];
 
-    #[ORM\Column(type: 'datetime')]
-    private \DateTime $createdAt;
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $originalValues = null;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $isProcessed = false;
+    #[ORM\Column]
+    private ?bool $isProcessed = null;
 
-    public function __construct()
-    {
-        $this->createdAt = new \DateTime();
-    }
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $createdAt = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getAssignment(): Assignment
+    public function getAssignment(): ?Assignment
     {
         return $this->assignment;
     }
 
-    public function setAssignment(Assignment $assignment): self
+    public function setAssignment(?Assignment $assignment): static
     {
         $this->assignment = $assignment;
         return $this;
     }
 
-    public function getSuggestedBy(): User
+    public function getSuggestedBy(): ?User
     {
         return $this->suggestedBy;
     }
 
-    public function setSuggestedBy(User $suggestedBy): self
+    public function setSuggestedBy(?User $suggestedBy): static
     {
         $this->suggestedBy = $suggestedBy;
         return $this;
     }
 
-    public function getProposedChanges(): array
-    {
-        return $this->proposedChanges ?? [];
-    }
-
-    public function setProposedChanges(?array $proposedChanges): self
-    {
-        $this->proposedChanges = $proposedChanges;
-        return $this;
-    }
-
-    public function getMessage(): ?string // Retourner null ou string
+    public function getMessage(): ?string
     {
         return $this->message;
     }
 
-    public function setMessage(?string $message): self // Accepter null
+    public function setMessage(?string $message): static
     {
         $this->message = $message;
         return $this;
     }
 
-    public function getCreatedAt(): \DateTime
+    public function getProposedChanges(): array
     {
-        return $this->createdAt;
+        return $this->proposedChanges;
     }
 
-    public function isProcessed(): bool
+    public function setProposedChanges(array $proposedChanges): static
+    {
+        $this->proposedChanges = $proposedChanges;
+        return $this;
+    }
+
+    public function getOriginalValues(): ?array
+    {
+        return $this->originalValues;
+    }
+
+    public function setOriginalValues(?array $originalValues): static
+    {
+        $this->originalValues = $originalValues;
+        return $this;
+    }
+
+    public function isProcessed(): ?bool
     {
         return $this->isProcessed;
     }
 
-    public function setIsProcessed(bool $isProcessed): self
+    public function setIsProcessed(bool $isProcessed): static
     {
         $this->isProcessed = $isProcessed;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(?\DateTimeInterface $createdAt): static
+    {
+        $this->createdAt = $createdAt;
         return $this;
     }
 }
