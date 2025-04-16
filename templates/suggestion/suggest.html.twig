@@ -1,64 +1,70 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Suggérer une modification{% endblock %}
-{% block description %}Une erreur dans une tâche ? Suggérez une modification aux délégués{% endblock %}
-
+{% block title %}Proposer une suggestion pour "{{ assignment.title }}"{% endblock %}
 
 {% block body %}
-    <main class="suggest-assignment padding form">
-        <h1>Suggérer une modification pour "[{{ assignment.subject.code }}] {{ assignment.title }}"</h1>
+    <h1>Proposer une suggestion pour "{{ assignment.title }}"</h1>
 
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="alert alert-{{ label }}">{{ message }}</div>
-            {% endfor %}
-        {% endfor %}
+    {{ form_start(form) }}
+    <div class="form-group">
+        {{ form_label(form.title) }}
+        {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.title) }}
+    </div>
 
-        {{ form_start(form) }}
-        <div>
-            {{ form_label(form.title) }}
-            {{ form_widget(form.title) }}
-            {{ form_errors(form.title) }}
-        </div>
-        <div>
-            {{ form_label(form.description) }}
-            {{ form_widget(form.description) }}
-            {{ form_errors(form.description) }}
-        </div>
-        <div>
-            {{ form_label(form.due_date) }}
-            {{ form_widget(form.due_date) }}
-            {{ form_errors(form.due_date) }}
-        </div>
-        <div>
-            {{ form_label(form.submission_type) }}
-            {{ form_widget(form.submission_type) }}
-            {{ form_errors(form.submission_type) }}
-        </div>
-        <div>
-            {{ form_label(form.submission_url) }}
-            {{ form_widget(form.submission_url) }}
-            {{ form_errors(form.submission_url) }}
-        </div>
-        <div>
-            {{ form_label(form.type) }}
-            {{ form_widget(form.type) }}
-            {{ form_errors(form.type) }}
-        </div>
-        <div>
-            {{ form_label(form.subject) }}
-            {{ form_widget(form.subject) }}
-            {{ form_errors(form.subject) }}
-        </div>
-        <div>
-            {{ form_label(form.message) }}
-            {{ form_widget(form.message) }}
-            {{ form_errors(form.message) }}
-        </div>
-        <div class="row-center">
-            <a class="button" href="{{ path('app_home') }}">Annuler</a>
-            {{ form_widget(form.submit) }}
-        </div>
-        {{ form_end(form) }}
-    </main>
+    <div class="form-group">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.description) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.due_date) }}
+        {{ form_widget(form.due_date, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.due_date) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.type) }}
+        {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.type) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.submission_url) }}
+        {{ form_widget(form.submission_url, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.submission_url) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.submission_other) }}
+        {{ form_widget(form.submission_other, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.submission_other) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.course_location) }}
+        {{ form_widget(form.course_location, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.course_location) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.subject) }}
+        {{ form_widget(form.subject, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.subject) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.message) }}
+        {{ form_widget(form.message, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.message) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_widget(form.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+    </div>
+
+    {{ form_end(form) }}
+
+    <a href="{{ path('app_home') }}" class="btn btn-secondary">Retour</a>
 {% endblock %}
