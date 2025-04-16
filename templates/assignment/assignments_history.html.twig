@@ -132,41 +132,44 @@
         <div class="filter-section">
             <div class="filter-container">
                 <h1>Toutes les tâches</h1>
-                <div class="filter">
-                    <label for="subjectSelect">Sélectionner une matière</label>
-                    <select id="subjectSelect" name="subject">
-                        <option value="">Toutes les matières</option>
-                        {% if subjects is defined and subjects|length > 0 %}
-                            {% for subject in subjects %}
-                                <option value="{{ subject.id }}" {{ subject.id == current_subject ? 'selected' }}>{{ subject.name }}</option>
-                            {% endfor %}
-                        {% else %}
-                            <option disabled>Aucune matière disponible</option>
-                        {% endif %}
-                    </select>
-                </div>
-
-                {% if is_delegate_or_admin %}
+                <div class="filters-container">
                     <div class="filter">
-                        <label for="groupSelect">Sélectionner un groupe</label>
-                        <select id="groupSelect" name="group">
-                            <option value="">Tous les groupes</option>
-                            {% if groups is defined and groups|length > 0 %}
-                                {% for group in groups %}
-                                    <option value="{{ group.id }}" {{ group.id == current_group ? 'selected' }}>{{ group.name }}</option>
+                        <label for="subjectSelect">Sélectionner une matière</label>
+                        <select id="subjectSelect" name="subject">
+                            <option value="">Toutes les matières</option>
+                            {% if subjects is defined and subjects|length > 0 %}
+                                {% for subject in subjects %}
+                                    <option value="{{ subject.id }}" {{ subject.id == current_subject ? 'selected' }}>{{ subject.name }}</option>
                                 {% endfor %}
                             {% else %}
-                                <option disabled>Aucun groupe disponible</option>
+                                <option disabled>Aucune matière disponible</option>
                             {% endif %}
                         </select>
                     </div>
-                {% endif %}
-                <button class="button-grey" onclick="filterAssignments()"><i class="fa-solid fa-filter"></i> Filtrer</button>
+
+                    {% if is_delegate_or_admin %}
+                        <div class="filter">
+                            <label for="groupSelect">Sélectionner un groupe</label>
+                            <select id="groupSelect" name="group">
+                                <option value="">Tous les groupes</option>
+                                {% if groups is defined and groups|length > 0 %}
+                                    {% for group in groups %}
+                                        <option value="{{ group.id }}" {{ group.id == current_group ? 'selected' }}>{{ group.name }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    <option disabled>Aucun groupe disponible</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                    {% endif %}
+                    <button class="button-grey" onclick="filterAssignments()"><i class="fa-solid fa-filter"></i> Filtrer</button>
+                </div>
+
             </div>
             <a class="button back-btn" href="/"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
         </div>
 
-        <div id="assignmentsContainer" class="column-start">
+        <div id="assignmentsContainer">
             {% if assignments|length > 0 %}
                 {% for assignment in assignments %}
                     {% set now = "now"|date('U') %}

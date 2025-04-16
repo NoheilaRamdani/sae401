@@ -340,7 +340,7 @@
                             </div>
                             <div class="content row-spacebtwn">
                                 <div class="task row-start">
-                                    <input type="checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
+                                    <input aria-label="Tâche faite" type="checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
                                     <div class="details column-start">
                                         <p class="check-enabled name">
                                             {{ assignment.title }}
@@ -372,7 +372,7 @@
 
         <div id="eventModal" class="modal-container" style="display: none;">
             <div class="modal">
-                <button id="closeModal"><i class="fa-solid fa-xmark"></i></button>
+                <button id="closeModal" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
                 <h3 id="modalTitle"></h3>
                 <ul>
                     <li id="modalType" class="tag"></li>
@@ -392,7 +392,7 @@
                         </ul>
                     </li>
                     <div class="done">
-                        <input type="checkbox" id="modalCompleted" name="done" />
+                        <input aria-label="Tâche faite" type="checkbox" id="modalCompleted" name="done" />
                         <label for="done">Fait</label>
                     </div>
                 </ul>
@@ -407,10 +407,10 @@
 
         {% if is_granted('ROLE_DELEGATE') %}
             <div class="notif-container" data-suggestions>
-                <h4 class="row-spacebtwn">
-                    <span>Suggestions de modifications</span>
-                    <button id="closeSuggestions"><i class="fa-solid fa-xmark"></i></button>
-                </h4>
+                <h3 class="row-spacebtwn h4">
+                    Suggestions de modifications
+                    <button aria-label="Fermer" id="closeSuggestions"><i class="fa-solid fa-xmark"></i></button>
+                </h3>
                 <ul></ul>
                 <div class="link row-end">
                     <a class="row-end" href="{{ path('app_suggestions') }}"><i class="fa-solid fa-arrow-right"></i> Voir l'historique complet</a>

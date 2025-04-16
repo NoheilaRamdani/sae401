@@ -73,10 +73,10 @@
                                 {% endfor %}
                             </td>
                             <td class="row-start">
-                                <a class="button-modify" href="{{ path('app_edit_assignment', {'id': assignment.id}) }}"><i class="fa-solid fa-pen"></i></a>
+                                <a aria-label="Modifier" class="button-modify" href="{{ path('app_edit_assignment', {'id': assignment.id}) }}"><i class="fa-solid fa-pen"></i></a>
                                 <form method="POST" action="{{ path('delete_assignment', {'id': assignment.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce devoir ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ assignment.id) }}">
-                                    <button class="button-delete" type="submit"><i class="fa-solid fa-trash"></i></button>
+                                    <input aria-label="Supprimer" type="hidden" name="_token" value="{{ csrf_token('delete' ~ assignment.id) }}">
+                                    <button aria-label="Supprimer" class="button-delete" type="submit"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>

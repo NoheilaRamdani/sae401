@@ -76,8 +76,9 @@
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
   border: 0;
+  clip-path: inset(50%);
 }
 
 .group-buttons-container {
@@ -87,7 +88,7 @@
     display: flex;
     background-color: $purplelight;
     width: fit-content;
-    border-radius: 8px;
+    border-radius: 8px 8px 3px 3px;
     overflow: hidden;
     justify-content: flex-end;
     position: relative;
@@ -237,6 +238,7 @@ nav {
   background: white;
 
   .logo {
+    aspect-ratio: 283/150;
     height: 25px;
   }
 
@@ -313,14 +315,14 @@ main {
 
   }
 
-  h2,
-  h3 {
+  h2, .h2,
+  h3, .h3 {
     @extend .font-large;
     font-weight: 700;
   }
 
-  h2,
-  h3,
+  h2, .h2,
+  h3:not(.h4), .h3,
   p {
     color: $maincolor;
   }

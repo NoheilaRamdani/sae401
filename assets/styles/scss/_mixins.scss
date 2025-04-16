@@ -135,14 +135,14 @@
 
 
 
-// 🎯 Génération automatique des classes avec les tailles pour petits écrans
+// Génération automatique des classes avec les tailles pour petits écrans
 @each $name, $size in $font-sizes-small {
   .font-#{$name} {
     font-size: $size;
   }
 }
 
-// 🎯 Mise à jour des classes pour grands écrans
+// Mise à jour des classes pour grands écrans
 @include media-breakpoint-up(md) {
   @each $name, $size in $font-sizes-large {
     .font-#{$name} {

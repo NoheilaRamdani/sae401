@@ -1,19 +1,59 @@
 .all-tasks {
   min-height: 100vh;
-  @include flex-row(flex-start, flex-start);
+  @include flex-column(flex-start, flex-start);
+
+  @include media-breakpoint-up(xl) {
+    flex-direction: row
+  }
 
   .filter-section {
     @include flex-column(flex-start, space-between);
-    height: 100vh;
-    top: 0;
-    position: sticky;
-    padding: 0 25px 25px 0;    width: 30%;
+    padding: 0 25px 25px 0;
+    width: 100%;
 
-    .filter {
+    @include media-breakpoint-up(xl) {
+      position: sticky;
+      width: 30%;
+      top: 0;
+      height: 100vh;
+    }
+
+    .filters-container {
       display: flex;
       flex-direction: column;
-      margin-top: 20px;
+
+      @include media-breakpoint-up(md) {
+        flex-direction: row;
+        gap: 20px;
+      }
+
+      @include media-breakpoint-up(xl) {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .filter {
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+
+        label[for="groupSelect"], label[for="subjectSelect"] {
+          @extend .sr-only;
+
+          @include media-breakpoint-up(xl) {
+            position: static;
+            width: auto;
+            height: auto;
+            margin: 0;
+            overflow: visible;
+            white-space: normal;
+            clip-path: none;
+          }
+        }
+      }
+
     }
+
 
     .button-grey {
       margin-top: 20px
@@ -22,45 +62,60 @@
     .button.back-btn {
       position: fixed;
       bottom: 20px;
-      left: 4%
+      left: 4%;
+      z-index: 100;
     }
   }
 
-
-
   #assignmentsContainer {
     height: 100%;
-    width: 70%;
+    width: 100%;
     gap: 15px;
+    @include flex-column(center, center);
 
+    @include media-breakpoint-up(xl) {
+      width: 70%;
+    }
 
     .task-container {
+      max-width: 970px;
 
-      .task {
-        gap: 2px;
-      }
-      .status {
-        @include tag($purplelight, 0.9em, 10px 20px);
-        color: $purpledark;
-      }
+      .content {
+        align-items: start;
+        flex-direction: column;
+        @include media-breakpoint-up(md) {
+          align-items: center;
+          flex-direction: row;
+        }
 
-      .details {
-        gap: 5px;
-      }
+        .task {
+          gap: 2px;
+        }
+        .status {
+          @include tag($purplelight, 0.9em, 10px 20px);
+          color: $purpledark;
+        }
 
-      .description {
-        @extend .font-small;
-      }
+        .details {
+          gap: 5px;
+        }
 
-      .groupes {
-        @extend .font-extra-small;
-        margin-top: 11px;
+        .description {
+          @extend .font-small;
+        }
 
-        .title {
-          font-weight: 600;
-          font-size: 0.8em;
+        .groupes {
+          @extend .font-extra-small;
+          margin-top: 11px;
+
+          .title {
+            font-weight: 600;
+            font-size: 0.8em;
+          }
         }
       }
+
+
     }
 
   }
