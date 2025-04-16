@@ -49,9 +49,14 @@
 <body>
 <nav class="row-spacebtwn">
     <a class="logo" href="{{ path('app_home') }}"><img class="logo" src="{{ asset('img/logo_intranet_iut_troyes.svg') }}" alt="Logo de l'Intranet de Troyes"></a>
-    <ul class="links">
+    <div class="burger" id="burger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <ul id="navLinks" class="links">
         <li class="row-center {{ app.request.get('_route') == 'app_home' ? 'active' : '' }}">
-            <a class="row-center" href="{{ path('app_home') }}"><i class="fa-solid fa-calendar-days"></i> Calendrier</a></a>
+            <a class="row-center" href="{{ path('app_home') }}"><i class="fa-solid fa-calendar-days"></i> Calendrier</a>
         </li>
         <li class="row-center separator"></li>
         {% if is_granted('ROLE_ADMIN') %}

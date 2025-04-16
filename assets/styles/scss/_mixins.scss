@@ -9,6 +9,18 @@
   }
 }
 
+@mixin media-breakpoint-down($size) {
+  @if map-has-key($breakpoints, $size) {
+    @media (max-width: #{map-get($breakpoints, $size)}) {
+      @content;
+    }
+  } @else {
+    @warn "⚠️ Breakpoint #{$size} not found in map.";
+  }
+}
+
+
+
 
 
 // MIXINS BUTTON ET TAGS //

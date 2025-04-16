@@ -73,6 +73,10 @@
     gap: 15px;
     @include flex-column(center, center);
 
+    @include media-breakpoint-up(lg) {
+     align-items: flex-start;
+    }
+
     @include media-breakpoint-up(xl) {
       width: 70%;
     }
