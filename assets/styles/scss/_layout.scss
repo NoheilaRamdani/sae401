@@ -308,15 +308,13 @@ nav {
     }
 
     li {
-      padding: 10px 0;
+//      padding: 10px 0;
 
       .row-center {
         @extend .font-extra-small;
         gap: 8px;
         color: $purpledark;
         white-space: nowrap;
-        display: flex;
-        align-items: center;
 
         .icon {
           height: 14px;
@@ -333,14 +331,17 @@ nav {
 
       &.active {
         .row-center {
-          color: white;
-          background-color: $purpledark;
-          padding: 8px 12px;
-          border-radius: 14px;
+          @include media-breakpoint-down(xl) {
+            color: white;
+            background-color: $purpledark;
+            border-radius: 14px;
+            padding: 8px 12px;
 
-          .icon path {
-            fill: white;
+            .icon path {
+              fill: white;
+            }
           }
+
         }
       }
     }
@@ -376,8 +377,6 @@ nav {
         .row-center {
           height: 100%;
           width: 100%;
-          display: flex;
-          align-items: center;
           flex-shrink: 0;
         }
 

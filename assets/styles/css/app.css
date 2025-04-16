@@ -364,15 +364,10 @@ nav .links {
 nav .links.active {
   right: 0;
 }
-nav .links li {
-  padding: 10px 0;
-}
 nav .links li .row-center {
   gap: 8px;
   color: #4D3677;
   white-space: nowrap;
-  display: flex;
-  align-items: center;
 }
 nav .links li .row-center .icon {
   height: 14px;
@@ -383,14 +378,16 @@ nav .links li .row-center .icon path {
 nav .links li.separator {
   display: none;
 }
-nav .links li.active .row-center {
-  color: white;
-  background-color: #4D3677;
-  padding: 8px 12px;
-  border-radius: 14px;
-}
-nav .links li.active .row-center .icon path {
-  fill: white;
+@media (max-width: 1200px) {
+  nav .links li.active .row-center {
+    color: white;
+    background-color: #4D3677;
+    border-radius: 14px;
+    padding: 8px 12px;
+  }
+  nav .links li.active .row-center .icon path {
+    fill: white;
+  }
 }
 @media (min-width: 1200px) {
   nav .burger {
@@ -419,8 +416,6 @@ nav .links li.active .row-center .icon path {
   nav .links li .row-center {
     height: 100%;
     width: 100%;
-    display: flex;
-    align-items: center;
     flex-shrink: 0;
   }
   nav .links li.separator {
