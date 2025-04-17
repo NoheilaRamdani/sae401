@@ -66,7 +66,7 @@ class HomeController extends AbstractController
                 'urgencyClass' => $this->getUrgencyClass($hoursUntilDue, $dueDate < $now),
             ];
 
-            if (!$assignment->isCompleted() && ($hoursUntilDue === 24 || $hoursUntilDue === 48)) {
+            if (!$assignment->isCompleted() && ($hoursUntilDue === 24 || $hoursUntilDue === 72)) {
                 $notifications[] = [
                     'title' => $assignment->getTitle(),
                     'hoursUntilDue' => $hoursUntilDue,
@@ -102,10 +102,10 @@ class HomeController extends AbstractController
             return 'expired';
         } elseif ($hoursUntilDue < 24) {
             return 'urgent'; // Moins de 24 heures
-        } elseif ($hoursUntilDue <= 48) {
-            return 'soon'; // Entre 24 et 48 heures
+        } elseif ($hoursUntilDue <= 72) {
+            return 'soon'; // Entre 24 et 72 heures
         }
-        return 'ontime'; // Plus de 48 heures
+        return 'ontime'; // Plus de 72 heures
     }
 
     #[Route('/cal.ics', name: 'ical_user_feed', methods: ['GET'])]

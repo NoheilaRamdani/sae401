@@ -178,8 +178,7 @@
                     {% set daysUntilDue = daysUntilDue|round(0, 'floor') %}
                     {% set hoursUntilDue = (dueDate - now) / (60 * 60) %}
                     {% set hoursUntilDue = hoursUntilDue|round(0, 'floor') %}
-                    {% set urgencyClass = hoursUntilDue < 0 ? 'expired' : (hoursUntilDue < 24 ? 'urgent' : (hoursUntilDue <= 48 ? 'soon' : 'ontime')) %}
-                    <div class="task-container column-start"
+                    {% set urgencyClass = hoursUntilDue < 0 ? 'expired' : (hoursUntilDue < 24 ? 'urgent' : (hoursUntilDue <= 72 ? 'warning' : 'ontime')) %}                    <div class="task-container column-start"
                          data-id="{{ assignment.id }}"
                          data-subject="{{ assignment.subject.id }}"
                          data-groups="{{ assignment.groups|map(group => group.id)|join(',') }}">
