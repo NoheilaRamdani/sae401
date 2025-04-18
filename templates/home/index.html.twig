@@ -3,16 +3,6 @@
 {% block title %}Calendrier{% endblock %}
 {% block description %}Découvrez l’agenda MMI pour gérer vos devoirs et organiser vos tâches !{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        /* S'assurer que le calendrier ne dépasse pas le z-index du bouton */
-        .calendar-container, #calendar {
-            position: relative;
-            z-index: 1 !important; /* Forcer un z-index bas pour le calendrier */
-        }
-    </style>
-{% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
@@ -77,7 +67,7 @@
             window.addEventListener('scroll', adjustTasksContainerPosition);
             adjustTasksContainerPosition();
 
-            // Gestion des tâches complétées
+            // Gestion des tâches complétées dans le panneau "À venir"
             document.querySelectorAll('.event-item').forEach(item => {
                 const checkbox = item.querySelector('input[type="checkbox"]');
                 const checkEnabledElements = item.querySelectorAll('.check-enabled');
@@ -139,7 +129,15 @@
             function showEventDetails(event) {
                 console.log('Event passé à showEventDetails:', event);
 
-                document.getElementById('modalTitle').textContent = event.title || 'Sans titre';
+                const modalTitle = document.getElementById('modalTitle');
+                modalTitle.textContent = event.title || 'Sans titre';
+
+                // Appliquer completed-task si la tâche est terminée
+                if (event.isCompleted) {
+                    modalTitle.classList.add('completed-task');
+                } else {
+                    modalTitle.classList.remove('completed-task');
+                }
 
                 const dueDate = event.start ? new Date(event.start) : null;
                 document.getElementById('modalDate').textContent = dueDate ?
@@ -187,6 +185,53 @@
                 if (editAssignmentLink) {
                     editAssignmentLink.href = `/assignments/${event.id}/edit`;
                 }
+
+                // Écouteur pour la checkbox du modal
+                const modalCompletedCheckbox = document.getElementById('modalCompleted');
+                modalCompletedCheckbox.addEventListener('change', function() {
+                    const eventId = document.getElementById('eventModal').dataset.id;
+                    fetch(`/api/assignments/${eventId}/toggle-complete`, {
+                        method: 'POST'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Mettre à jour l'affichage dans le modal
+                            if (data.isCompleted) {
+                                modalTitle.classList.add('completed-task');
+                            } else {
+                                modalTitle.classList.remove('completed-task');
+                            }
+
+                            // Mettre à jour l'affichage dans le panneau "À venir"
+                            const taskItem = document.querySelector(`.event-item[data-id="${eventId}"]`);
+                            if (taskItem) {
+                                const checkEnabledElements = taskItem.querySelectorAll('.check-enabled');
+                                checkEnabledElements.forEach(element => {
+                                    if (data.isCompleted) {
+                                        element.classList.add('completed-task');
+                                    } else {
+                                        element.classList.remove('completed-task');
+                                    }
+                                });
+                                const taskCheckbox = taskItem.querySelector('input[type="checkbox"]');
+                                if (taskCheckbox) {
+                                    taskCheckbox.checked = data.isCompleted;
+                                }
+                            }
+
+                            // Mettre à jour l'événement dans le calendrier
+                            const calendarEvent = calendar.getEventById(eventId);
+                            if (calendarEvent) {
+                                calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de la mise à jour de l\'état:', error);
+                            alert('Impossible de mettre à jour l\'état de la tâche.');
+                            // Revenir à l'état précédent en cas d'erreur
+                            modalCompletedCheckbox.checked = !modalCompletedCheckbox.checked;
+                        });
+                });
 
                 document.getElementById('eventModal').style.display = 'flex';
             }
@@ -398,5 +443,6 @@
                 <span class="sr-only">Afficher les suggestions</span>
             </button>
         {% endif %}
+
     </main>
 {% endblock %}

@@ -1,0 +1,37 @@
+extends 'base.html.twig'
+
+{% block title %}Nouveau devoir ajouté{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/email.css') }}">
+{% endblock %}
+
+{% block body %}
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Nouveau devoir ajouté</h1>
+    </div>
+    <div class="content">
+        <p>Bonjour {{ user.firstName }} {{ user.lastName }},</p>
+        <p>Un nouveau devoir a été ajouté à votre agenda :</p>
+        <h2>{{ assignment.title }}</h2>
+        <p><strong>Matière :</strong> [{{ assignment.subject.code }}] {{ assignment.subject.name }}</p>
+        <p><strong>Type :</strong> {{ assignment.type|capitalize }}</p>
+        <p><strong>Date d'échéance :</strong> {{ assignment.dueDate|date('d/m/Y H:i') }}</p>
+        {% if assignment.description %}
+            <p><strong>Description :</strong> {{ assignment.description }}</p>
+        {% endif %}
+        {% if assignment.submissionUrl %}
+            <p><strong>URL de rendu :</strong> <a href="{{ assignment.submissionUrl }}">{{ assignment.submissionUrl }}</a></p>
+        {% endif %}
+        <p>Vous pouvez consulter ce devoir dans votre calendrier :</p>
+        <a href="{{ absolute_url(path('app_home')) }}" class="button">Voir le calendrier</a>
+    </div>
+    <div class="footer">
+        <p>Ceci est un email automatique, merci de ne pas y répondre.</p>
+        <p>MMI Agenda &copy; {{ "now"|date("Y") }}</p>
+    </div>
+</div>
+</body>
+{% endblock %}

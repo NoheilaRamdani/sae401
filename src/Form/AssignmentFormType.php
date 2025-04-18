@@ -51,7 +51,7 @@ class AssignmentFormType extends AbstractType
                 'required' => false,
             ])
             ->add('course_location', TextType::class, [
-                'label' => 'Lieu du cours',
+                'label' => 'Support du cours',
                 'required' => false,
             ])
             ->add('subject', EntityType::class, [
@@ -65,6 +65,7 @@ class AssignmentFormType extends AbstractType
                 'class' => Group::class,
                 'choice_label' => 'name',
                 'multiple' => true,
+                'expanded' => true,
                 'required' => true,
             ]);
     }
