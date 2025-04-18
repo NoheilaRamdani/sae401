@@ -3,17 +3,6 @@
 {% block title %}Calendrier{% endblock %}
 {% block description %}Découvrez l’agenda MMI pour gérer vos devoirs et organiser vos tâches !{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        /* S'assurer que le calendrier ne dépasse pas le z-index du bouton */
-        .calendar-container, #calendar {
-            position: relative;
-            z-index: 1 !important; /* Forcer un z-index bas pour le calendrier */
-        }
-    </style>
-{% endblock %}
-
 {% block javascripts %}
     {{ parent() }}
     <script>
@@ -44,9 +33,20 @@
                             console.error('Erreur lors de la récupération des détails:', error);
                             alert('Impossible de charger les détails de l\'événement.');
                         });
+                },
+                eventDidMount: function(info) {
+                    info.el.classList.add('check-enabled');
+                    info.el.dataset.id = info.event.id; // Ajouter data-id pour la sélection
                 }
             });
             calendar.render();
+
+            // Initialiser la gestion des tâches terminées
+            initTaskManager({
+                selector: '.task-container',
+                hasCalendar: true,
+                calendar: calendar
+            });
 
             document.querySelectorAll(".group-btn").forEach(button => {
                 button.addEventListener("click", function () {
@@ -76,132 +76,6 @@
 
             window.addEventListener('scroll', adjustTasksContainerPosition);
             adjustTasksContainerPosition();
-
-            // Gestion des tâches complétées
-            document.querySelectorAll('.event-item').forEach(item => {
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                const checkEnabledElements = item.querySelectorAll('.check-enabled');
-                if (checkbox && checkEnabledElements.length > 0) {
-                    if (checkbox.checked) {
-                        checkEnabledElements.forEach(element => {
-                            element.classList.add('completed-task');
-                        });
-                    }
-
-                    checkbox.addEventListener('change', function(e) {
-                        e.stopPropagation();
-                        const eventId = this.dataset.id;
-                        fetch(`/api/assignments/${eventId}/toggle-complete`, { method: 'POST' })
-                            .then(response => response.json())
-                            .then(data => {
-                                const calendarEvent = calendar.getEventById(eventId);
-                                if (calendarEvent) {
-                                    calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
-                                }
-
-                                checkEnabledElements.forEach(element => {
-                                    if (data.isCompleted) {
-                                        element.classList.add('completed-task');
-                                    } else {
-                                        element.classList.remove('completed-task');
-                                    }
-                                });
-                            });
-                    });
-                }
-
-                item.addEventListener('click', function(e) {
-                    if (e.target.tagName === 'INPUT') {
-                        e.stopPropagation();
-                        return;
-                    }
-                    const eventId = this.dataset.id;
-                    fetch(`/api/assignments/${eventId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Erreur API: ' + response.status);
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            console.log('ID cliqué:', eventId);
-                            console.log('Data from API:', data);
-                            showEventDetails(data);
-                        })
-                        .catch(error => {
-                            console.error('Erreur lors de la récupération des détails:', error);
-                            alert('Impossible de charger les détails de l\'événement.');
-                        });
-                });
-            });
-
-            // Fonction pour afficher les détails dans le modal
-            function showEventDetails(event) {
-                console.log('Event passé à showEventDetails:', event);
-
-                document.getElementById('modalTitle').textContent = event.title || 'Sans titre';
-
-                const dueDate = event.start ? new Date(event.start) : null;
-                document.getElementById('modalDate').textContent = dueDate ?
-                    `${String(dueDate.getUTCDate()).padStart(2, '0')}/${String(dueDate.getUTCMonth() + 1).padStart(2, '0')}/${dueDate.getUTCFullYear()} - ${String(dueDate.getUTCHours()).padStart(2, '0')}:${String(dueDate.getUTCMinutes()).padStart(2, '0')}` :
-                    'Date inconnue';
-
-                document.getElementById('modalDescription').textContent = event.description || 'Aucune description';
-                document.getElementById('modalSubjectCode').textContent = event.subject?.code || 'Non spécifié';
-                document.getElementById('modalSubjectName').textContent = event.subject?.name || 'Non spécifié';
-
-                const submissionUrlEl = document.getElementById('modalSubmissionUrl');
-                if (event.submissionUrl) {
-                    submissionUrlEl.innerHTML = `<a href="${event.submissionUrl}" target="_blank">${event.submissionUrl}</a>`;
-                } else {
-                    submissionUrlEl.textContent = 'Aucune URL de rendu';
-                }
-
-                // Afficher le type (examen, oral, devoir)
-                document.getElementById('modalType').textContent = event.type ?
-                    event.type.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') :
-                    'Non spécifié';
-
-                // Afficher submissionOther si présent
-                const submissionOtherContainer = document.getElementById('modalSubmissionOtherContainer');
-                if (event.submissionOther) {
-                    document.getElementById('modalSubmissionOther').textContent = event.submissionOther;
-                    submissionOtherContainer.style.display = 'block';
-                } else {
-                    submissionOtherContainer.style.display = 'none';
-                }
-
-                // Afficher courseLocation si présent
-                const courseLocationContainer = document.getElementById('modalCourseLocationContainer');
-                if (event.courseLocation) {
-                    document.getElementById('modalCourseLocation').textContent = event.courseLocation;
-                    courseLocationContainer.style.display = 'block';
-                } else {
-                    courseLocationContainer.style.display = 'none';
-                }
-
-                document.getElementById('modalCompleted').checked = event.isCompleted || false;
-                document.getElementById('eventModal').dataset.id = event.id;
-
-                const editAssignmentLink = document.getElementById('editAssignment');
-                if (editAssignmentLink) {
-                    editAssignmentLink.href = `/assignments/${event.id}/edit`;
-                }
-
-                document.getElementById('eventModal').style.display = 'flex';
-            }
-
-            const suggestModificationBtn = document.getElementById('suggestModification');
-            if (suggestModificationBtn) {
-                suggestModificationBtn.addEventListener('click', function() {
-                    const eventId = document.getElementById('eventModal').dataset.id;
-                    window.location.href = `/assignment/${eventId}/suggest`;
-                });
-            }
-
-            document.getElementById('closeModal').addEventListener('click', function() {
-                document.getElementById('eventModal').style.display = 'none';
-            });
 
             const notifications = {{ notifications|json_encode|raw }};
             notifications.forEach(notification => {
@@ -281,7 +155,6 @@
         });
     </script>
 {% endblock %}
-
 {% block body %}
     <main class="home">
         <div class="calendar-container">

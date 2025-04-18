@@ -33,6 +33,9 @@
     }
 
     #calendar {
+      position: relative;
+      z-index: 1 !important;
+
       .fc .fc-toolbar.fc-header-toolbar {
         width: 100%;
       }

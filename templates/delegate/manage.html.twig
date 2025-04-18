@@ -37,48 +37,49 @@
                     <span>-</span>
                     <p>Délégués actifs : {{ groupData.activeDelegates|length }}/2</p>
                 </div>
-
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Nom</th>
-                        <th>Prénom</th>
-                        <th>Email</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for userData in groupData.users %}
-                        {% if userData.isDelegate %}
-                            <tr class="is-delegate">
-                        {% else %}
-                            <tr>
-                        {% endif %}                            <td>{{ userData.user.lastName }}</td>
-                            <td>{{ userData.user.firstName }}</td>
-                            <td>{{ userData.user.email }}</td>
-                            <td>
-                                {% if userData.isDelegate %}
-                                    <span>Délégué</span>
-                                {% else %}
-                                    <span>Non délégué</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if userData.isDelegate %}
-                                <a class="button delegate-btn" href="{{ path('delegate_toggle', {'userId': userData.user.id, 'groupId': groupData.group.id}) }}">
-                                Retirer
-                                </a>
-                                {% else %}
-                                    <a class="button" href="{{ path('delegate_toggle', {'userId': userData.user.id, 'groupId': groupData.group.id}) }}">
-                                        Désigner
-                                    </a>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+<div class="has-table">
+    <table>
+        <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for userData in groupData.users %}
+            {% if userData.isDelegate %}
+                <tr class="is-delegate">
+            {% else %}
+                <tr>
+            {% endif %}                            <td>{{ userData.user.lastName }}</td>
+            <td>{{ userData.user.firstName }}</td>
+            <td>{{ userData.user.email }}</td>
+            <td>
+                {% if userData.isDelegate %}
+                    <span>Délégué</span>
+                {% else %}
+                    <span>Non délégué</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if userData.isDelegate %}
+                    <a class="button delegate-btn" href="{{ path('delegate_toggle', {'userId': userData.user.id, 'groupId': groupData.group.id}) }}">
+                        Retirer
+                    </a>
+                {% else %}
+                    <a class="button" href="{{ path('delegate_toggle', {'userId': userData.user.id, 'groupId': groupData.group.id}) }}">
+                        Désigner
+                    </a>
+                {% endif %}
+            </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
             </div>
         {% endfor %}
 

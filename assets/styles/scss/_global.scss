@@ -14,6 +14,11 @@ $purplemedium : #9C36B5;
 $purplelight : #F0B5FF;
 $yellow : #F7B000;
 
+//$sea-green: #138c66ff;
+//$bice-blue: #1d6993ff;
+//$grape: #5221adff;
+//$rose-red: #c5285fff;
+
 //TIME COLORS
 $urgent : #DC3545;
 $soon : #FFA600;
@@ -25,7 +30,7 @@ $font-sizes-small: (
         "large": clamp(1.8rem, max(3vh, 1.5vw), 3.5rem),
         "base": clamp(0.85rem, calc(0.35vw + 0.65rem), 1.2rem),
         "small": clamp(0.85rem, calc(0.45vw + 0.5rem), 1.2rem),
-        "extra-small": clamp(0.76rem, calc(0.7vw + 0.15rem), 1.2rem)
+        "extra-small": clamp(0.85rem, calc(0.7vw + 0.15rem), 1.2rem)
 );
 
 // Font sizes pour large screens
@@ -33,7 +38,7 @@ $font-sizes-large: (
         "large": clamp(1.5rem, calc(0.6vw + 1rem), 2.5rem),
         "base": clamp(0.9rem, calc(0.35vw + 0.65rem), 1.2rem),
         "small": clamp(0.85rem, calc(0.45vw + 0.5rem), 1.2rem),
-        "extra-small": clamp(0.73rem, calc(0.7vw + 0.15rem), 1.2rem)
+        "extra-small": clamp(0.8rem, calc(0.7vw + 0.15rem), 1.2rem)
 );
 
 // Breakpoints
