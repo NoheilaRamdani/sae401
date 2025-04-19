@@ -28,10 +28,10 @@
             </div>
             <div class="assignment">
                 {{ form_label(form.groups) }}
-                <div class="group row-start">
+                <div class="group row-start" style="flex-wrap: wrap; gap: 15px;">
                     {% for group in form.groups %}
-                        <div class="row-start group">
-                            {{ form_widget(group) }}
+                        <div class="row-start group" style="gap: 5px;">
+                            {{ form_widget(group, {'attr': {'class': 'form-checkbox'}}) }}
                             {{ form_label(group) }}
                         </div>
                     {% endfor %}
@@ -101,11 +101,9 @@
                 console.log("Valeur actuelle de type :", typeSelect.value);
                 if (typeSelect.value === 'devoir') {
                     submissionOtherContainer.style.display = 'block';
-                    submissionOtherInput.required = true;
                 } else {
                     submissionOtherContainer.style.display = 'none';
-                    submissionOtherInput.required = false;
-                    submissionOtherInput.value = '';
+                    submissionOtherInput.value = ''; // Réinitialise pour un nouveau formulaire
                 }
             }
 
