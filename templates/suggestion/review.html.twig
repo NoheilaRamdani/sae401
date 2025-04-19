@@ -1,28 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Revoir la suggestion - {{ assignment.title }}{% endblock %}
-{% block description %}Une erreur potentielle dans un tâche ? Consulter la suggestion de modification{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .difference-table th, .difference-table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-        }
-        .current-value {
-            color: #DC3545;
-            text-decoration: line-through;
-        }
-        .proposed-value {
-            color: #28A745;
-        }
-        .no-changes {
-            color: #666;
-            font-style: italic;
-        }
-    </style>
-{% endblock %}
+{% block description %}Une erreur potentielle dans une tâche ? Consulter la suggestion de modification{% endblock %}
 
 {% block body %}
     <main class="modal-container padding container row-center has-table">
@@ -49,55 +28,53 @@
                 'title': {
                     'label': 'Titre',
                     'current': suggestion.originalValues.title|default(assignment.title|default('')),
-                    'proposed': 'title' in suggestion.proposedChanges ? suggestion.proposedChanges.title|default('') : assignment.title|default('')
+                    'proposed': suggestion.proposedChanges.title|default(assignment.title|default(''))
                 },
                 'description': {
                     'label': 'Description',
-                    'current': suggestion.originalValues.description|default(assignment.description|default('Aucune')),
-                    'proposed': 'description' in suggestion.proposedChanges ? suggestion.proposedChanges.description|default('Aucune') : assignment.description|default('Aucune')
+                    'current': suggestion.originalValues.description|default(assignment.description|default('')),
+                    'proposed': suggestion.proposedChanges.description|default(assignment.description|default(''))
                 },
                 'due_date': {
                     'label': 'Date limite',
-                    'current': suggestion.originalValues.due_date ? (suggestion.originalValues.due_date|date('d/m/Y H:i')) : (assignment.dueDate ? assignment.dueDate|date('d/m/Y H:i') : 'Non défini'),
-                    'proposed': 'due_date' in suggestion.proposedChanges ? (suggestion.proposedChanges.due_date ? suggestion.proposedChanges.due_date|date('d/m/Y H:i') : 'Non défini') : (assignment.dueDate ? assignment.dueDate|date('d/m/Y H:i') : 'Non défini')
+                    'current': suggestion.originalValues.due_date|default(assignment.dueDate ? assignment.dueDate|date('Y-m-d H:i:s') : ''),
+                    'proposed': suggestion.proposedChanges.due_date|default(assignment.dueDate ? assignment.dueDate|date('Y-m-d H:i:s') : '')
                 },
                 'type': {
                     'label': 'Type',
-                    'current': suggestion.originalValues.type|default(assignment.type|default('Aucun')),
-                    'proposed': 'type' in suggestion.proposedChanges ? suggestion.proposedChanges.type|default('Aucun') : assignment.type|default('Aucun')
+                    'current': suggestion.originalValues.type|default(assignment.type|default('')),
+                    'proposed': suggestion.proposedChanges.type|default(assignment.type|default(''))
                 },
                 'submission_url': {
                     'label': 'URL de rendu',
-                    'current': suggestion.originalValues.submission_url|default(assignment.submissionUrl|default('Aucune')),
-                    'proposed': 'submission_url' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_url|default('Aucune') : assignment.submissionUrl|default('Aucune')
+                    'current': suggestion.originalValues.submission_url|default(assignment.submissionUrl|default('')),
+                    'proposed': suggestion.proposedChanges.submission_url|default(assignment.submissionUrl|default(''))
                 },
                 'submission_other': {
                     'label': 'Autres instructions',
-                    'current': suggestion.originalValues.submission_other|default(assignment.submissionOther|default('Aucune')),
-                    'proposed': 'submission_other' in suggestion.proposedChanges ? suggestion.proposedChanges.submission_other|default('Aucune') : assignment.submissionOther|default('Aucune')
+                    'current': suggestion.originalValues.submission_other|default(assignment.submissionOther|default('')),
+                    'proposed': suggestion.proposedChanges.submission_other|default(assignment.submissionOther|default(''))
                 },
                 'course_location': {
                     'label': 'Lieu du cours',
-                    'current': suggestion.originalValues.course_location|default(assignment.courseLocation|default('Aucun')),
-                    'proposed': 'course_location' in suggestion.proposedChanges ? suggestion.proposedChanges.course_location|default('Aucun') : assignment.courseLocation|default('Aucun')
+                    'current': suggestion.originalValues.course_location|default(assignment.courseLocation|default('')),
+                    'proposed': suggestion.proposedChanges.course_location|default(assignment.courseLocation|default(''))
                 },
                 'subject_id': {
                     'label': 'Matière',
-                    'current': suggestion.originalValues.subject_id ? (entity_manager.getRepository('App\\Entity\\Subject').find(suggestion.originalValues.subject_id).name) : (assignment.subject ? assignment.subject.name : 'Non défini'),
+                    'current': originalSubject ? originalSubject.name : (assignment.subject ? assignment.subject.name : 'Non défini'),
                     'proposed': proposedSubject ? proposedSubject.name : (assignment.subject ? assignment.subject.name : 'Non défini')
                 }
             } %}
 
             {% for field, data in fields %}
-                {% set currentNormalized = data.current == 'Aucune' or data.current == 'Non défini' ? '' : data.current %}
-                {% set proposedNormalized = data.proposed == 'Aucune' or data.proposed == 'Non défini' ? '' : data.proposed %}
-
-                {% if currentNormalized != proposedNormalized %}
+                {# Comparer les valeurs directement, en évitant une normalisation excessive #}
+                {% if data.current != data.proposed %}
                     {% set hasChanges = true %}
                     {% set differences = differences|merge([{
                         'field': data.label,
-                        'current': data.current,
-                        'proposed': data.proposed
+                        'current': data.current == '' ? 'Non défini' : data.current,
+                        'proposed': data.proposed == '' ? 'Non défini' : data.proposed
                     }]) %}
                 {% endif %}
             {% endfor %}
@@ -126,7 +103,7 @@
             {% endif %}
 
             {% if not suggestion.isProcessed %}
-                {{ form_start(form) }}
+                {{ form_start(form, {'attr': {'class': 'form'}}) }}
                 <div class="row-start">
                     {{ form_widget(form.approve, {'attr': {'class': 'button btn btn-success'}}) }}
                     {{ form_widget(form.reject, {'attr': {'class': 'button btn btn-danger'}}) }}

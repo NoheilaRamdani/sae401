@@ -12,9 +12,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Psr\Log\LoggerInterface;
 
 class SuggestionController extends AbstractController
 {
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
     #[Route('/assignment/{id}/suggest', name: 'suggest_assignment', methods: ['GET', 'POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function suggestAssignment(int $id, Request $request, EntityManagerInterface $entityManager): Response
@@ -47,7 +55,7 @@ class SuggestionController extends AbstractController
             $proposedChanges = [];
             $originalValues = [];
 
-            // Normalisation pour éviter les problèmes avec null ou chaînes vides
+            // Normalisation pour gérer null et chaînes vides
             $normalize = function ($value) {
                 return $value === null ? '' : $value;
             };
@@ -56,7 +64,7 @@ class SuggestionController extends AbstractController
             $submittedTitle = $normalize($data['title']);
             $currentTitle = $normalize($assignment->getTitle());
             if ($submittedTitle !== $currentTitle) {
-                $proposedChanges['title'] = $data['title'];
+                $proposedChanges['title'] = $submittedTitle;
                 $originalValues['title'] = $currentTitle;
             }
 
@@ -64,23 +72,23 @@ class SuggestionController extends AbstractController
             $submittedDescription = $normalize($data['description']);
             $currentDescription = $normalize($assignment->getDescription());
             if ($submittedDescription !== $currentDescription) {
-                $proposedChanges['description'] = $data['description'];
+                $proposedChanges['description'] = $submittedDescription;
                 $originalValues['description'] = $currentDescription;
             }
 
             // Date limite
-            $submittedDueDate = $data['due_date'];
-            $currentDueDate = $assignment->getDueDate();
-            if ($submittedDueDate != $currentDueDate) {
-                $proposedChanges['due_date'] = $submittedDueDate ? $submittedDueDate->format('Y-m-d H:i:s') : null;
-                $originalValues['due_date'] = $currentDueDate ? $currentDueDate->format('Y-m-d H:i:s') : null;
+            $submittedDueDate = $data['due_date'] ? $data['due_date']->format('Y-m-d H:i:s') : '';
+            $currentDueDate = $assignment->getDueDate() ? $assignment->getDueDate()->format('Y-m-d H:i:s') : '';
+            if ($submittedDueDate !== $currentDueDate) {
+                $proposedChanges['due_date'] = $submittedDueDate;
+                $originalValues['due_date'] = $currentDueDate;
             }
 
             // Type
             $submittedType = $normalize($data['type']);
             $currentType = $normalize($assignment->getType());
             if ($submittedType !== $currentType) {
-                $proposedChanges['type'] = $data['type'];
+                $proposedChanges['type'] = $submittedType;
                 $originalValues['type'] = $currentType;
             }
 
@@ -88,7 +96,7 @@ class SuggestionController extends AbstractController
             $submittedSubmissionUrl = $normalize($data['submission_url']);
             $currentSubmissionUrl = $normalize($assignment->getSubmissionUrl());
             if ($submittedSubmissionUrl !== $currentSubmissionUrl) {
-                $proposedChanges['submission_url'] = $data['submission_url'];
+                $proposedChanges['submission_url'] = $submittedSubmissionUrl;
                 $originalValues['submission_url'] = $currentSubmissionUrl;
             }
 
@@ -96,7 +104,7 @@ class SuggestionController extends AbstractController
             $submittedSubmissionOther = $normalize($data['submission_other']);
             $currentSubmissionOther = $normalize($assignment->getSubmissionOther());
             if ($submittedSubmissionOther !== $currentSubmissionOther) {
-                $proposedChanges['submission_other'] = $data['submission_other'];
+                $proposedChanges['submission_other'] = $submittedSubmissionOther;
                 $originalValues['submission_other'] = $currentSubmissionOther;
             }
 
@@ -104,16 +112,16 @@ class SuggestionController extends AbstractController
             $submittedCourseLocation = $normalize($data['course_location']);
             $currentCourseLocation = $normalize($assignment->getCourseLocation());
             if ($submittedCourseLocation !== $currentCourseLocation) {
-                $proposedChanges['course_location'] = $data['course_location'];
+                $proposedChanges['course_location'] = $submittedCourseLocation;
                 $originalValues['course_location'] = $currentCourseLocation;
             }
 
             // Matière
             $submittedSubjectId = $data['subject'] ? $data['subject']->getId() : null;
             $currentSubjectId = $assignment->getSubject() ? $assignment->getSubject()->getId() : null;
+            $originalValues['subject_id'] = $currentSubjectId; // Toujours inclure dans originalValues
             if ($submittedSubjectId !== $currentSubjectId) {
                 $proposedChanges['subject_id'] = $submittedSubjectId;
-                $originalValues['subject_id'] = $currentSubjectId;
             }
 
             if (empty($proposedChanges)) {
@@ -132,6 +140,14 @@ class SuggestionController extends AbstractController
             $suggestion->setOriginalValues($originalValues);
             $suggestion->setIsProcessed(false);
             $suggestion->setCreatedAt(new \DateTime());
+
+            // Journalisation pour déboguer
+            $this->logger->debug('Suggestion créée', [
+                'assignment_id' => $assignment->getId(),
+                'proposedChanges' => $proposedChanges,
+                'originalValues' => $originalValues,
+                'submittedData' => $data,
+            ]);
 
             $entityManager->persist($suggestion);
             $entityManager->flush();
@@ -285,6 +301,22 @@ class SuggestionController extends AbstractController
             $proposedSubject = $entityManager->getRepository(Subject::class)->find($proposedChanges['subject_id']);
         }
 
+        // Charger la matière originale, si elle existe dans originalValues
+        $originalValues = $suggestion->getOriginalValues();
+        $originalSubject = null;
+        if (isset($originalValues['subject_id'])) {
+            $originalSubject = $entityManager->getRepository(Subject::class)->find($originalValues['subject_id']);
+        }
+
+        // Journalisation pour déboguer les données envoyées au template
+        $this->logger->debug('Données pour review.html.twig', [
+            'suggestion_id' => $suggestion->getId(),
+            'proposedChanges' => $proposedChanges,
+            'originalValues' => $originalValues,
+            'proposedSubject' => $proposedSubject ? $proposedSubject->getName() : null,
+            'originalSubject' => $originalSubject ? $originalSubject->getName() : null
+        ]);
+
         $form = $this->createFormBuilder()
             ->add('approve', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, [
                 'label' => 'Valider',
@@ -349,9 +381,9 @@ class SuggestionController extends AbstractController
             'assignment' => $assignment,
             'form' => $form->createView(),
             'proposedSubject' => $proposedSubject,
+            'originalSubject' => $originalSubject, // Nouvelle variable passée au template
         ]);
     }
-
     #[Route('/api/suggestions/{id}/toggle-processed', name: 'api_toggle_suggestion_processed', methods: ['POST'])]
     #[IsGranted('ROLE_DELEGATE')]
     public function toggleSuggestionProcessed(int $id, EntityManagerInterface $entityManager): JsonResponse
@@ -408,5 +440,4 @@ class SuggestionController extends AbstractController
 
         return $this->json($data);
     }
-
 }

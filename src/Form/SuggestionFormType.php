@@ -79,6 +79,9 @@ class SuggestionFormType extends AbstractType
                 'label' => 'Soumettre',
                 'attr' => ['class' => 'btn btn-primary'],
             ]);
+
+        // Ajouter la classe 'form' au formulaire
+        $builder->setAttribute('attr', array_merge($builder->getAttribute('attr') ?? [], ['class' => 'form']));
     }
 
     public function configureOptions(OptionsResolver $resolver): void

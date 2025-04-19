@@ -70,7 +70,7 @@
                     // Calculer la position de la nav par rapport à la fenêtre
                     const navRect = nav.getBoundingClientRect();
 
-                    // La hauteur visible de la nav est la différence entre la position en bas de la nav et la position en haut de la fenêtre
+                    // La hauteur visible de la nav est la séance entre la position en bas de la nav et la position en haut de la fenêtre
                     const navVisibleHeight = Math.max(0, Math.min(navRect.bottom, window.innerHeight) - Math.max(0, navRect.top));
 
                     // Appliquer le padding-top à .tasks-container en fonction de la hauteur visible de la nav
@@ -100,14 +100,15 @@
             const suggestionsBox = document.querySelector('div[data-suggestions]');
             const showSuggestionsBtn = document.querySelector('button[data-show-suggestions]');
             if (suggestionsBox && showSuggestionsBtn) {
-                const isHidden = localStorage.getItem('suggestionsBoxHidden') === 'true';
-                if (isHidden) {
-                    suggestionsBox.style.display = 'none';
-                    showSuggestionsBtn.style.display = 'flex';
-                } else {
-                    suggestionsBox.style.display = 'block';
-                    showSuggestionsBtn.style.display = 'none';
-                }
+                // Fermer le popup par défaut
+                suggestionsBox.style.display = 'none';
+                showSuggestionsBtn.style.display = 'flex';
+                localStorage.setItem('suggestionsBoxHidden', 'true');
+
+                // Ajouter la bulle pour le nombre de suggestions
+                const suggestionCountBadge = document.createElement('span');
+                suggestionCountBadge.classList.add('suggestion-count-badge');
+                showSuggestionsBtn.appendChild(suggestionCountBadge);
 
                 document.getElementById('closeSuggestions').addEventListener('click', function() {
                     suggestionsBox.style.display = 'none';
@@ -142,14 +143,23 @@
                                 suggestionsList.appendChild(li);
                             });
 
+                            // Mettre à jour la bulle avec le nombre de suggestions
+                            suggestionCountBadge.textContent = data.length;
+                            suggestionCountBadge.style.display = data.length > 0 ? 'inline-block' : 'none';
+
                             if (data.length === 0) {
                                 suggestionsBox.style.display = 'none';
                                 showSuggestionsBtn.style.display = 'flex';
                                 localStorage.setItem('suggestionsBoxHidden', 'true');
                             } else {
-                                suggestionsBox.style.display = 'block';
-                                showSuggestionsBtn.style.display = 'none';
-                                localStorage.setItem('suggestionsBoxHidden', 'false');
+                                // Respecter l'état actuel (fermé par défaut)
+                                if (localStorage.getItem('suggestionsBoxHidden') === 'true') {
+                                    suggestionsBox.style.display = 'none';
+                                    showSuggestionsBtn.style.display = 'flex';
+                                } else {
+                                    suggestionsBox.style.display = 'block';
+                                    showSuggestionsBtn.style.display = 'none';
+                                }
                             }
                         })
                         .catch(error => console.error('Erreur lors du chargement des suggestions :', error));
@@ -166,6 +176,7 @@
         });
     </script>
 {% endblock %}
+
 {% block body %}
     <main class="home">
         <div class="calendar-container">
@@ -195,7 +206,7 @@
                         {% set daysUntilDue = daysUntilDue|round(0, 'floor') %}
 
                         <div data-id="{{ assignment.id }}" class="event-item task-container column-start {{ data.urgencyClass }}">
-                            <span class="color" style="background-color: {{ data.color }}"></span>
+                            <span class="color" style="background-color: {{ assignment.subject.color|default('#CCCCCC') }}"></span>
                             <div class="top row-start">
                                 <p class="date">{{ assignment.dueDate|date('d/m/Y - H:i') }}</p>
                                 <p class="tag-small">{{ assignment.type|capitalize }}</p>

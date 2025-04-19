@@ -703,6 +703,24 @@ table:not(#calendar table) {
 
 }
 
+.suggestion-count-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: $urgent; // Utilise votre variable $urgent pour la couleur rouge
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  line-height: 1;
+  min-width: 18px;
+  text-align: center;
+  display: none;
+}
+    // Afficher le badge si le nombre de suggestions est supérieur à 0
+    &.has-suggestions {
+        display: inline-block;
+    }
 
 .form {
   min-width: 750px;
@@ -757,42 +775,4 @@ table:not(#calendar table) {
     font-size: 0.9rem;
     margin-top: 0.3rem;
   }
-
-
-  .button {
-    margin-top: 30px;
-    width: 100%;
-  }
-
-  // Champ conditionnel pour le mode de rendu
-  #submission_other_container {
-    display: none;
-  }
-  .container {
-    &.row-start {
-      gap: 50px;
-
-      .assignment {
-        .row-start {
-          gap: 15px;
-          .row-start {
-            gap: 10px;
-          }
-        }
-      }
-
-    }
-  }
-
-
-
-  .buttons {
-    gap: 15px;
-  }
-
-
 }
-
-
-
-
