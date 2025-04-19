@@ -1,0 +1,34 @@
+<div id="eventModal" class="modal-container" style="display: none;">
+    <div class="modal">
+        <button id="closeModal" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+        <h3 id="modalTitle"></h3>
+        <ul>
+            <li id="modalType" class="tag"></li>
+            <li class="title"><i class="fa-solid fa-bookmark"></i> Matière</li>
+            <li><span id="modalSubjectCode"></span> - <span id="modalSubjectName"></span></li>
+            <li class="title"><i class="fa-solid fa-calendar-day"></i> Date</li>
+            <li id="modalDate"></li>
+            <li class="title"><i class="fa-solid fa-file-lines"></i> Description</li>
+            <li id="modalDescription"></li>
+            <li class="plateformes">
+                <span class="title"><i class="fa-solid fa-layer-group"></i> Consignes et rendu</span>
+                <ul>
+                    <li>- <span class="subtitle">Sujet</span> : <span id="modalSubmissionType"></span></li>
+                    <li>- <span class="subtitle">Mode de rendu</span> : <span id="modalSubmissionInstruction"></span></li>
+                    <li id="modalSubmissionOtherContainer" style="display: none;"><span class="subtitle">Précision</span> : <span id="modalSubmissionOther"></span></li>
+                    <li>- <span class="subtitle">URL de rendu</span> : <span id="modalSubmissionUrl"></span></li>
+                </ul>
+            </li>
+            <div class="done">
+                <input aria-label="Tâche faite" type="checkbox" id="modalCompleted" name="done" />
+                <label for="done">Fait</label>
+            </div>
+        </ul>
+
+        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_DELEGATE') %}
+            <a class="button" href="" id="editAssignment"><i class="fa-solid fa-pencil"></i> Modifier le devoir</a>
+        {% else %}
+            <button class="button" id="suggestModification"><i class="fa-solid fa-pencil"></i> Suggérer une modification</button>
+        {% endif %}
+    </div>
+</div>

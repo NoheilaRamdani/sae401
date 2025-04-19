@@ -1,57 +1,437 @@
+<<<<<<< HEAD
 {% extends 'base.html.twig' %}
 
-{% block title %}Tâches{% endblock %}
-{% block description %}Retrouvez ici toutes vos tâches et suivez votre progression.{% endblock %}
+{% block title %}Calendrier{% endblock %}
+{% block description %}Découvrez l’agenda MMI pour gérer vos devoirs et organiser vos tâches !{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                buttonText: {
+                    today: 'Aujourd\'hui'
+                },
+                events: '/api/assignments' + (new URLSearchParams(window.location.search).toString() ? '?' + new URLSearchParams(window.location.search).toString() : ''),
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    fetch(`/api/assignments/${info.event.id}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erreur API: ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('ID cliqué:', info.event.id);
+                            console.log('Data from API:', data);
+                            showEventDetails(data);
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de la récupération des détails:', error);
+                            alert('Impossible de charger les détails de l\'événement.');
+                        });
+                },
+                eventDidMount: function(info) {
+                    info.el.classList.add('check-enabled');
+                    info.el.dataset.id = info.event.id; // Ajouter data-id pour la sélection
+                }
+            });
+            calendar.render();
+
+            // Initialiser la gestion des tâches terminées
+            initTaskManager({
+                selector: '.task-container',
+                hasCalendar: true,
+                calendar: calendar
+            });
+
+            document.querySelectorAll(".group-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const type = this.dataset.type;
+                    const url = new URL(window.location);
+                    if (type) {
+                        url.searchParams.set("type", type);
+                    } else {
+                        url.searchParams.delete("type");
+                    }
+                    window.location.href = url.toString();
+                });
+            });
+
+            // Fonction pour ajuster la position de .tasks-container en fonction de la hauteur visible de la nav
+            function adjustTasksContainerPosition() {
+                const tasksContainer = document.querySelector('.tasks-container');
+                const nav = document.querySelector('nav');
+
+                if (tasksContainer && nav && window.innerWidth >= 1200) {
+                    // Calculer la position de la nav par rapport à la fenêtre
+                    const navRect = nav.getBoundingClientRect();
+
+                    // La hauteur visible de la nav est la différence entre la position en bas de la nav et la position en haut de la fenêtre
+                    const navVisibleHeight = Math.max(0, Math.min(navRect.bottom, window.innerHeight) - Math.max(0, navRect.top));
+
+                    // Appliquer le padding-top à .tasks-container en fonction de la hauteur visible de la nav
+                    const currentPaddingTop = 30; // Valeur fixe que tu as définie pour le padding
+                    tasksContainer.style.paddingTop = (navVisibleHeight + currentPaddingTop) + 'px';
+                } else if (tasksContainer) {
+                    // Réinitialiser le padding-top pour les écrans < 1200px
+                    tasksContainer.style.paddingTop = '30px';
+                }
+            }
+
+            // Ajouter un écouteur d'événements pour recalculer à chaque scroll
+            window.addEventListener('scroll', adjustTasksContainerPosition);
+
+            // Appeler la fonction une première fois pour initialiser la position
+            adjustTasksContainerPosition();
+
+            const notifications = {{ notifications|json_encode|raw }};
+            notifications.forEach(notification => {
+                const div = document.createElement('div');
+                div.textContent = `Attention : "${notification.title}" dans ${notification.hoursUntilDue}h !`;
+                div.classList.add('popup');
+                document.body.appendChild(div);
+                setTimeout(() => div.remove(), 3000);
+            });
+
+            const suggestionsBox = document.querySelector('div[data-suggestions]');
+            const showSuggestionsBtn = document.querySelector('button[data-show-suggestions]');
+            if (suggestionsBox && showSuggestionsBtn) {
+                const isHidden = localStorage.getItem('suggestionsBoxHidden') === 'true';
+                if (isHidden) {
+                    suggestionsBox.style.display = 'none';
+                    showSuggestionsBtn.style.display = 'flex';
+                } else {
+                    suggestionsBox.style.display = 'block';
+                    showSuggestionsBtn.style.display = 'none';
+                }
+
+                document.getElementById('closeSuggestions').addEventListener('click', function() {
+                    suggestionsBox.style.display = 'none';
+                    showSuggestionsBtn.style.display = 'flex';
+                    localStorage.setItem('suggestionsBoxHidden', 'true');
+                });
+
+                showSuggestionsBtn.addEventListener('click', function() {
+                    suggestionsBox.style.display = 'block';
+                    showSuggestionsBtn.style.display = 'none';
+                    localStorage.setItem('suggestionsBoxHidden', 'false');
+                });
+
+                function updateSuggestions() {
+                    fetch('/api/suggestions/pending', {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            const suggestionsList = suggestionsBox.querySelector('ul');
+                            if (!suggestionsList) return;
+
+                            suggestionsList.innerHTML = '';
+                            data.forEach(suggestion => {
+                                const li = document.createElement('li');
+                                li.dataset.id = suggestion.id;
+                                li.innerHTML = `
+                                    <a href="/suggestion/${suggestion.id}/review"><strong>${suggestion.suggestedBy}</strong> pour "[${suggestion.assignment.subjectCode}] ${suggestion.assignment.title}" : ${suggestion.message || 'Aucun message'}</a>
+                                `;
+                                suggestionsList.appendChild(li);
+                            });
+
+                            if (data.length === 0) {
+                                suggestionsBox.style.display = 'none';
+                                showSuggestionsBtn.style.display = 'flex';
+                                localStorage.setItem('suggestionsBoxHidden', 'true');
+                            } else {
+                                suggestionsBox.style.display = 'block';
+                                showSuggestionsBtn.style.display = 'none';
+                                localStorage.setItem('suggestionsBoxHidden', 'false');
+                            }
+                        })
+                        .catch(error => console.error('Erreur lors du chargement des suggestions :', error));
+                }
+
+                const fontAwesomeLoaded = document.querySelector('link[href*="font-awesome"]') || document.querySelector('link[href*="fontawesome"]');
+                if (!fontAwesomeLoaded) {
+                    showSuggestionsBtn.classList.add('no-icon');
+                }
+
+                updateSuggestions();
+                document.addEventListener('suggestionProcessed', updateSuggestions);
+            }
+        });
+    </script>
+{% endblock %}
+{% block body %}
+<main class="home">
+    <div class="calendar-container">
+        <h1 class="sr-only">Calendrier des tâches</h1>
+
+        <div class="group-buttons-container">
+            <div class="group-buttons">
+                <button class="group-btn {{ type_filter == '' ? 'current' }}" data-type="">Tous</button>
+                <button class="group-btn {{ type_filter == 'devoir' ? 'current' }}" data-type="devoir">Devoir</button>
+                <button class="group-btn {{ type_filter == 'examen' ? 'current' }}" data-type="examen">Examen</button>
+                <button class="group-btn {{ type_filter == 'oral' ? 'current' }}" data-type="oral">Oral</button>
+            </div>
+        </div>
+        <div id="calendar"></div>
+    </div>
+
+    <div class="tasks-container">
+        <div class="main-content column-start-start">
+            <h2><i class="fa-solid fa-calendar"></i> A venir</h2>
+
+            {% if assignments_data|length > 0 %}
+                {% for data in assignments_data %}
+                    {% set assignment = data.assignment %}
+                    {% set now = "now"|date('U') %}
+                    {% set dueDate = assignment.dueDate|date('U') %}
+                    {% set daysUntilDue = (dueDate - now) / (60 * 60 * 24) %}
+                    {% set daysUntilDue = daysUntilDue|round(0, 'floor') %}
+
+                    <div data-id="{{ assignment.id }}" class="event-item task-container column-start {{ data.urgencyClass }}">
+                        <span class="color" style="background-color: {{ data.color }}"></span>
+                        <div class="top row-start">
+                            <p class="date">{{ assignment.dueDate|date('d/m/Y - H:i') }}</p>
+                            <p class="tag-small">{{ assignment.type|capitalize }}</p>
+                        </div>
+                        <div class="content row-spacebtwn">
+                            <div class="task row-start">
+                                <input aria-label="Tâche faite" type="checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
+                                <div class="details column-start">
+                                    <p class="check-enabled name">
+                                        {{ assignment.title }}
+                                    </p>
+                                    <p class="check-enabled subject">[{{ data.subjectCode }}] {{ assignment.subject.name }}</p>
+                                </div>
+                            </div>
+                            <div class="countdown row-start">
+                                <i class="check-enabled fa-solid fa-clock {{ data.urgencyClass }}"></i>
+                                <p class="check-enabled {{ data.hoursUntilDue < 24 and data.hoursUntilDue >= 0 ? 'urgent-time' : '' }}">
+                                    {% if data.hoursUntilDue < 0 %}
+                                        Expiré
+                                    {% elseif data.hoursUntilDue < 24 %}
+                                        {{ data.hoursUntilDue }} heure{{ data.hoursUntilDue > 1 ? 's' : '' }}
+                                    {% else %}
+                                        {{ daysUntilDue }} jour{{ daysUntilDue > 1 ? 's' : '' }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Aucun devoir à venir.</p>
+            {% endif %}
+        </div>
+        <a class="button-grey" href="{{ path('app_assignments_history') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historique des tâches</a>
+    </div>
+
+    <div id="eventModal" class="modal-container" style="display: none;">
+        <div class="modal">
+            <button id="closeModal" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+            <h3 id="modalTitle"></h3>
+            <ul>
+                <li id="modalType" class="tag"></li>
+                <li class="title"><i class="fa-solid fa-bookmark"></i> Matière</li>
+                <li><span id="modalSubjectCode"></span> - <span id="modalSubjectName"></span></li>
+                <li class="title"><i class="fa-solid fa-calendar-day"></i> Date</li>
+                <li id="modalDate"></li>
+                <li class="title"><i class="fa-solid fa-file-lines"></i> Description</li>
+                <li id="modalDescription"></li>
+                <li class="plateformes">
+                    <span class="title"><i class="fa-solid fa-layer-group"></i> Consignes et rendu</span>
+                    <ul>
+                        <li>- <span class="subtitle">Sujet</span> : <span id="modalSubmissionType"></span></li>
+                        <li>- <span class="subtitle">Mode de rendu</span> : <span id="modalSubmissionInstruction"></span></li>
+                        <li id="modalSubmissionOtherContainer" style="display: none;"><span class="subtitle">Précision</span> : <span id="modalSubmissionOther"></span></li>
+                        <li>- <span class="subtitle">URL de rendu</span> : <span id="modalSubmissionUrl"></span></li>
+                    </ul>
+                </li>
+                <div class="done">
+                    <input aria-label="Tâche faite" type="checkbox" id="modalCompleted" name="done" />
+                    <label for="done">Fait</label>
+                </div>
+            </ul>
+
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_DELEGATE') %}
+                <a class="button" href="" id="editAssignment"><i class="fa-solid fa-pencil"></i> Modifier le devoir</a>
+            {% else %}
+                <button class="button" id="suggestModification"><i class="fa-solid fa-pencil"></i> Suggérer une modification</button>
+            {% endif %}
+        </div>
+    </div>
+    {% if is_granted('ROLE_DELEGATE') %}
+        <div class="notif-container" data-suggestions>
+            <h3 class="row-spacebtwn h4">
+                Suggestions de modifications
+                <button aria-label="Fermer" id="closeSuggestions"><i class="fa-solid fa-xmark"></i></button>
+            </h3>
+            <ul></ul>
+            <div class="link row-end">
+                <a class="row-end" href="{{ path('app_suggestions') }}"><i class="fa-solid fa-arrow-right"></i> Voir l'historique complet</a>
+            </div>
+        </div>
+        <button class="notif-button" data-show-suggestions title="Afficher les suggestions">
+            <i class="fa-solid fa-bell"></i>
+            <span class="sr-only">Afficher les suggestions</span>
+        </button>
+    {% endif %}
+</main>
+=======
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier{% endblock %}
+{% block description %}Découvrez l’agenda MMI pour gérer vos devoirs et organiser vos tâches !{% endblock %}
 
 
 {% block javascripts %}
     {{ parent() }}
     <script>
-        function filterAssignments() {
-            const subjectSelect = document.getElementById('subjectSelect').value;
-            const groupSelect = document.getElementById('groupSelect') ? document.getElementById('groupSelect').value : '';
-            const url = new URL(window.location.href);
-            url.searchParams.set('subject', subjectSelect);
-            url.searchParams.set('group', groupSelect);
-            window.location.href = url.toString();
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const subject = urlParams.get('subject') || '';
-            const group = urlParams.get('group') || '';
-            document.getElementById('subjectSelect').value = subject;
-            if (document.getElementById('groupSelect')) {
-                document.getElementById('groupSelect').value = group;
-            }
-
-            // Gestion du clic sur les tâches pour afficher le modal
-            document.querySelectorAll('.task-container').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    const assignmentId = this.dataset.id;
-                    if (!assignmentId) return; // S'assurer qu'il y a un ID
-                    fetch(`/api/assignments/${assignmentId}`)
-                        .then(response => response.json())
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                buttonText: {
+                    today: 'Aujourd\'hui'
+                },
+                events: '/api/assignments' + (new URLSearchParams(window.location.search).toString() ? '?' + new URLSearchParams(window.location.search).toString() : ''),
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    fetch(`/api/assignments/${info.event.id}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erreur API: ' + response.status);
+                            }
+                            return response.json();
+                        })
                         .then(data => {
-                            console.log('ID cliqué:', assignmentId);
+                            console.log('ID cliqué:', info.event.id);
                             console.log('Data from API:', data);
                             showEventDetails(data);
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de la récupération des détails:', error);
+                            alert('Impossible de charger les détails de l\'événement.');
+                        });
+                }
+            });
+            calendar.render();
+
+            document.querySelectorAll(".group-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const type = this.dataset.type;
+                    const url = new URL(window.location);
+                    if (type) {
+                        url.searchParams.set("type", type);
+                    } else {
+                        url.searchParams.delete("type");
+                    }
+                    window.location.href = url.toString();
+                });
+            });
+
+            // Fonction pour ajuster la position de .tasks-container
+            function adjustTasksContainerPosition() {
+                const tasksContainer = document.querySelector('.tasks-container');
+                const nav = document.querySelector('nav');
+
+                if (tasksContainer && nav) {
+                    const navRect = nav.getBoundingClientRect();
+                    const navVisibleHeight = Math.max(0, Math.min(navRect.bottom, window.innerHeight) - Math.max(0, navRect.top));
+                    const currentPaddingTop = 30;
+                    tasksContainer.style.paddingTop = (navVisibleHeight + currentPaddingTop) + 'px';
+                }
+            }
+
+            window.addEventListener('scroll', adjustTasksContainerPosition);
+            adjustTasksContainerPosition();
+
+            // Gestion des tâches complétées dans le panneau "À venir"
+            document.querySelectorAll('.event-item').forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                const checkEnabledElements = item.querySelectorAll('.check-enabled');
+                if (checkbox && checkEnabledElements.length > 0) {
+                    if (checkbox.checked) {
+                        checkEnabledElements.forEach(element => {
+                            element.classList.add('completed-task');
+                        });
+                    }
+
+                    checkbox.addEventListener('change', function(e) {
+                        e.stopPropagation();
+                        const eventId = this.dataset.id;
+                        fetch(`/api/assignments/${eventId}/toggle-complete`, { method: 'POST' })
+                            .then(response => response.json())
+                            .then(data => {
+                                const calendarEvent = calendar.getEventById(eventId);
+                                if (calendarEvent) {
+                                    calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
+                                }
+
+                                checkEnabledElements.forEach(element => {
+                                    if (data.isCompleted) {
+                                        element.classList.add('completed-task');
+                                    } else {
+                                        element.classList.remove('completed-task');
+                                    }
+                                });
+                            });
+                    });
+                }
+
+                item.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'INPUT') {
+                        e.stopPropagation();
+                        return;
+                    }
+                    const eventId = this.dataset.id;
+                    fetch(`/api/assignments/${eventId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erreur API: ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('ID cliqué:', eventId);
+                            console.log('Data from API:', data);
+                            showEventDetails(data);
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de la récupération des détails:', error);
+                            alert('Impossible de charger les détails de l\'événement.');
                         });
                 });
             });
 
+            // Fonction pour afficher les détails dans le modal
             function showEventDetails(event) {
                 console.log('Event passé à showEventDetails:', event);
 
-                document.getElementById('modalTitle').textContent = event.title || 'Sans titre';
-                const dueDate = new Date(event.start);
-                const day = String(dueDate.getUTCDate()).padStart(2, '0');
-                const month = String(dueDate.getUTCMonth() + 1).padStart(2, '0');
-                const year = dueDate.getUTCFullYear();
-                const hours = String(dueDate.getUTCHours()).padStart(2, '0');
-                const minutes = String(dueDate.getUTCMinutes()).padStart(2, '0');
-                document.getElementById('modalDate').textContent = `${day}/${month}/${year} - ${hours}:${minutes}` || 'Date inconnue';                document.getElementById('modalDescription').textContent = event.description || 'Aucune description';
+                const modalTitle = document.getElementById('modalTitle');
+                modalTitle.textContent = event.title || 'Sans titre';
 
+                // Appliquer completed-task si la tâche est terminée
+                if (event.isCompleted) {
+                    modalTitle.classList.add('completed-task');
+                } else {
+                    modalTitle.classList.remove('completed-task');
+                }
+
+                const dueDate = event.start ? new Date(event.start) : null;
+                document.getElementById('modalDate').textContent = dueDate ?
+                    `${String(dueDate.getUTCDate()).padStart(2, '0')}/${String(dueDate.getUTCMonth() + 1).padStart(2, '0')}/${dueDate.getUTCFullYear()} - ${String(dueDate.getUTCHours()).padStart(2, '0')}:${String(dueDate.getUTCMinutes()).padStart(2, '0')}` :
+                    'Date inconnue';
+
+                document.getElementById('modalDescription').textContent = event.description || 'Aucune description';
                 document.getElementById('modalSubjectCode').textContent = event.subject?.code || 'Non spécifié';
                 document.getElementById('modalSubjectName').textContent = event.subject?.name || 'Non spécifié';
 
@@ -62,21 +442,30 @@
                     submissionUrlEl.textContent = 'Aucune URL de rendu';
                 }
 
-                const submissionTypeDisplay = (event.submissionType && event.submissionType.toLowerCase() === 'other') ? 'Autre' : event.submissionType || 'Non spécifié';
-                document.getElementById('modalSubmissionType').textContent = submissionTypeDisplay;
+                // Afficher le type (examen, oral, devoir)
+                document.getElementById('modalType').textContent = event.type ?
+                    event.type.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') :
+                    'Non spécifié';
 
+                // Afficher submissionOther si présent
                 const submissionOtherContainer = document.getElementById('modalSubmissionOtherContainer');
-                if (event.submissionType && event.submissionType.toLowerCase() === 'other' && event.submissionOther) {
+                if (event.submissionOther) {
                     document.getElementById('modalSubmissionOther').textContent = event.submissionOther;
                     submissionOtherContainer.style.display = 'block';
                 } else {
                     submissionOtherContainer.style.display = 'none';
                 }
 
-                document.getElementById('modalType').textContent = (event.type || 'Non spécifié')
-                    .split(' ')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                    .join(' ');                document.getElementById('modalCompleted').checked = event.isCompleted || false;
+                // Afficher courseLocation si présent
+                const courseLocationContainer = document.getElementById('modalCourseLocationContainer');
+                if (event.courseLocation) {
+                    document.getElementById('modalCourseLocation').textContent = event.courseLocation;
+                    courseLocationContainer.style.display = 'block';
+                } else {
+                    courseLocationContainer.style.display = 'none';
+                }
+
+                document.getElementById('modalCompleted').checked = event.isCompleted || false;
                 document.getElementById('eventModal').dataset.id = event.id;
 
                 const editAssignmentLink = document.getElementById('editAssignment');
@@ -84,37 +473,55 @@
                     editAssignmentLink.href = `/assignments/${event.id}/edit`;
                 }
 
-                document.getElementById('eventModal').style.display = 'flex';
-
-                const modalCheckbox = document.getElementById('modalCompleted');
-                modalCheckbox.addEventListener('change', function() {
+                // Écouteur pour la checkbox du modal
+                const modalCompletedCheckbox = document.getElementById('modalCompleted');
+                modalCompletedCheckbox.addEventListener('change', function() {
                     const eventId = document.getElementById('eventModal').dataset.id;
-                    const isCompleted = this.checked;
-
                     fetch(`/api/assignments/${eventId}/toggle-complete`, {
                         method: 'POST'
-                    }).then(response => response.json())
+                    })
+                        .then(response => response.json())
                         .then(data => {
-                            const listItem = document.querySelector(`div[data-id="${eventId}"]`);
-                            if (listItem) {
-                                const nameElement = listItem.querySelector('.name');
-                                if (data.isCompleted) {
-                                    nameElement.classList.add('completed-task');
-                                } else {
-                                    nameElement.classList.remove('completed-task');
-                                }
-                                const statusElement = listItem.querySelector('.status');
-                                statusElement.innerHTML = data.isCompleted
-                                    ? '<span><i class="fa-solid fa-circle-check"></i></span> Terminé'
-                                    : '<span><i class="fa-solid fa-circle-notch"></i></span> En cours';
+                            // Mettre à jour l'affichage dans le modal
+                            if (data.isCompleted) {
+                                modalTitle.classList.add('completed-task');
+                            } else {
+                                modalTitle.classList.remove('completed-task');
                             }
+
+                            // Mettre à jour l'affichage dans le panneau "À venir"
+                            const taskItem = document.querySelector(`.event-item[data-id="${eventId}"]`);
+                            if (taskItem) {
+                                const checkEnabledElements = taskItem.querySelectorAll('.check-enabled');
+                                checkEnabledElements.forEach(element => {
+                                    if (data.isCompleted) {
+                                        element.classList.add('completed-task');
+                                    } else {
+                                        element.classList.remove('completed-task');
+                                    }
+                                });
+                                const taskCheckbox = taskItem.querySelector('input[type="checkbox"]');
+                                if (taskCheckbox) {
+                                    taskCheckbox.checked = data.isCompleted;
+                                }
+                            }
+
+                            // Mettre à jour l'événement dans le calendrier
+                            const calendarEvent = calendar.getEventById(eventId);
+                            if (calendarEvent) {
+                                calendarEvent.setProp('classNames', data.isCompleted ? ['completed-event'] : []);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de la mise à jour de l\'état:', error);
+                            alert('Impossible de mettre à jour l\'état de la tâche.');
+                            // Revenir à l'état précédent en cas d'erreur
+                            modalCompletedCheckbox.checked = !modalCompletedCheckbox.checked;
                         });
                 });
-            }
 
-            document.getElementById('closeModal').addEventListener('click', function() {
-                document.getElementById('eventModal').style.display = 'none';
-            });
+                document.getElementById('eventModal').style.display = 'flex';
+            }
 
             const suggestModificationBtn = document.getElementById('suggestModification');
             if (suggestModificationBtn) {
@@ -123,119 +530,159 @@
                     window.location.href = `/assignment/${eventId}/suggest`;
                 });
             }
+
+            document.getElementById('closeModal').addEventListener('click', function() {
+                document.getElementById('eventModal').style.display = 'none';
+            });
+
+            const notifications = {{ notifications|json_encode|raw }};
+            notifications.forEach(notification => {
+                const div = document.createElement('div');
+                div.textContent = `Attention : "${notification.title}" dans ${notification.hoursUntilDue}h !`;
+                div.classList.add('popup');
+                document.body.appendChild(div);
+                setTimeout(() => div.remove(), 3000);
+            });
+
+            const suggestionsBox = document.querySelector('div[data-suggestions]');
+            const showSuggestionsBtn = document.querySelector('button[data-show-suggestions]');
+            if (suggestionsBox && showSuggestionsBtn) {
+                const isHidden = localStorage.getItem('suggestionsBoxHidden') === 'true';
+                if (isHidden) {
+                    suggestionsBox.style.display = 'none';
+                    showSuggestionsBtn.style.display = 'flex';
+                } else {
+                    suggestionsBox.style.display = 'block';
+                    showSuggestionsBtn.style.display = 'none';
+                }
+
+                document.getElementById('closeSuggestions').addEventListener('click', function() {
+                    suggestionsBox.style.display = 'none';
+                    showSuggestionsBtn.style.display = 'flex';
+                    localStorage.setItem('suggestionsBoxHidden', 'true');
+                });
+
+                showSuggestionsBtn.addEventListener('click', function() {
+                    suggestionsBox.style.display = 'block';
+                    showSuggestionsBtn.style.display = 'none';
+                    localStorage.setItem('suggestionsBoxHidden', 'false');
+                });
+
+                function updateSuggestions() {
+                    fetch('/api/suggestions/pending', {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            const suggestionsList = suggestionsBox.querySelector('ul');
+                            if (!suggestionsList) return;
+
+                            suggestionsList.innerHTML = '';
+                            data.forEach(suggestion => {
+                                const li = document.createElement('li');
+                                li.dataset.id = suggestion.id;
+                                li.innerHTML = `
+                                    <a href="/suggestion/${suggestion.id}/review"><strong>${suggestion.suggestedBy}</strong> pour "[${suggestion.assignment.subjectCode}] ${suggestion.assignment.title}" : ${suggestion.message || 'Aucun message'}</a>
+                                `;
+                                suggestionsList.appendChild(li);
+                            });
+
+                            if (data.length === 0) {
+                                suggestionsBox.style.display = 'none';
+                                showSuggestionsBtn.style.display = 'flex';
+                                localStorage.setItem('suggestionsBoxHidden', 'true');
+                            } else {
+                                suggestionsBox.style.display = 'block';
+                                showSuggestionsBtn.style.display = 'none';
+                                localStorage.setItem('suggestionsBoxHidden', 'false');
+                            }
+                        })
+                        .catch(error => console.error('Erreur lors du chargement des suggestions :', error));
+                }
+
+                const fontAwesomeLoaded = document.querySelector('link[href*="font-awesome"]') || document.querySelector('link[href*="fontawesome"]');
+                if (!fontAwesomeLoaded) {
+                    showSuggestionsBtn.classList.add('no-icon');
+                }
+
+                updateSuggestions();
+                document.addEventListener('suggestionProcessed', updateSuggestions);
+            }
         });
     </script>
 {% endblock %}
 
 {% block body %}
-    <main class="all-tasks padding">
-        <div class="filter-section">
-            <div class="filter-container">
-                <h1>Toutes les tâches</h1>
-                <div class="filters-container">
-                    <div class="filter">
-                        <label for="subjectSelect">Sélectionner une matière</label>
-                        <select id="subjectSelect" name="subject">
-                            <option value="">Toutes les matières</option>
-                            {% if subjects is defined and subjects|length > 0 %}
-                                {% for subject in subjects %}
-                                    <option value="{{ subject.id }}" {{ subject.id == current_subject ? 'selected' }}>{{ subject.name }}</option>
-                                {% endfor %}
-                            {% else %}
-                                <option disabled>Aucune matière disponible</option>
-                            {% endif %}
-                        </select>
-                    </div>
+    <main class="home">
+        <div class="calendar-container">
+            <h1 class="sr-only">Calendrier des tâches</h1>
 
-                    {% if is_delegate_or_admin %}
-                        <div class="filter">
-                            <label for="groupSelect">Sélectionner un groupe</label>
-                            <select id="groupSelect" name="group">
-                                <option value="">Tous les groupes</option>
-                                {% if groups is defined and groups|length > 0 %}
-                                    {% for group in groups %}
-                                        <option value="{{ group.id }}" {{ group.id == current_group ? 'selected' }}>{{ group.name }}</option>
-                                    {% endfor %}
-                                {% else %}
-                                    <option disabled>Aucun groupe disponible</option>
-                                {% endif %}
-                            </select>
-                        </div>
-                    {% endif %}
-                    <button class="button-grey" onclick="filterAssignments()"><i class="fa-solid fa-filter"></i> Filtrer</button>
+            <div class="group-buttons-container">
+                <div class="group-buttons">
+                    <button class="group-btn {{ type_filter == '' ? 'current' }}" data-type="">Tous</button>
+                    <button class="group-btn {{ type_filter == 'devoir' ? 'current' }}" data-type="devoir">Devoir</button>
+                    <button class="group-btn {{ type_filter == 'examen' ? 'current' }}" data-type="examen">Examen</button>
+                    <button class="group-btn {{ type_filter == 'oral' ? 'current' }}" data-type="oral">Oral</button>
                 </div>
-
             </div>
-            <a class="button back-btn" href="/"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
+            <div id="calendar"></div>
         </div>
 
-        <div id="assignmentsContainer">
-            {% if assignments|length > 0 %}
-                {% for assignment in assignments %}
-                    {% set now = "now"|date('U') %}
-                    {% set dueDate = assignment.dueDate|date('U') %}
-                    {% set daysUntilDue = (dueDate - now) / (60 * 60 * 24) %}
-                    {% set daysUntilDue = daysUntilDue|round(0, 'floor') %}
-                    {% set hoursUntilDue = (dueDate - now) / (60 * 60) %}
-                    {% set hoursUntilDue = hoursUntilDue|round(0, 'floor') %}
-                    {% set urgencyClass = hoursUntilDue < 0 ? 'expired' : (hoursUntilDue < 24 ? 'urgent' : (hoursUntilDue <= 72 ? 'soon' : 'ontime')) %}
-                    <div class="task-container column-start {{ urgencyClass }}"
-                         data-id="{{ assignment.id }}"
-                         data-subject="{{ assignment.subject.id }}"
-                         data-groups="{{ assignment.groups|map(group => group.id)|join(',') }}">
-                        <span class="color" style="background-color: {{ assignment.subject.color }}"></span>
-                        <div class="top row-start">
-                            <p class="date">{{ assignment.dueDate|date('d/m/Y - H:i') }}</p>
-                            <p class="tag-small">{{ assignment.type|capitalize }}</p>
-                        </div>
-                        <div class="content row-spacebtwn">
-                            <div class="task column-start-start">
-                                <div class="details row-start">
-                                    <p class="name {% if assignment.isCompleted %}completed-task{% endif %}">
-                                        {{ assignment.title }}
-                                    </p>
-                                    <p class="subject">| {{ assignment.subject.name }}</p>
+        <div class="tasks-container">
+            <div class="main-content column-start-start">
+                <h2><i class="fa-solid fa-calendar"></i> A venir</h2>
+
+                {% if assignments_data|length > 0 %}
+                    {% for data in assignments_data %}
+                        {% set assignment = data.assignment %}
+                        {% set now = "now"|date('U') %}
+                        {% set dueDate = assignment.dueDate|date('U') %}
+                        {% set daysUntilDue = (dueDate - now) / (60 * 60 * 24) %}
+                        {% set daysUntilDue = daysUntilDue|round(0, 'floor') %}
+
+                        <div data-id="{{ assignment.id }}" class="event-item task-container column-start {{ data.urgencyClass }}">
+                            <span class="color" style="background-color: {{ data.color }}"></span>
+                            <div class="top row-start">
+                                <p class="date">{{ assignment.dueDate|date('d/m/Y - H:i') }}</p>
+                                <p class="tag-small">{{ assignment.type|capitalize }}</p>
+                            </div>
+                            <div class="content row-spacebtwn">
+                                <div class="task row-start">
+                                    <input aria-label="Tâche faite" type="checkbox" data-id="{{ assignment.id }}" {{ data.isCompleted ? 'checked' }}>
+                                    <div class="details column-start">
+                                        <p class="check-enabled name">
+                                            {{ assignment.title }}
+                                        </p>
+                                        <p class="check-enabled subject">[{{ data.subjectCode }}] {{ assignment.subject.name }}</p>
+                                    </div>
                                 </div>
-                                <p class="description">{{ assignment.description }}</p>
-                                <p class="groupes">
-                                    <span class="title">Groupe(s) :</span>
-                                    {% if assignment.groups|length > 0 %}
-                                        {% for group in assignment.groups %}
-                                            {{ group.name }}{% if not loop.last %} - {% endif %}
-                                        {% endfor %}
-                                    {% else %}
-                                        Aucun groupe
-                                    {% endif %}
-                                </p>
+                                <div class="countdown row-start">
+                                    <i class="check-enabled fa-solid fa-clock {{ data.urgencyClass }}"></i>
+                                    <p class="check-enabled {{ data.hoursUntilDue < 24 and data.hoursUntilDue >= 0 ? 'urgent-time' : '' }}">
+                                        {% if data.hoursUntilDue < 0 %}
+                                            Expiré
+                                        {% elseif data.hoursUntilDue < 24 %}
+                                            {{ data.hoursUntilDue }} heure{{ data.hoursUntilDue > 1 ? 's' : '' }}
+                                        {% else %}
+                                            {{ daysUntilDue }} jour{{ daysUntilDue > 1 ? 's' : '' }}
+                                        {% endif %}
+                                    </p>
+                                </div>
                             </div>
-                            <div class="countdown row-start">
-                                <i class="fa-solid fa-clock {{ urgencyClass }}"></i>
-                                <p class="{{ hoursUntilDue < 24 and hoursUntilDue >= 0 ? 'urgent-time' : '' }}">
-                                    {% if hoursUntilDue < 0 %}
-                                        Expiré
-                                    {% elseif hoursUntilDue < 24 %}
-                                        {{ hoursUntilDue }} heure{{ hoursUntilDue > 1 ? 's' : '' }}
-                                    {% else %}
-                                        {{ daysUntilDue }} jour{{ daysUntilDue > 1 ? 's' : '' }}
-                                    {% endif %}
-                                </p>
-                            </div>
-                            <p class="status row-start">
-                                <span>{{ assignment.isCompleted ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-notch"></i>' }}</span>
-                                {{ assignment.isCompleted ? 'Terminé' : 'En cours' }}
-                            </p>
                         </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>Aucune tâche trouvée.</p>
-            {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p>Aucun devoir à venir.</p>
+                {% endif %}
+            </div>
+            <a class="button-grey" href="{{ path('app_assignments_history') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historique des tâches</a>
         </div>
 
-        {# Ajout du modal identique à celui de home #}
         <div id="eventModal" class="modal-container" style="display: none;">
             <div class="modal">
-                <button id="closeModal"><i class="fa-solid fa-xmark"></i></button>
+                <button id="closeModal" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
                 <h3 id="modalTitle"></h3>
                 <ul>
                     <li id="modalType" class="tag"></li>
@@ -248,14 +695,13 @@
                     <li class="plateformes">
                         <span class="title"><i class="fa-solid fa-layer-group"></i> Consignes et rendu</span>
                         <ul>
-                            <li>- <span class="subtitle">Sujet</span> : <span id="modalSubmissionType"></span></li>
-                            <li>- <span class="subtitle">Mode de rendu</span> : <span id="modalSubmissionInstruction"></span></li>
-                            <li id="modalSubmissionOtherContainer" style="display: none;"><span class="subtitle">Précision</span> : <span id="modalSubmissionOther"></span></li>
                             <li>- <span class="subtitle">URL de rendu</span> : <span id="modalSubmissionUrl"></span></li>
+                            <li id="modalSubmissionOtherContainer" style="display: none;">- <span class="subtitle">Instructions supplémentaires</span> : <span id="modalSubmissionOther"></span></li>
+                            <li id="modalCourseLocationContainer" style="display: none;">- <span class="subtitle">Lieu</span> : <span id="modalCourseLocation"></span></li>
                         </ul>
                     </li>
                     <div class="done">
-                        <input type="checkbox" id="modalCompleted" name="done" />
+                        <input aria-label="Tâche faite" type="checkbox" id="modalCompleted" name="done" />
                         <label for="done">Fait</label>
                     </div>
                 </ul>
@@ -267,5 +713,24 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if is_granted('ROLE_DELEGATE') %}
+            <div class="notif-container" data-suggestions>
+                <h3 class="row-spacebtwn h4">
+                    Suggestions de modifications
+                    <button aria-label="Fermer" id="closeSuggestions"><i class="fa-solid fa-xmark"></i></button>
+                </h3>
+                <ul></ul>
+                <div class="link row-end">
+                    <a class="row-end" href="{{ path('app_suggestions') }}"><i class="fa-solid fa-arrow-right"></i> Voir l'historique complet</a>
+                </div>
+            </div>
+            <button class="notif-button" data-show-suggestions title="Afficher les suggestions">
+                <i class="fa-solid fa-bell"></i>
+                <span class="sr-only">Afficher les suggestions</span>
+            </button>
+        {% endif %}
+
     </main>
+    >>>>>>> cd07d8aaf4183da4ef835b2531954f315fe992ea
 {% endblock %}
