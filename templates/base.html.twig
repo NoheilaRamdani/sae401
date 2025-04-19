@@ -23,7 +23,6 @@
     <!-- Chargement non bloquant de la feuille de style -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" media="print" onload="this.media='all'">
 
-
     {% block stylesheets %}
         <link rel="stylesheet" href="{{ asset('styles/css/app.css') }}">
         <link
@@ -112,6 +111,13 @@
                 <a class="row-center" href="{{ path('app_assignments_history') }}"><i class="fa-solid fa-clock-rotate-left"></i> Toutes les tâches</a>
             </li>
             <li class="row-center separator"></li>
+            {# Ajout du lien iCal pour ROLE_DELEGATE et ROLE_USER uniquement #}
+            {% if is_granted('ROLE_DELEGATE') or not is_granted('ROLE_ADMIN') %}
+                <li class="row-center">
+                    <a class="row-center" href="{{ path('ical_user_feed') }}" title="Exporter vers calendrier"><i class="fa-solid fa-calendar-plus"></i> Exporter calendrier</a>
+                </li>
+                <li class="row-center separator"></li>
+            {% endif %}
             <li class="row-center">
                 <a class="row-center" href="{{ path('app_logout') }}">Déconnexion <i class="fa-solid fa-arrow-right-from-bracket"></i></a>
             </li>

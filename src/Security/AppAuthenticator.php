@@ -29,8 +29,8 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function start(Request $request, AuthenticationException $authException = null): Response
     {
-        // Redirige vers /register quand l'utilisateur n'est pas connecté
-        return new RedirectResponse($this->urlGenerator->generate('app_register'));
+
+        return new RedirectResponse($this->urlGenerator->generate('app_login'));
     }
 
     public function supports(Request $request): bool

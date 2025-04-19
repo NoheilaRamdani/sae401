@@ -6,6 +6,7 @@ use App\Entity\Suggestion;
 use App\Form\AssignmentFormType;
 use App\Form\SuggestionFormType;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Service\NotificationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +39,8 @@ class AssignmentController extends AbstractController
 
             $entityManager->persist($assignment);
             $entityManager->flush();
+            // Envoyer les notifications par email
+            $notificationService->sendAssignmentNotification($assignment);
 
             $this->addFlash('success', 'Le devoir a été ajouté avec succès !');
             return $this->redirectToRoute('app_home');

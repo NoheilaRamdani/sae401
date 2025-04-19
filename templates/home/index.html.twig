@@ -85,9 +85,6 @@
             // Ajouter un écouteur d'événements pour recalculer à chaque scroll
             window.addEventListener('scroll', adjustTasksContainerPosition);
 
-            // Appeler la fonction une première fois pour initialiser la position
-            adjustTasksContainerPosition();
-
             const notifications = {{ notifications|json_encode|raw }};
             notifications.forEach(notification => {
                 const div = document.createElement('div');
@@ -282,5 +279,6 @@
                 <span class="sr-only">Afficher les suggestions</span>
             </button>
         {% endif %}
+
     </main>
 {% endblock %}
