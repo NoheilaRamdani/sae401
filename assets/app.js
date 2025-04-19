@@ -35,6 +35,15 @@ function initTaskManager(config) {
             if (checkbox) {
                 checkbox.checked = isCompleted;
             }
+            // Mettre à jour l'élément .name dans .task-container
+            const nameElement = item.querySelector('.name');
+            if (nameElement) {
+                if (isCompleted) {
+                    nameElement.classList.add('completed-task');
+                } else {
+                    nameElement.classList.remove('completed-task');
+                }
+            }
         });
 
         // Mettre à jour les .fc-event
@@ -51,6 +60,16 @@ function initTaskManager(config) {
         const modalCheckbox = document.querySelector('#modalCompleted');
         if (modalCheckbox && document.getElementById('eventModal').dataset.id === eventId) {
             modalCheckbox.checked = isCompleted;
+        }
+
+        // Mettre à jour l'apparence du titre du modal si ouvert
+        const modalTitle = document.getElementById('modalTitle');
+        if (modalTitle && document.getElementById('eventModal').dataset.id === eventId) {
+            if (isCompleted) {
+                modalTitle.classList.add('completed-task');
+            } else {
+                modalTitle.classList.remove('completed-task');
+            }
         }
 
         // Mettre à jour l'événement du calendrier (si applicable)
@@ -175,8 +194,17 @@ function initTaskManager(config) {
 function showEventDetails(event) {
     console.log('Event passé à showEventDetails:', event);
 
-    document.getElementById('modalTitle').textContent = event.title || 'Sans titre';
+    const modalTitle = document.getElementById('modalTitle');
+    modalTitle.textContent = event.title || 'Sans titre';
 
+    // Appliquer completed-task si la tâche est terminée
+    if (event.isCompleted) {
+        modalTitle.classList.add('completed-task');
+    } else {
+        modalTitle.classList.remove('completed-task');
+    }
+
+    // Gérer la date avec robustesse
     const dueDate = event.start ? new Date(event.start) : null;
     document.getElementById('modalDate').textContent = dueDate ?
         `${String(dueDate.getUTCDate()).padStart(2, '0')}/${String(dueDate.getUTCMonth() + 1).padStart(2, '0')}/${dueDate.getUTCFullYear()} - ${String(dueDate.getUTCHours()).padStart(2, '0')}:${String(dueDate.getUTCMinutes()).padStart(2, '0')}` :
@@ -186,6 +214,7 @@ function showEventDetails(event) {
     document.getElementById('modalSubjectCode').textContent = event.subject?.code || 'Non spécifié';
     document.getElementById('modalSubjectName').textContent = event.subject?.name || 'Non spécifié';
 
+    // Gérer l'URL de rendu
     const submissionUrlEl = document.getElementById('modalSubmissionUrl');
     if (event.submissionUrl) {
         submissionUrlEl.innerHTML = `<a href="${event.submissionUrl}" target="_blank">${event.submissionUrl}</a>`;
@@ -193,26 +222,34 @@ function showEventDetails(event) {
         submissionUrlEl.textContent = 'Aucune URL de rendu';
     }
 
+    // Gérer le type de soumission
+    const submissionTypeEl = document.getElementById('modalSubmissionType');
+    if (submissionTypeEl) {
+        const submissionTypeDisplay = (event.submissionType && event.submissionType.toLowerCase() === 'other') ? 'Autre' : event.submissionType || 'Non spécifié';
+        submissionTypeEl.textContent = submissionTypeDisplay;
+    }
+
+    // Gérer les instructions de rendu
+    const submissionInstructionEl = document.getElementById('modalSubmissionInstruction');
+    if (submissionInstructionEl) {
+        submissionInstructionEl.textContent = event.submissionInstruction || 'Non spécifié';
+    }
+
+    // Gérer les précisions supplémentaires
     const submissionOtherContainer = document.getElementById('modalSubmissionOtherContainer');
-    if (event.submissionOther) {
+    if (event.submissionType && event.submissionType.toLowerCase() === 'other' && event.submissionOther) {
         document.getElementById('modalSubmissionOther').textContent = event.submissionOther;
         submissionOtherContainer.style.display = 'block';
     } else {
         submissionOtherContainer.style.display = 'none';
     }
 
-    const courseLocationContainer = document.getElementById('modalCourseLocationContainer');
-    if (event.courseLocation) {
-        document.getElementById('modalCourseLocation').textContent = event.courseLocation;
-        courseLocationContainer.style.display = 'block';
-    } else {
-        courseLocationContainer.style.display = 'none';
-    }
-
+    // Gérer le type d'événement
     document.getElementById('modalType').textContent = event.type ?
         event.type.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') :
         'Non spécifié';
 
+    // Gérer la checkbox du modal
     document.getElementById('modalCompleted').checked = event.isCompleted || false;
     document.getElementById('eventModal').dataset.id = event.id;
 
@@ -222,11 +259,13 @@ function showEventDetails(event) {
         modalCheckbox.dataset.id = event.id;
     }
 
+    // Gérer le lien d'édition
     const editAssignmentLink = document.getElementById('editAssignment');
     if (editAssignmentLink) {
         editAssignmentLink.href = `/assignments/${event.id}/edit`;
     }
 
+    // Afficher le modal
     document.getElementById('eventModal').style.display = 'flex';
 }
 
@@ -246,6 +285,16 @@ function initModalListeners() {
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', function() {
             document.getElementById('eventModal').style.display = 'none';
+        });
+    }
+
+    // Fermer le modal en cliquant en dehors
+    const modalContainer = document.getElementById('eventModal');
+    if (modalContainer) {
+        modalContainer.addEventListener('click', function(event) {
+            if (event.target === modalContainer) {
+                modalContainer.style.display = 'none';
+            }
         });
     }
 }

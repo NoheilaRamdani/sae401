@@ -265,6 +265,9 @@ nav {
     }
 
     &.open {
+      position: fixed;
+      right: 4%;
+      top: 15px;
       span:nth-child(1) {
         transform: translateY(8px) rotate(45deg);
       }
@@ -282,7 +285,7 @@ nav {
   // ===== MOBILE LINKS =====
   .links {
     position: fixed;
-    right: -100%;
+    right: -140%;
     top: 0;
     bottom: 0;
     transition: right 0.4s ease;

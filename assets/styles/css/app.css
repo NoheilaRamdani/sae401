@@ -328,6 +328,11 @@ nav .burger span {
   border-radius: 2px;
   transition: 0.3s ease;
 }
+nav .burger.open {
+  position: fixed;
+  right: 4%;
+  top: 15px;
+}
 nav .burger.open span:nth-child(1) {
   transform: translateY(8px) rotate(45deg);
 }
@@ -339,7 +344,7 @@ nav .burger.open span:nth-child(3) {
 }
 nav .links {
   position: fixed;
-  right: -100%;
+  right: -140%;
   top: 0;
   bottom: 0;
   transition: right 0.4s ease;
@@ -754,6 +759,12 @@ table:not(#calendar table) tbody tr td span.delegate {
 .home .calendar-container {
   width: 100%;
   padding: 30px 20px 35px 4%;
+  height: 100vh;
+}
+@media (min-width: 576px) {
+  .home .calendar-container {
+    height: auto;
+  }
 }
 @media (min-width: 1200px) {
   .home .calendar-container {
@@ -773,8 +784,20 @@ table:not(#calendar table) tbody tr td span.delegate {
   position: relative;
   z-index: 1 !important;
 }
-.home .calendar-container #calendar .fc .fc-toolbar.fc-header-toolbar {
+@media (max-width: 576px) {
+  .home .calendar-container #calendar {
+    max-height: 80vh;
+    height: 100%;
+  }
+}
+.home .calendar-container #calendar .fc-toolbar.fc-header-toolbar {
   width: 100%;
+}
+@media (max-width: 768px) {
+  .home .calendar-container #calendar .fc-toolbar.fc-header-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 .home .calendar-container #calendar .fc-today-button, .home .calendar-container #calendar .fc-next-button, .home .calendar-container #calendar .fc-prev-button {
   background-color: #4D3677 !important;

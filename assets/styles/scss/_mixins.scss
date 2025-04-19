@@ -1,4 +1,5 @@
 // MIXINS BREAKPOINTS
+//media min
 @mixin media-breakpoint-up($size) {
   @if map-has-key($breakpoints, $size) {
     @media (min-width: #{map-get($breakpoints, $size)}) {
@@ -8,7 +9,7 @@
     @warn "⚠️ Breakpoint #{$size} not found in map.";
   }
 }
-
+//media max
 @mixin media-breakpoint-down($size) {
   @if map-has-key($breakpoints, $size) {
     @media (max-width: #{map-get($breakpoints, $size)}) {

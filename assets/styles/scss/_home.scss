@@ -18,6 +18,11 @@
   .calendar-container {
     width : 100%;
     padding: 30px 20px 35px 4%;
+    height: 100vh;
+
+    @include media-breakpoint-up(sm) {
+      height: auto;
+    }
 
     @include media-breakpoint-up(xl) {
       width : 62%;
@@ -36,8 +41,20 @@
       position: relative;
       z-index: 1 !important;
 
-      .fc .fc-toolbar.fc-header-toolbar {
+
+      @include media-breakpoint-down(sm) {
+        max-height: 80vh;
+        height: 100%;
+      }
+
+      .fc-toolbar.fc-header-toolbar {
         width: 100%;
+
+        @include media-breakpoint-down(md) {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
       }
 
       .fc-today-button, .fc-next-button, .fc-prev-button {
