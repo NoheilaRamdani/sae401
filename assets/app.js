@@ -3,7 +3,7 @@ console.log('AssetMapper test');
 /**
  * Gestion des tâches terminées (checkboxes, mise à jour de l'apparence, synchronisation).
  * Utilisé par les pages avec des listes de tâches ou un calendrier.
- * @param {Object} config - Configuration pour adapter la logique.
+ * @param {{selector: string, hasCalendar: boolean}} config - Configuration pour adapter la logique.
  * @param {string} config.selector - Sélecteur des éléments de tâche (.task-container).
  * @param {boolean} config.hasCalendar - Indique si un calendrier FullCalendar est présent.
  * @param {Object} config.calendar - Instance du calendrier FullCalendar (si hasCalendar est true).
