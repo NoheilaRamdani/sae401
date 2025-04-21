@@ -337,12 +337,14 @@ class SuggestionController extends AbstractController
 
         $form = $this->createFormBuilder()
             ->add('approve', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, [
-                'label' => 'Valider',
-                'attr' => ['class' => 'btn btn-success'],
+                'label' => '<i class="fa-solid fa-check"></i> Valider', // Add Font Awesome icon
+                'label_html' => true,
+                'attr' => ['class' => 'btn btn-success row-start'],
             ])
             ->add('reject', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, [
-                'label' => 'Rejeter',
-                'attr' => ['class' => 'btn btn-danger'],
+                'label' => '<i class="fa-solid fa-xmark"></i> Rejeter', // Add Font Awesome icon
+                'label_html' => true,
+                'attr' => ['class' => 'btn btn-danger row-start'],
             ])
             ->getForm();
 

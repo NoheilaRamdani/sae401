@@ -3,7 +3,7 @@
     gap: 15px;
   }
 
-  .modal-container {
+  &.modal-container {
     position: relative;
     min-height: 100vh;
     background: white;
@@ -17,29 +17,33 @@
         margin-top: 20px;
       }
 
+      table {
+        margin-top: 20px;
+      }
+
       .row-start {
         gap: 10px;
         margin: 20px 0;
 
         #form_approve, #form_reject {
           @extend %btn-base;
-          color: $purpledark;
           padding: 10px 15px;
-          background-color: $purplelight;
           cursor: pointer;
+          color: white;
+
+          &:hover {
+            color: $purpledark;
+            background-color: $purplelight;
+          }
+
         }
 
         #form_approve {
-          &:hover {
             background-color: $ontime;
-          }
         }
 
         #form_reject {
-          &:hover {
             background-color: $urgent;
-            color: white;
-          }
         }
       }
 

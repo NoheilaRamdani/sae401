@@ -74,10 +74,14 @@ class SuggestionFormType extends AbstractType
             ->add('message', TextareaType::class, [
                 'label' => 'Message (expliquez votre suggestion)',
                 'required' => true,
+                'attr' => [
+                    'rows' => 4,
+                    'placeholder' => 'Écrivez votre message ici...'
+                ],
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Soumettre',
-                'attr' => ['class' => 'btn btn-primary'],
+                'attr' => ['class' => 'button'],
             ]);
 
         // Ajouter la classe 'form' au formulaire

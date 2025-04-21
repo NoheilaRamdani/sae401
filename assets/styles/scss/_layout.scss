@@ -756,4 +756,34 @@ table:not(#calendar table) {
     font-size: 0.9rem;
     margin-top: 0.3rem;
   }
+
+  .button {
+    margin-top: 30px;
+    width: 100%;
+  }
+
+  // Champ conditionnel pour le mode de rendu
+  #submission_other_container {
+    display: none;
+  }
+  .container {
+    &.row-start {
+      gap: 50px;
+
+      .assignment {
+        .row-start {
+          gap: 15px;
+          .row-start {
+            gap: 10px;
+          }
+        }
+      }
+
+    }
+  }
+
+  .buttons {
+    gap: 15px;
+  }
+
 }

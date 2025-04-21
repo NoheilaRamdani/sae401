@@ -60,21 +60,30 @@
     });
     });
 
-    function adjustTasksContainerPosition() {
-    const tasksContainer = document.querySelector('.tasks-container');
-    const nav = document.querySelector('nav');
-    if (tasksContainer && nav && window.innerWidth >= 1200) {
-    const navRect = nav.getBoundingClientRect();
-    const navVisibleHeight = Math.max(0, Math.min(navRect.bottom, window.innerHeight) - Math.max(0, navRect.top));
-    const currentPaddingTop = 30;
-    tasksContainer.style.paddingTop = (navVisibleHeight + currentPaddingTop) + 'px';
-    } else if (tasksContainer) {
-    tasksContainer.style.paddingTop = '30px';
-    }
-    }
+        // Fonction pour ajuster la position de .tasks-container en fonction de la hauteur visible de la nav
+        function adjustTasksContainerPosition() {
+            const tasksContainer = document.querySelector('.tasks-container');
+            const nav = document.querySelector('nav');
 
-    window.addEventListener('scroll', adjustTasksContainerPosition);
-    adjustTasksContainerPosition();
+            if (tasksContainer && nav && window.innerWidth >= 1200) {
+                // Calculer la position de la nav par rapport à la fenêtre
+                const navRect = nav.getBoundingClientRect();
+
+                // La hauteur visible de la nav est la séance entre la position en bas de la nav et la position en haut de la fenêtre
+                const navVisibleHeight = Math.max(0, Math.min(navRect.bottom, window.innerHeight) - Math.max(0, navRect.top));
+
+                // Appliquer le padding-top à .tasks-container en fonction de la hauteur visible de la nav
+                const currentPaddingTop = 30;
+                tasksContainer.style.paddingTop = (navVisibleHeight + currentPaddingTop) + 'px';
+            } else if (tasksContainer) {
+                // Réinitialiser le padding-top pour les écrans < 1200px
+                tasksContainer.style.paddingTop = '30px';
+            }
+        }
+
+        // Ajouter un écouteur d'événements pour recalculer à chaque scroll
+        window.addEventListener('scroll', adjustTasksContainerPosition);
+        adjustTasksContainerPosition();
 
     const suggestionsBox = document.querySelector('div[data-suggestions]');
     const showSuggestionsBtn = document.querySelector('button[data-show-suggestions]');

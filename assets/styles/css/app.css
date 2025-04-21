@@ -9,7 +9,7 @@
   font-family: "Poppins";
 }
 
-.suggest-assignment .modal-container .modal .row-start #form_approve, .suggest-assignment .modal-container .modal .row-start #form_reject, .manage-assignmts td.row-start .button-delete, .manage-assignmts td.row-start .button-modify, .home .button-grey, main .filter-section .button-grey, .button, .all-tasks #assignmentsContainer .task-container .content .status, .tag-small, .tag {
+.suggest-assignment.modal-container .modal .row-start #form_approve, .suggest-assignment.modal-container .modal .row-start #form_reject, .manage-assignmts td.row-start .button-delete, .manage-assignmts td.row-start .button-modify, .home .button-grey, main .filter-section .button-grey, .button, .all-tasks #assignmentsContainer .task-container .content .status, .tag-small, .tag {
   font-weight: 600;
   border-radius: 9px;
   text-align: center;
@@ -79,7 +79,7 @@ main h3, main .h3 {
   }
 }
 .ontime {
-  color: #9BDC33;
+  color: #65b623;
 }
 
 .soon {
@@ -721,6 +721,25 @@ table:not(#calendar table) tbody tr td span.delegate {
   font-size: 0.9rem;
   margin-top: 0.3rem;
 }
+.form .button {
+  margin-top: 30px;
+  width: 100%;
+}
+.form #submission_other_container {
+  display: none;
+}
+.form .container.row-start {
+  gap: 50px;
+}
+.form .container.row-start .assignment .row-start {
+  gap: 15px;
+}
+.form .container.row-start .assignment .row-start .row-start {
+  gap: 10px;
+}
+.form .buttons {
+  gap: 15px;
+}
 
 .home {
   width: 100%;
@@ -1285,35 +1304,40 @@ table:not(#calendar table) tbody tr td span.delegate {
 .suggest-assignment .row-center {
   gap: 15px;
 }
-.suggest-assignment .modal-container {
+.suggest-assignment.modal-container {
   position: relative;
   min-height: 100vh;
   background: white;
   align-items: flex-start;
 }
-.suggest-assignment .modal-container .modal {
+.suggest-assignment.modal-container .modal {
   background: #f9f9f9;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-.suggest-assignment .modal-container .modal h2 {
+.suggest-assignment.modal-container .modal h2 {
   margin-top: 20px;
 }
-.suggest-assignment .modal-container .modal .row-start {
+.suggest-assignment.modal-container .modal table {
+  margin-top: 20px;
+}
+.suggest-assignment.modal-container .modal .row-start {
   gap: 10px;
   margin: 20px 0;
 }
-.suggest-assignment .modal-container .modal .row-start #form_approve, .suggest-assignment .modal-container .modal .row-start #form_reject {
-  color: #4D3677;
+.suggest-assignment.modal-container .modal .row-start #form_approve, .suggest-assignment.modal-container .modal .row-start #form_reject {
   padding: 10px 15px;
-  background-color: #F0B5FF;
   cursor: pointer;
-}
-.suggest-assignment .modal-container .modal .row-start #form_approve:hover {
-  background-color: #9BDC33;
-}
-.suggest-assignment .modal-container .modal .row-start #form_reject:hover {
-  background-color: #DC3545;
   color: white;
+}
+.suggest-assignment.modal-container .modal .row-start #form_approve:hover, .suggest-assignment.modal-container .modal .row-start #form_reject:hover {
+  color: #4D3677;
+  background-color: #F0B5FF;
+}
+.suggest-assignment.modal-container .modal .row-start #form_approve {
+  background-color: #65b623;
+}
+.suggest-assignment.modal-container .modal .row-start #form_reject {
+  background-color: #DC3545;
 }
 
 /*# sourceMappingURL=app.css.map */

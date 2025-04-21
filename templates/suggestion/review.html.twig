@@ -4,7 +4,7 @@
 {% block description %}Une erreur potentielle dans une tâche ? Consulter la suggestion de modification{% endblock %}
 
 {% block body %}
-    <main class="modal-container padding container row-center has-table">
+    <main class="suggest-assignment modal-container padding container row-center has-table">
         <div class="modal">
             <h1>Revoir la suggestion pour "{{ assignment.title }}"</h1>
 
@@ -103,15 +103,15 @@
             {% endif %}
 
             {% if not suggestion.isProcessed %}
-                {{ form_start(form, {'attr': {'class': 'form'}}) }}
+                {{ form_start(form) }}
                 <div class="row-start">
-                    {{ form_widget(form.approve, {'attr': {'class': 'button btn btn-success'}}) }}
-                    {{ form_widget(form.reject, {'attr': {'class': 'button btn btn-danger'}}) }}
+                    {{ form_widget(form.approve) }}
+                    {{ form_widget(form.reject) }}
                 </div>
                 {{ form_end(form) }}
             {% endif %}
 
-            <a href="{{ path('app_suggestions') }}" class="button btn btn-sec">Retour à l’historique</a>
+            <a href="{{ path('app_suggestions') }}" class="button btn btn-sec">Retour aux suggestions</a>
         </div>
     </main>
 {% endblock %}
