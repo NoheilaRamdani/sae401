@@ -6,174 +6,157 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'fr',
-                buttonText: {
-                    today: 'Aujourd\'hui'
-                },
-                events: '/api/assignments' + (new URLSearchParams(window.location.search).toString() ? '?' + new URLSearchParams(window.location.search).toString() : ''),
-                eventClick: function(info) {
-                    info.jsEvent.preventDefault();
-                    fetch(`/api/assignments/${info.event.id}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Erreur API: ' + response.status);
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            console.log('ID cliqué:', info.event.id);
-                            console.log('Data from API:', data);
-                            showEventDetails(data);
-                        })
-                        .catch(error => {
-                            console.error('Erreur lors de la récupération des détails:', error);
-                            alert('Impossible de charger les détails de l\'événement.');
-                        });
-                },
-                eventDidMount: function(info) {
-                    info.el.classList.add('check-enabled');
-                    info.el.dataset.id = info.event.id; // Ajouter data-id pour la sélection
-                }
-            });
-            calendar.render();
+    document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'fr',
+    buttonText: {
+    today: 'Aujourd\'hui'
+    },
+    events: '/api/assignments' + (new URLSearchParams(window.location.search).toString() ? '?' + new URLSearchParams(window.location.search).toString() : ''),
+    eventClick: function(info) {
+    info.jsEvent.preventDefault();
+    fetch(`/api/assignments/${info.event.id}`)
+    .then(response => {
+    if (!response.ok) {
+    throw new Error('Erreur API: ' + response.status);
+    }
+    return response.json();
+    })
+    .then(data => {
+    console.log('ID cliqué:', info.event.id);
+    console.log('Data from API:', data);
+    showEventDetails(data);
+    })
+    .catch(error => {
+    console.error('Erreur lors de la récupération des détails:', error);
+    alert('Impossible de charger les détails de l\'événement.');
+    });
+    },
+    eventDidMount: function(info) {
+    info.el.classList.add('check-enabled');
+    info.el.dataset.id = info.event.id;
+    }
+    });
+    calendar.render();
 
-            // Initialiser la gestion des tâches terminées
-            initTaskManager({
-                selector: '.task-container',
-                hasCalendar: true,
-                calendar: calendar
-            });
+    initTaskManager({
+    selector: '.task-container',
+    hasCalendar: true,
+    calendar: calendar
+    });
 
-            document.querySelectorAll(".group-btn").forEach(button => {
-                button.addEventListener("click", function () {
-                    const type = this.dataset.type;
-                    const url = new URL(window.location);
-                    if (type) {
-                        url.searchParams.set("type", type);
-                    } else {
-                        url.searchParams.delete("type");
-                    }
-                    window.location.href = url.toString();
-                });
-            });
+    document.querySelectorAll(".group-btn").forEach(button => {
+    button.addEventListener("click", function () {
+    const type = this.dataset.type;
+    const url = new URL(window.location);
+    if (type) {
+    url.searchParams.set("type", type);
+    } else {
+    url.searchParams.delete("type");
+    }
+    window.location.href = url.toString();
+    });
+    });
 
-            // Fonction pour ajuster la position de .tasks-container en fonction de la hauteur visible de la nav
-            function adjustTasksContainerPosition() {
-                const tasksContainer = document.querySelector('.tasks-container');
-                const nav = document.querySelector('nav');
+    function adjustTasksContainerPosition() {
+    const tasksContainer = document.querySelector('.tasks-container');
+    const nav = document.querySelector('nav');
+    if (tasksContainer && nav && window.innerWidth >= 1200) {
+    const navRect = nav.getBoundingClientRect();
+    const navVisibleHeight = Math.max(0, Math.min(navRect.bottom, window.innerHeight) - Math.max(0, navRect.top));
+    const currentPaddingTop = 30;
+    tasksContainer.style.paddingTop = (navVisibleHeight + currentPaddingTop) + 'px';
+    } else if (tasksContainer) {
+    tasksContainer.style.paddingTop = '30px';
+    }
+    }
 
-                if (tasksContainer && nav && window.innerWidth >= 1200) {
-                    // Calculer la position de la nav par rapport à la fenêtre
-                    const navRect = nav.getBoundingClientRect();
+    window.addEventListener('scroll', adjustTasksContainerPosition);
+    adjustTasksContainerPosition();
 
-                    // La hauteur visible de la nav est la séance entre la position en bas de la nav et la position en haut de la fenêtre
-                    const navVisibleHeight = Math.max(0, Math.min(navRect.bottom, window.innerHeight) - Math.max(0, navRect.top));
+    const suggestionsBox = document.querySelector('div[data-suggestions]');
+    const showSuggestionsBtn = document.querySelector('button[data-show-suggestions]');
+    if (suggestionsBox && showSuggestionsBtn) {
+    suggestionsBox.classList.remove('is-visible'); // Hide popup initially
+    showSuggestionsBtn.classList.add('is-visible'); // Show button initially
+    localStorage.setItem('suggestionsBoxHidden', 'true');
 
-                    // Appliquer le padding-top à .tasks-container en fonction de la hauteur visible de la nav
-                    const currentPaddingTop = 30; // Valeur fixe que tu as définie pour le padding
-                    tasksContainer.style.paddingTop = (navVisibleHeight + currentPaddingTop) + 'px';
-                } else if (tasksContainer) {
-                    // Réinitialiser le padding-top pour les écrans < 1200px
-                    tasksContainer.style.paddingTop = '30px';
-                }
-            }
+    const suggestionBadgeContainer = document.querySelector('.suggestion-badge-container');
+    const suggestionCountBadge = document.createElement('span');
+    suggestionCountBadge.classList.add('suggestion-count-badge');
+    suggestionCountBadge.textContent = '0';
+    suggestionBadgeContainer.appendChild(suggestionCountBadge);
 
-            // Ajouter un écouteur d'événements pour recalculer à chaque scroll
-            window.addEventListener('scroll', adjustTasksContainerPosition);
+    document.getElementById('closeSuggestions').addEventListener('click', function() {
+    suggestionsBox.classList.remove('is-visible');
+    showSuggestionsBtn.classList.add('is-visible');
+    localStorage.setItem('suggestionsBoxHidden', 'true');
+    });
 
-            // Appeler la fonction une première fois pour initialiser la position
-            adjustTasksContainerPosition();
+    showSuggestionsBtn.addEventListener('click', function() {
+    suggestionsBox.classList.add('is-visible');
+    showSuggestionsBtn.classList.remove('is-visible');
+    localStorage.setItem('suggestionsBoxHidden', 'false');
+    });
 
-            const notifications = {{ notifications|json_encode|raw }};
-            notifications.forEach(notification => {
-                const div = document.createElement('div');
-                div.textContent = `Attention : "${notification.title}" dans ${notification.hoursUntilDue}h !`;
-                div.classList.add('popup');
-                document.body.appendChild(div);
-                setTimeout(() => div.remove(), 3000);
-            });
+    function updateSuggestions() {
+    fetch('/api/suggestions/pending', {
+    headers: {
+    'X-Requested-With': 'XMLHttpRequest'
+    }
+    })
+    .then(response => response.json())
+    .then(data => {
+    const suggestionsList = suggestionsBox.querySelector('ul');
+    if (!suggestionsList) return;
 
-            const suggestionsBox = document.querySelector('div[data-suggestions]');
-            const showSuggestionsBtn = document.querySelector('button[data-show-suggestions]');
-            if (suggestionsBox && showSuggestionsBtn) {
-                // Fermer le popup par défaut
-                suggestionsBox.style.display = 'none';
-                showSuggestionsBtn.style.display = 'flex';
-                localStorage.setItem('suggestionsBoxHidden', 'true');
+    suggestionsList.innerHTML = '';
+    data.forEach(suggestion => {
+    const li = document.createElement('li');
+    li.dataset.id = suggestion.id;
+    li.innerHTML = `
+    <a href="/suggestion/${suggestion.id}/review"><strong>${suggestion.suggestedBy}</strong> pour "[${suggestion.assignment.subjectCode}] ${suggestion.assignment.title}" : ${suggestion.message || 'Aucun message'}</a>
+    `;
+    suggestionsList.appendChild(li);
+    });
 
-                // Ajouter la bulle pour le nombre de suggestions
-                const suggestionCountBadge = document.createElement('span');
-                suggestionCountBadge.classList.add('suggestion-count-badge');
-                showSuggestionsBtn.appendChild(suggestionCountBadge);
+    const bellIcon = suggestionBadgeContainer.querySelector('i.fa-bell');
 
-                document.getElementById('closeSuggestions').addEventListener('click', function() {
-                    suggestionsBox.style.display = 'none';
-                    showSuggestionsBtn.style.display = 'flex';
-                    localStorage.setItem('suggestionsBoxHidden', 'true');
-                });
+    suggestionCountBadge.textContent = data.length;
+    suggestionCountBadge.style.display = data.length > 0 ? 'flex' : 'none';
+    bellIcon.style.animation = 'tintement 0.6s ease';
+    setTimeout(() => {
+    bellIcon.style.animation = '';
+    }, 600);
 
-                showSuggestionsBtn.addEventListener('click', function() {
-                    suggestionsBox.style.display = 'block';
-                    showSuggestionsBtn.style.display = 'none';
-                    localStorage.setItem('suggestionsBoxHidden', 'false');
-                });
+    if (data.length === 0) {
+    suggestionsBox.classList.remove('is-visible');
+    showSuggestionsBtn.classList.add('is-visible');
+    localStorage.setItem('suggestionsBoxHidden', 'true');
+    } else {
+    if (localStorage.getItem('suggestionsBoxHidden') === 'true') {
+    suggestionsBox.classList.remove('is-visible');
+    showSuggestionsBtn.classList.add('is-visible');
+    } else {
+    suggestionsBox.classList.add('is-visible');
+    showSuggestionsBtn.classList.remove('is-visible');
+    }
+    }
+    })
+    .catch(error => console.error('Erreur lors du chargement des suggestions :', error));
+    }
 
-                function updateSuggestions() {
-                    fetch('/api/suggestions/pending', {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            const suggestionsList = suggestionsBox.querySelector('ul');
-                            if (!suggestionsList) return;
+    const fontAwesomeLoaded = document.querySelector('link[href*="font-awesome"]') || document.querySelector('link[href*="fontawesome"]');
+    if (!fontAwesomeLoaded) {
+    showSuggestionsBtn.classList.add('no-icon');
+    }
 
-                            suggestionsList.innerHTML = '';
-                            data.forEach(suggestion => {
-                                const li = document.createElement('li');
-                                li.dataset.id = suggestion.id;
-                                li.innerHTML = `
-                                    <a href="/suggestion/${suggestion.id}/review"><strong>${suggestion.suggestedBy}</strong> pour "[${suggestion.assignment.subjectCode}] ${suggestion.assignment.title}" : ${suggestion.message || 'Aucun message'}</a>
-                                `;
-                                suggestionsList.appendChild(li);
-                            });
-
-                            // Mettre à jour la bulle avec le nombre de suggestions
-                            suggestionCountBadge.textContent = data.length;
-                            suggestionCountBadge.style.display = data.length > 0 ? 'inline-block' : 'none';
-
-                            if (data.length === 0) {
-                                suggestionsBox.style.display = 'none';
-                                showSuggestionsBtn.style.display = 'flex';
-                                localStorage.setItem('suggestionsBoxHidden', 'true');
-                            } else {
-                                // Respecter l'état actuel (fermé par défaut)
-                                if (localStorage.getItem('suggestionsBoxHidden') === 'true') {
-                                    suggestionsBox.style.display = 'none';
-                                    showSuggestionsBtn.style.display = 'flex';
-                                } else {
-                                    suggestionsBox.style.display = 'block';
-                                    showSuggestionsBtn.style.display = 'none';
-                                }
-                            }
-                        })
-                        .catch(error => console.error('Erreur lors du chargement des suggestions :', error));
-                }
-
-                const fontAwesomeLoaded = document.querySelector('link[href*="font-awesome"]') || document.querySelector('link[href*="fontawesome"]');
-                if (!fontAwesomeLoaded) {
-                    showSuggestionsBtn.classList.add('no-icon');
-                }
-
-                updateSuggestions();
-                document.addEventListener('suggestionProcessed', updateSuggestions);
-            }
-        });
+    updateSuggestions();
+    document.addEventListener('suggestionProcessed', updateSuggestions);
+    }
+    });
     </script>
 {% endblock %}
 
@@ -257,8 +240,9 @@
                 </div>
             </div>
             <button class="notif-button" data-show-suggestions title="Afficher les suggestions">
-                <i class="fa-solid fa-bell"></i>
-                <span class="sr-only">Afficher les suggestions</span>
+                <span class="suggestion-badge-container">
+                    <i class="fa-solid fa-bell"></i>
+                </span>
             </button>
         {% endif %}
     </main>

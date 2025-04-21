@@ -703,25 +703,6 @@ table:not(#calendar table) {
 
 }
 
-.suggestion-count-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background-color: $urgent; // Utilise votre variable $urgent pour la couleur rouge
-  color: white;
-  border-radius: 50%;
-  padding: 2px 6px;
-  font-size: 12px;
-  line-height: 1;
-  min-width: 18px;
-  text-align: center;
-  display: none;
-}
-    // Afficher le badge si le nombre de suggestions est supérieur à 0
-    &.has-suggestions {
-        display: inline-block;
-    }
-
 .form {
   min-width: 750px;
   width: 80%;

@@ -186,34 +186,61 @@
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
     z-index: 100;
     @extend .font-base;
+  opacity: 0;
+  visibility: hidden;
     transition: all 0.2s ease;
 
-  i {
-    transition: transform 0.3s ease;
-
+  &.is-visible {
+    opacity: 1;
+    visibility: visible;
   }
+
+    .suggestion-badge-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      .suggestion-count-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: $purplelight;
+        color: $purpledark;
+        border-radius: 50%;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+       width: 20px;
+        height: 20px;
+        align-items: center;
+        justify-content: center;
+        display: none;
+        transition: all 0.2s ease;
+
+      }
+      // Afficher le badge si le nombre de suggestions est supérieur à 0
+      &.has-suggestions {
+        display: flex;
+
+        i {
+          transition: transform 0.3s ease;
+        }
+      }
+    }
 
   &:hover {
     background-color: $purplelight;
     color: $purpledark;
 
-    i {
-      animation: tintement 0.6s ease;
+    .suggestion-count-badge {
+      color: $purplelight;
+      background-color: $purpledark;
     }
-  }
-
-  &::after {
-    content: "🔔"; /* Emoji de cloche comme secours */
-    display: none;
-  }
-  &.no-icon::after {
-    display: block;
   }
 
   }
@@ -231,8 +258,10 @@
   border-radius: 8px;
   z-index: 100;
   overflow-y: auto;
-  opacity: 1;
-  transition: opacity 0.3s ease-in-out;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s ease-in-out;
 
   .h4, h4 {
     margin: 0 0 8px;
@@ -312,6 +341,13 @@ li {
 
   a:active {
     color: currentColor;
+  }
+
+
+  &.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
   }
 }
 

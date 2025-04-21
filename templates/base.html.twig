@@ -114,12 +114,12 @@
             {# Ajout du lien iCal pour ROLE_DELEGATE et ROLE_USER uniquement #}
             {% if is_granted('ROLE_DELEGATE') or not is_granted('ROLE_ADMIN') %}
                 <li class="row-center">
-                    <a class="row-center" href="{{ path('ical_user_feed') }}" title="Exporter vers calendrier"><i class="fa-solid fa-calendar-plus"></i> Exporter calendrier</a>
+                    <a class="row-center" href="{{ path('ical_user_feed') }}" title="Exporter vers calendrier"><i class="fa-solid fa-calendar-plus"></i> iCal</a>
                 </li>
                 <li class="row-center separator"></li>
             {% endif %}
             <li class="row-center">
-                <a class="row-center" href="{{ path('app_logout') }}">Déconnexion <i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                <a class="row-center" href="{{ path('app_logout') }}"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
             </li>
         {% endif %}
     </ul>
