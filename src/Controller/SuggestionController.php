@@ -231,9 +231,14 @@ class SuggestionController extends AbstractController
 
     #[Route('/suggestions', name: 'app_suggestions', methods: ['GET'])]
     #[IsGranted('ROLE_DELEGATE')]
-    public function suggestions(EntityManagerInterface $entityManager): Response
+    public function suggestions(Request $request, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
+
+        // Récupérer le numéro de page (par défaut, page 1)
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 10; // 10 suggestions par page
+
         $queryBuilder = $entityManager->getRepository(Suggestion::class)
             ->createQueryBuilder('s')
             ->leftJoin('s.assignment', 'a')
@@ -245,9 +250,21 @@ class SuggestionController extends AbstractController
                 ->setParameter('userGroups', $userGroups);
         }
 
+        // Compter le total des suggestions
+        $countQueryBuilder = clone $queryBuilder;
+        $totalSuggestions = $countQueryBuilder->select('COUNT(DISTINCT s.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // Appliquer la pagination
         $suggestions = $queryBuilder->orderBy('s.createdAt', 'DESC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+
+        // Calculer le nombre total de pages
+        $totalPages = ceil($totalSuggestions / $limit);
 
         // Préparer les données pour le template
         $suggestionsData = [];
@@ -268,9 +285,10 @@ class SuggestionController extends AbstractController
 
         return $this->render('suggestion/history.html.twig', [
             'suggestionsData' => $suggestionsData,
+            'current_page' => $page,
+            'total_pages' => $totalPages,
         ]);
     }
-
     #[Route('/suggestion/{id}/review', name: 'review_suggestion', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_DELEGATE')]
     public function reviewSuggestion(int $id, Request $request, EntityManagerInterface $entityManager): Response

@@ -3,7 +3,6 @@
 {% block title %}Gestion des tâches{% endblock %}
 {% block description %}Gérez l'ensemble des tâches de l'agenda MMI{% endblock %}
 
-
 {% block body %}
     <main class="manage-assignmts padding">
         <h1>Gestion des tâches</h1>
@@ -87,6 +86,27 @@
                 <p>Aucun devoir trouvé.</p>
             {% endif %}
         </div>
+
+        {# Pagination #}
+        {% if total_pages > 1 %}
+            <nav class="pagination row-start">
+                {# Bouton Précédent #}
+                <a href="{{ path('manage_assignments', {'page': current_page - 1, 'subject': current_subject, 'group': current_group}) }}"
+                   class="button-grey {{ current_page == 1 ? 'disabled' : '' }}">Précédent</a>
+
+                {# Numéros de page #}
+                {% set startPage = max(1, current_page - 2) %}
+                {% set endPage = min(total_pages, current_page + 2) %}
+                {% for i in startPage..endPage %}
+                    <a href="{{ path('manage_assignments', {'page': i, 'subject': current_subject, 'group': current_group}) }}"
+                       class="button {{ current_page == i ? 'active' : '' }}">{{ i }}</a>
+                {% endfor %}
+
+                {# Bouton Suivant #}
+                <a href="{{ path('manage_assignments', {'page': current_page + 1, 'subject': current_subject, 'group': current_group}) }}"
+                   class="button-grey {{ current_page == total_pages ? 'disabled' : '' }}">Suivant</a>
+            </nav>
+        {% endif %}
 
         {# Lien pour ajouter un nouveau devoir #}
         <a class="button" href="{{ path('add_assignment') }}"><i class="fa-solid fa-plus"></i> Ajouter une nouvelle tâche</a>
