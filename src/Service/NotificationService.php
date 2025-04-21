@@ -1,53 +1,72 @@
 <?php
-
 namespace App\Service;
 
 use App\Entity\Assignment;
-use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 class NotificationService
 {
-    private $mailer;
     private $entityManager;
+    private $mailer;
 
-    public function __construct(MailerInterface $mailer, EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, MailerInterface $mailer)
     {
-        $this->mailer = $mailer;
         $this->entityManager = $entityManager;
+        $this->mailer = $mailer;
     }
 
     public function sendAssignmentNotification(Assignment $assignment): void
     {
-        // Récupérer les groupes associés au devoir
         $groups = $assignment->getGroups();
-
-        // Récupérer tous les utilisateurs des groupes
         $users = [];
         foreach ($groups as $group) {
-            foreach ($group->getUsers() as $user) {
-                // Envoyer uniquement aux utilisateurs avec ROLE_USER
-                if (in_array('ROLE_USER', $user->getRoles()) && !in_array($user->getId(), array_column($users, 'id'))) {
-                    $users[] = $user;
-                }
-            }
+            // Requête modifiée pour utiliser UserGroup
+            $groupUsers = $this->entityManager->createQueryBuilder()
+                ->select('u')
+                ->from('App\Entity\User', 'u')
+                ->innerJoin('App\Entity\UserGroup', 'ug', 'WITH', 'ug.user = u')
+                ->where('ug.group = :groupId')
+                ->setParameter('groupId', $group->getId())
+                ->getQuery()
+                ->getResult();
+            $users = array_merge($users, $groupUsers);
         }
+        $users = array_unique($users, SORT_REGULAR);
 
-        // Créer et envoyer un email pour chaque utilisateur
         foreach ($users as $user) {
-            $email = (new TemplatedEmail())
-                ->from('no-reply@mmi-agenda.com')
+            $description = $assignment->getDescription() ?: 'Aucune description';
+            $email = (new Email())
+                ->from('admin@mmiple.fr')
                 ->to($user->getEmail())
                 ->subject('Nouveau devoir ajouté : ' . $assignment->getTitle())
-                ->htmlTemplate('emails/assignment_notification.html.twig')
-                ->context([
-                    'assignment' => $assignment,
-                    'user' => $user,
-                ]);
+                ->text(
+                    "Bonjour {$user->getFirstName()},\n\n" .
+                    "Un nouveau devoir a été ajouté :\n" .
+                    "Titre : {$assignment->getTitle()}\n" .
+                    "Description : {$description}\n" .
+                    "Date limite : {$assignment->getDueDate()->format('d/m/Y H:i')}\n" .
+                    "Type : {$assignment->getType()}\n\n" .
+                    "Consultez les détails sur l'application."
+                )
+                ->html(
+                    "<p>Bonjour {$user->getFirstName()},</p>" .
+                    "<p>Un nouveau devoir a été ajouté :</p>" .
+                    "<ul>" .
+                    "<li><strong>Titre :</strong> {$assignment->getTitle()}</li>" .
+                    "<li><strong>Description :</strong> {$description}</li>" .
+                    "<li><strong>Date limite :</strong> {$assignment->getDueDate()->format('d/m/Y H:i')}</li>" .
+                    "<li><strong>Type :</strong> {$assignment->getType()}</li>" .
+                    "</ul>" .
+                    "<p>Consultez les détails sur l'application.</p>"
+                );
 
-            $this->mailer->send($email);
+            try {
+                $this->mailer->send($email);
+            } catch (\Exception $e) {
+                error_log("Erreur lors de l'envoi de l'email à {$user->getEmail()} : {$e->getMessage()}");
+            }
         }
     }
 }

@@ -4,9 +4,8 @@ namespace App\Controller;
 use App\Entity\Assignment;
 use App\Entity\Suggestion;
 use App\Form\AssignmentFormType;
-use App\Form\SuggestionFormType;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Service\NotificationService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class AssignmentController extends AbstractController
 {
     #[Route('/assignment/add', name: 'add_assignment', methods: ['GET', 'POST'])]
-    public function addAssignment(Request $request, EntityManagerInterface $entityManager): Response
+    public function addAssignment(Request $request, EntityManagerInterface $entityManager, NotificationService $notificationService): Response
     {
         $user = $this->getUser();
         if (!$user) {
@@ -39,8 +38,13 @@ class AssignmentController extends AbstractController
 
             $entityManager->persist($assignment);
             $entityManager->flush();
+
             // Envoyer les notifications par email
-            $notificationService->sendAssignmentNotification($assignment);
+            try {
+                $notificationService->sendAssignmentNotification($assignment);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Devoir ajouté, mais erreur lors de l\'envoi des notifications : ' . $e->getMessage());
+            }
 
             $this->addFlash('success', 'Le devoir a été ajouté avec succès !');
             return $this->redirectToRoute('app_home');
@@ -116,8 +120,19 @@ class AssignmentController extends AbstractController
             throw $this->createNotFoundException('Devoir non trouvé.');
         }
 
-        if ($assignment->getCreatedBy() !== $user && !$this->isGranted('ROLE_ADMIN')) {
-            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer ce devoir.');
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $userGroups = $user->getGroups();
+            $assignmentGroups = $assignment->getGroups();
+            $hasAccess = false;
+            foreach ($assignmentGroups as $group) {
+                if ($userGroups->contains($group)) {
+                    $hasAccess = true;
+                    break;
+                }
+            }
+            if (!$hasAccess && $assignment->getCreatedBy() !== $user) {
+                throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce devoir.');
+            }
         }
 
         if ($this->isCsrfTokenValid('delete'.$id, $request->request->get('_token'))) {
@@ -142,7 +157,6 @@ class AssignmentController extends AbstractController
     public function manageAssignments(Request $request, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
-        dump('Utilisateur :', $user ? $user->getEmail() : 'Aucun utilisateur', 'Rôles :', $user ? $user->getRoles() : 'N/A');
         if (!$user) {
             throw $this->createAccessDeniedException('Utilisateur non connecté.');
         }
@@ -152,10 +166,16 @@ class AssignmentController extends AbstractController
         }
 
         try {
+            // Récupérer le numéro de page depuis la requête (par défaut, page 1)
+            $page = max(1, $request->query->getInt('page', 1));
+            $limit = 10; // Nombre de tâches par page
+
+            // Construire la requête de base
             $queryBuilder = $entityManager->getRepository(Assignment::class)
                 ->createQueryBuilder('a')
                 ->leftJoin('a.groups', 'g');
 
+            // Appliquer les filtres
             $subjectId = $request->query->get('subject', $request->request->get('subject'));
             $groupId = $request->query->get('group', $request->request->get('group'));
 
@@ -173,18 +193,28 @@ class AssignmentController extends AbstractController
                 $userGroups = $user->getGroups();
                 if (!$userGroups) {
                     $assignments = [];
+                    $totalAssignments = 0;
                 } else {
                     $queryBuilder->andWhere('g IN (:userGroups)')
                         ->setParameter('userGroups', $userGroups);
-                    $assignments = $queryBuilder->orderBy('a.due_date', 'ASC')
-                        ->getQuery()
-                        ->getResult();
                 }
-            } else {
-                $assignments = $queryBuilder->orderBy('a.due_date', 'ASC')
-                    ->getQuery()
-                    ->getResult();
             }
+
+            // Cloner la requête pour compter le total
+            $countQueryBuilder = clone $queryBuilder;
+            $totalAssignments = $countQueryBuilder->select('COUNT(DISTINCT a.id)')
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            // Appliquer la pagination
+            $assignments = $queryBuilder->orderBy('a.due_date', 'ASC')
+                ->setFirstResult(($page - 1) * $limit)
+                ->setMaxResults($limit)
+                ->getQuery()
+                ->getResult();
+
+            // Calculer le nombre total de pages
+            $totalPages = ceil($totalAssignments / $limit);
 
             $subjects = $entityManager->getRepository('App\Entity\Subject')->findAll();
             $groups = $this->isGranted('ROLE_ADMIN')
@@ -199,9 +229,90 @@ class AssignmentController extends AbstractController
                 'current_group' => $groupId,
                 'is_delegate_or_admin' => $this->isGranted('ROLE_DELEGATE') || $this->isGranted('ROLE_ADMIN'),
                 'entity_manager' => $entityManager,
+                'current_page' => $page,
+                'total_pages' => $totalPages,
+                'total_assignments' => $totalAssignments,
             ]);
         } catch (\Exception $e) {
-            dump($e->getMessage());
+            throw $this->createNotFoundException('Erreur lors du chargement des devoirs : ' . $e->getMessage());
+        }
+    }
+
+    #[Route('/assignments', name: 'app_assignments', methods: ['GET'])]
+    public function assignments(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+        }
+
+        try {
+            // Récupérer le numéro de page depuis la requête (par défaut, page 1)
+            $page = max(1, $request->query->getInt('page', 1));
+            $limit = 10; // Nombre de tâches par page
+
+            // Construire la requête de base
+            $queryBuilder = $entityManager->getRepository(Assignment::class)
+                ->createQueryBuilder('a')
+                ->leftJoin('a.groups', 'g');
+
+            // Appliquer les filtres
+            $subjectId = $request->query->get('subject', $request->request->get('subject'));
+            $groupId = $request->query->get('group', $request->request->get('group'));
+
+            if ($subjectId) {
+                $queryBuilder->andWhere('a.subject = :subject')
+                    ->setParameter('subject', $subjectId);
+            }
+
+            if ($groupId) {
+                $queryBuilder->andWhere('g.id = :group')
+                    ->setParameter('group', $groupId);
+            }
+
+            if (!$this->isGranted('ROLE_ADMIN')) {
+                $userGroups = $user->getGroups();
+                if (!$userGroups) {
+                    $assignments = [];
+                    $totalAssignments = 0;
+                } else {
+                    $queryBuilder->andWhere('g IN (:userGroups)')
+                        ->setParameter('userGroups', $userGroups);
+                }
+            }
+
+            // Cloner la requête pour compter le total
+            $countQueryBuilder = clone $queryBuilder;
+            $totalAssignments = $countQueryBuilder->select('COUNT(DISTINCT a.id)')
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            // Appliquer la pagination
+            $assignments = $queryBuilder->orderBy('a.due_date', 'ASC')
+                ->setFirstResult(($page - 1) * $limit)
+                ->setMaxResults($limit)
+                ->getQuery()
+                ->getResult();
+
+            // Calculer le nombre total de pages
+            $totalPages = ceil($totalAssignments / $limit);
+
+            $subjects = $entityManager->getRepository('App\Entity\Subject')->findAll();
+            $groups = $this->isGranted('ROLE_ADMIN')
+                ? $entityManager->getRepository('App\Entity\Group')->findAll()
+                : $user->getGroups();
+
+            return $this->render('assignment/assignments_history.html.twig', [
+                'assignments' => $assignments ?? [],
+                'subjects' => $subjects ?? [],
+                'groups' => $groups ?? [],
+                'current_subject' => $subjectId,
+                'current_group' => $groupId,
+                'is_delegate_or_admin' => $this->isGranted('ROLE_DELEGATE') || $this->isGranted('ROLE_ADMIN'),
+                'current_page' => $page,
+                'total_pages' => $totalPages,
+            ]);
+        } catch (\Exception $e) {
             throw $this->createNotFoundException('Erreur lors du chargement des devoirs : ' . $e->getMessage());
         }
     }
@@ -215,7 +326,6 @@ class AssignmentController extends AbstractController
         }
 
         $typeFilter = $request->query->get('type');
-        // Ajouter un filtrage optionnel par date
         $startDate = $request->query->get('start') ? new \DateTime($request->query->get('start')) : null;
         $endDate = $request->query->get('end') ? new \DateTime($request->query->get('end')) : null;
 
@@ -237,7 +347,6 @@ class AssignmentController extends AbstractController
             }
         }
 
-        // Ajouter le filtrage par date si start et end sont fournis
         if ($startDate) {
             $queryBuilder->andWhere('a.due_date >= :start')
                 ->setParameter('start', $startDate);
@@ -268,13 +377,14 @@ class AssignmentController extends AbstractController
                     'description' => $assignment->getDescription() ?? 'Lorem ipsum...',
                     'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
                     'isCompleted' => $assignment->isCompleted(),
-                    'type' => $assignment->getType() ?? 'devoir', // Valeur par défaut si type est vide
+                    'type' => $assignment->getType() ?? 'devoir',
                 ]
             ];
         }
 
         return $this->json($events);
     }
+
     #[Route('/api/assignments/{id}', name: 'api_assignment_details', methods: ['GET'])]
     public function getAssignmentDetails(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -291,7 +401,8 @@ class AssignmentController extends AbstractController
         if (!$this->isGranted('ROLE_ADMIN')) {
             $groups = $user->getGroups();
             $hasAccess = false;
-            foreach ($assignment->getGroups() as $group) {
+            for ($i = 0; $i < count($assignment->getGroups()->toArray()); $i++) {
+                $group = $assignment->getGroups()->toArray()[$i];
                 if ($groups->contains($group)) {
                     $hasAccess = true;
                     break;
@@ -320,6 +431,7 @@ class AssignmentController extends AbstractController
             ] : null,
         ]);
     }
+
     #[Route('/api/assignments/{id}/toggle-complete', name: 'api_toggle_complete', methods: ['POST'])]
     public function toggleComplete(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -336,7 +448,8 @@ class AssignmentController extends AbstractController
         if (!$this->isGranted('ROLE_ADMIN')) {
             $groups = $user->getGroups();
             $hasAccess = false;
-            foreach ($assignment->getGroups() as $group) {
+            for ($i = 0; $i < count($assignment->getGroups()->toArray()); $i++) {
+                $group = $assignment->getGroups()->toArray()[$i];
                 if ($groups->contains($group)) {
                     $hasAccess = true;
                     break;

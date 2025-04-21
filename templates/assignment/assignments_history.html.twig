@@ -3,7 +3,6 @@
 {% block title %}Tâches{% endblock %}
 {% block description %}Retrouvez ici toutes vos tâches et suivez votre progression.{% endblock %}
 
-
 {% block javascripts %}
     {{ parent() }}
     <script>
@@ -136,6 +135,27 @@
                 <p>Aucune tâche trouvée.</p>
             {% endif %}
         </div>
+
+        {# Pagination #}
+        {% if total_pages is defined and total_pages > 1 %}
+            <nav class="pagination">
+                {# Bouton Précédent #}
+                <a href="{{ path('app_assignments_history', {'page': current_page - 1, 'subject': current_subject, 'group': current_group}) }}"
+                   class="button-grey {{ current_page == 1 ? 'disabled' : '' }}">Précédent</a>
+
+                {# Numéros de page #}
+                {% set startPage = max(1, current_page - 2) %}
+                {% set endPage = min(total_pages, current_page + 2) %}
+                {% for i in startPage..endPage %}
+                    <a href="{{ path('app_assignments_history', {'page': i, 'subject': current_subject, 'group': current_group}) }}"
+                       class="button {{ current_page == i ? 'active' : '' }}">{{ i }}</a>
+                {% endfor %}
+
+                {# Bouton Suivant #}
+                <a href="{{ path('app_assignments_history', {'page': current_page + 1, 'subject': current_subject, 'group': current_group}) }}"
+                   class="button-grey {{ current_page == total_pages ? 'disabled' : '' }}">Suivant</a>
+            </nav>
+        {% endif %}
 
         {# Ajout du modal identique à celui de home #}
         {% include 'partials/modal.html.twig' %}
