@@ -37,6 +37,7 @@ class NotificationService
 
         foreach ($users as $user) {
             $description = $assignment->getDescription() ?: 'Aucune description';
+            $subjectName = $assignment->getSubject() ? $assignment->getSubject()->getName() : 'Non défini'; // Ajout de la matière
             $email = (new Email())
                 ->from('admin@mmiple.fr')
                 ->to($user->getEmail())
@@ -45,6 +46,7 @@ class NotificationService
                     "Bonjour {$user->getFirstName()},\n\n" .
                     "Un nouveau devoir a été ajouté :\n" .
                     "Titre : {$assignment->getTitle()}\n" .
+                    "Matière : {$subjectName}\n" . // Ajout de la matière
                     "Description : {$description}\n" .
                     "Date limite : {$assignment->getDueDate()->format('d/m/Y H:i')}\n" .
                     "Type : {$assignment->getType()}\n\n" .
@@ -55,6 +57,7 @@ class NotificationService
                     "<p>Un nouveau devoir a été ajouté :</p>" .
                     "<ul>" .
                     "<li><strong>Titre :</strong> {$assignment->getTitle()}</li>" .
+                    "<li><strong>Matière :</strong> {$subjectName}</li>" . // Ajout de la matière
                     "<li><strong>Description :</strong> {$description}</li>" .
                     "<li><strong>Date limite :</strong> {$assignment->getDueDate()->format('d/m/Y H:i')}</li>" .
                     "<li><strong>Type :</strong> {$assignment->getType()}</li>" .
