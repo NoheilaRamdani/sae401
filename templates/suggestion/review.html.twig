@@ -102,7 +102,7 @@
                 <p class="no-changes">Aucune modification détectée. Cette suggestion ne propose aucun changement par rapport aux valeurs actuelles.</p>
             {% endif %}
 
-            {% if not suggestion.isProcessed %}
+            {% if suggestion.status == 'PENDING' %} {# Changement ici : isProcessed remplacé par status == 'PENDING' #}
                 {{ form_start(form) }}
                 <div class="row-start">
                     {{ form_widget(form.approve) }}

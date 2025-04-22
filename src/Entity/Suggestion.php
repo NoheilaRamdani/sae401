@@ -30,8 +30,8 @@ class Suggestion
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $originalValues = null;
 
-    #[ORM\Column]
-    private ?bool $isProcessed = null;
+    #[ORM\Column(type: Types::STRING)]
+    private string $status = 'PENDING';
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $createdAt = null;
@@ -96,14 +96,17 @@ class Suggestion
         return $this;
     }
 
-    public function isProcessed(): ?bool
+    public function getStatus(): string
     {
-        return $this->isProcessed;
+        return $this->status;
     }
 
-    public function setIsProcessed(bool $isProcessed): static
+    public function setStatus(string $status): static
     {
-        $this->isProcessed = $isProcessed;
+        if (!in_array($status, ['PENDING', 'ACCEPTED', 'REJECTED'])) {
+            throw new \InvalidArgumentException("Statut invalide : $status");
+        }
+        $this->status = $status;
         return $this;
     }
 

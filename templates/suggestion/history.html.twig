@@ -2,7 +2,6 @@
 
 {% block title %}Historique des suggestions{% endblock %}
 {% block description %}Retrouvez ici toutes les suggestions qui vous ont été soumises{% endblock %}
-
 {% block body %}
     <main class="padding">
         <h1>Historique des suggestions</h1>
@@ -62,16 +61,17 @@
                         </td>
                         <td>{{ suggestion.createdAt|date('d/m/Y H:i') }}</td>
                         <td>
-                            {% if suggestion.isProcessed %}
-                                <span class="status-processed">Traité</span>
+                            {% if suggestion.status == 'ACCEPTED' %}
+                                <span class="status-accepted">Acceptée</span>
+                            {% elseif suggestion.status == 'REJECTED' %}
+                                <span class="status-rejected">Refusée</span>
                             {% else %}
                                 <span class="status-pending">En attente</span>
                             {% endif %}
                         </td>
                         <td class="action">
-                            {% if not suggestion.isProcessed %}
+                            {% if suggestion.status == 'PENDING' %}
                                 <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}" class="btn btn-primary">Traiter</a>
-                            {% else %}
                             {% endif %}
                         </td>
                     </tr>
@@ -82,14 +82,11 @@
             <p class="no-suggestions">Aucune suggestion à afficher.</p>
         {% endif %}
 
-        {# Pagination #}
         {% if total_pages > 1 %}
             <nav class="pagination">
-                {# Bouton Précédent #}
                 <a href="{{ path('app_suggestions', {'page': current_page - 1}) }}"
                    class="btn btn-sec {{ current_page == 1 ? 'disabled' : '' }}">Précédent</a>
 
-                {# Numéros de page #}
                 {% set startPage = max(1, current_page - 2) %}
                 {% set endPage = min(total_pages, current_page + 2) %}
                 {% for i in startPage..endPage %}
@@ -97,7 +94,6 @@
                        class="btn btn-primary {{ current_page == i ? 'active' : '' }}">{{ i }}</a>
                 {% endfor %}
 
-                {# Bouton Suivant #}
                 <a href="{{ path('app_suggestions', {'page': current_page + 1}) }}"
                    class="btn btn-sec {{ current_page == total_pages ? 'disabled' : '' }}">Suivant</a>
             </nav>

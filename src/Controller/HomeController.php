@@ -78,8 +78,8 @@ class HomeController extends AbstractController
         if ($this->isGranted('ROLE_DELEGATE')) {
             $suggestions = $entityManager->getRepository(\App\Entity\Suggestion::class)
                 ->createQueryBuilder('s')
-                ->where('s.isProcessed = :isProcessed')
-                ->setParameter('isProcessed', false)
+                ->where('s.status = :status') // Changement ici : isProcessed remplacé par status
+                ->setParameter('status', 'PENDING') // Changement ici : false remplacé par 'PENDING'
                 ->orderBy('s.createdAt', 'DESC')
                 ->setMaxResults(5)
                 ->getQuery()

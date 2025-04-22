@@ -119,7 +119,7 @@ class SuggestionController extends AbstractController
             // Matière
             $submittedSubjectId = $data['subject'] ? $data['subject']->getId() : null;
             $currentSubjectId = $assignment->getSubject() ? $assignment->getSubject()->getId() : null;
-            $originalValues['subject_id'] = $currentSubjectId; // Toujours inclure dans originalValues
+            $originalValues['subject_id'] = $currentSubjectId;
             if ($submittedSubjectId !== $currentSubjectId) {
                 $proposedChanges['subject_id'] = $submittedSubjectId;
             }
@@ -138,7 +138,7 @@ class SuggestionController extends AbstractController
             $suggestion->setMessage($normalize($data['message']));
             $suggestion->setProposedChanges($proposedChanges);
             $suggestion->setOriginalValues($originalValues);
-            $suggestion->setIsProcessed(false);
+            $suggestion->setStatus('PENDING'); // Changement ici : setIsProcessed(false) remplacé par setStatus('PENDING')
             $suggestion->setCreatedAt(new \DateTime());
 
             // Journalisation pour déboguer
@@ -219,7 +219,7 @@ class SuggestionController extends AbstractController
                 }
             }
             $assignment->setUpdatedAt(new \DateTime());
-            $suggestion->setIsProcessed(true);
+            $suggestion->setStatus('ACCEPTED');
             $entityManager->flush();
             $this->addFlash('success', 'La suggestion a été validée et le devoir mis à jour !');
         } else {
@@ -234,10 +234,8 @@ class SuggestionController extends AbstractController
     public function suggestions(Request $request, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
-
-        // Récupérer le numéro de page (par défaut, page 1)
         $page = max(1, $request->query->getInt('page', 1));
-        $limit = 10; // 10 suggestions par page
+        $limit = 10;
 
         $queryBuilder = $entityManager->getRepository(Suggestion::class)
             ->createQueryBuilder('s')
@@ -250,29 +248,23 @@ class SuggestionController extends AbstractController
                 ->setParameter('userGroups', $userGroups);
         }
 
-        // Compter le total des suggestions
         $countQueryBuilder = clone $queryBuilder;
         $totalSuggestions = $countQueryBuilder->select('COUNT(DISTINCT s.id)')
             ->getQuery()
             ->getSingleScalarResult();
 
-        // Appliquer la pagination
         $suggestions = $queryBuilder->orderBy('s.createdAt', 'DESC')
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
 
-        // Calculer le nombre total de pages
         $totalPages = ceil($totalSuggestions / $limit);
 
-        // Préparer les données pour le template
         $suggestionsData = [];
         foreach ($suggestions as $suggestion) {
             $proposedChanges = $suggestion->getProposedChanges();
             $proposedSubject = null;
-
-            // Si une matière est proposée, la charger
             if (isset($proposedChanges['subject_id'])) {
                 $proposedSubject = $entityManager->getRepository(Subject::class)->find($proposedChanges['subject_id']);
             }
@@ -289,6 +281,7 @@ class SuggestionController extends AbstractController
             'total_pages' => $totalPages,
         ]);
     }
+
     #[Route('/suggestion/{id}/review', name: 'review_suggestion', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_DELEGATE')]
     public function reviewSuggestion(int $id, Request $request, EntityManagerInterface $entityManager): Response
@@ -312,21 +305,18 @@ class SuggestionController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette suggestion.');
         }
 
-        // Charger la matière proposée, si elle existe
         $proposedChanges = $suggestion->getProposedChanges();
         $proposedSubject = null;
         if (isset($proposedChanges['subject_id'])) {
             $proposedSubject = $entityManager->getRepository(Subject::class)->find($proposedChanges['subject_id']);
         }
 
-        // Charger la matière originale, si elle existe dans originalValues
         $originalValues = $suggestion->getOriginalValues();
         $originalSubject = null;
         if (isset($originalValues['subject_id'])) {
             $originalSubject = $entityManager->getRepository(Subject::class)->find($originalValues['subject_id']);
         }
 
-        // Journalisation pour déboguer les données envoyées au template
         $this->logger->debug('Données pour review.html.twig', [
             'suggestion_id' => $suggestion->getId(),
             'proposedChanges' => $proposedChanges,
@@ -337,12 +327,12 @@ class SuggestionController extends AbstractController
 
         $form = $this->createFormBuilder()
             ->add('approve', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, [
-                'label' => '<i class="fa-solid fa-check"></i> Valider', // Add Font Awesome icon
+                'label' => '<i class="fa-solid fa-check"></i> Valider',
                 'label_html' => true,
                 'attr' => ['class' => 'btn btn-success row-start'],
             ])
             ->add('reject', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, [
-                'label' => '<i class="fa-solid fa-xmark"></i> Rejeter', // Add Font Awesome icon
+                'label' => '<i class="fa-solid fa-xmark"></i> Rejeter',
                 'label_html' => true,
                 'attr' => ['class' => 'btn btn-danger row-start'],
             ])
@@ -384,12 +374,12 @@ class SuggestionController extends AbstractController
                     }
                 }
                 $assignment->setUpdatedAt(new \DateTime());
-                $suggestion->setIsProcessed(true);
+                $suggestion->setStatus('ACCEPTED');
                 $entityManager->flush();
                 $this->addFlash('success', 'Suggestion validée et devoir mis à jour.');
                 return $this->redirectToRoute('app_suggestions');
             } elseif ($form->get('reject')->isClicked()) {
-                $suggestion->setIsProcessed(true);
+                $suggestion->setStatus('REJECTED');
                 $entityManager->flush();
                 $this->addFlash('info', 'Suggestion rejetée.');
                 return $this->redirectToRoute('app_suggestions');
@@ -401,9 +391,10 @@ class SuggestionController extends AbstractController
             'assignment' => $assignment,
             'form' => $form->createView(),
             'proposedSubject' => $proposedSubject,
-            'originalSubject' => $originalSubject, // Nouvelle variable passée au template
+            'originalSubject' => $originalSubject,
         ]);
     }
+
     #[Route('/api/suggestions/{id}/toggle-processed', name: 'api_toggle_suggestion_processed', methods: ['POST'])]
     #[IsGranted('ROLE_DELEGATE')]
     public function toggleSuggestionProcessed(int $id, EntityManagerInterface $entityManager): JsonResponse
@@ -413,12 +404,13 @@ class SuggestionController extends AbstractController
             throw $this->createNotFoundException('Suggestion non trouvée.');
         }
 
-        $suggestion->setIsProcessed(!$suggestion->isProcessed());
+        $newStatus = $suggestion->getStatus() === 'PENDING' ? 'ACCEPTED' : 'PENDING';
+        $suggestion->setStatus($newStatus);
         $entityManager->flush();
 
         return $this->json([
             'success' => true,
-            'isProcessed' => $suggestion->isProcessed(),
+            'status' => $suggestion->getStatus(),
             'id' => $suggestion->getId(),
         ]);
     }
@@ -432,8 +424,8 @@ class SuggestionController extends AbstractController
             ->createQueryBuilder('s')
             ->leftJoin('s.assignment', 'a')
             ->leftJoin('a.groups', 'g')
-            ->where('s.isProcessed = :isProcessed')
-            ->setParameter('isProcessed', false);
+            ->where('s.status = :status')
+            ->setParameter('status', 'PENDING');
 
         if (!$this->isGranted('ROLE_ADMIN')) {
             $userGroups = $user->getGroups();
