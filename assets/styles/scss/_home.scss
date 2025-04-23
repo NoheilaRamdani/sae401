@@ -17,7 +17,7 @@
 
   .calendar-container {
     width : 100%;
-    padding: 30px 20px 35px 4%;
+    padding: 30px 4% 35px;
     height: 100vh;
 
     @include media-breakpoint-up(sm) {
@@ -114,20 +114,19 @@
     width : 100%;
     position : relative;
     background-color: #f5f6fa;
-    padding: 30px 4% 25px 20px;
+    padding: 30px 4% 25px;
     gap: 20px;
     @include flex-column(stretch, space-between);
 
-    //(désactiver le js du paddingTop under a certain media-query)
 
     @include media-breakpoint-up(xl) {
+      padding: 30px 4% 25px 20px;
       //flex : 1; -> 0 ?
       height : 100vh;
       width : 38%;
       position : fixed;
       top: 0;
       right: 0;
-      //(activer le js du paddingTop under a certain media-query)
     }
   }
 
@@ -160,8 +159,6 @@
     margin: 15px;
   }
 }
-
-
 
 @keyframes tintement {
   0% {

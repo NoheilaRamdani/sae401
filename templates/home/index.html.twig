@@ -133,12 +133,14 @@
 
     const bellIcon = suggestionBadgeContainer.querySelector('i.fa-bell');
 
-    suggestionCountBadge.textContent = data.length;
-    suggestionCountBadge.style.display = data.length > 0 ? 'flex' : 'none';
-    bellIcon.style.animation = 'tintement 0.6s ease';
-    setTimeout(() => {
-    bellIcon.style.animation = '';
-    }, 600);
+        suggestionCountBadge.textContent = data.length;
+        suggestionCountBadge.style.display = data.length > 0 ? 'flex' : 'none';
+        if (data.length > 0) {
+            bellIcon.style.animation = 'tintement 0.6s ease';
+            setTimeout(() => {
+                bellIcon.style.animation = '';
+            }, 600);
+        }
 
     if (data.length === 0) {
     suggestionsBox.classList.remove('is-visible');

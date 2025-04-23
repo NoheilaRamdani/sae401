@@ -3,7 +3,7 @@
 {% block title %}Historique des suggestions{% endblock %}
 {% block description %}Retrouvez ici toutes les suggestions qui vous ont été soumises{% endblock %}
 {% block body %}
-    <main class="padding">
+    <main id="suggest-history" class="padding">
         <h1>Historique des suggestions</h1>
 
         {% for label, messages in app.flashes %}
@@ -13,92 +13,215 @@
         {% endfor %}
 
         {% if suggestionsData|length > 0 %}
-            <table class="suggestions-table">
-                <thead>
-                <tr>
-                    <th>Suggéré par</th>
-                    <th>Devoir</th>
-                    <th>Message</th>
-                    <th>Changements proposés</th>
-                    <th>Date</th>
-                    <th>Statut</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for data in suggestionsData %}
-                    {% set suggestion = data.suggestion %}
+            <div class="has-table">
+                <table class="suggestions-table">
+                    <thead>
                     <tr>
-                        <td class="suggested-by">{{ suggestion.suggestedBy.userIdentifier }}</td>
-                        <td class="assignment-info">[{{ suggestion.assignment.subject.code }}] {{ suggestion.assignment.title }}</td>
-                        <td class="message">{{ suggestion.message|default('Aucun message') }}</td>
-                        <td class="changes">
-                            {% if suggestion.proposedChanges|length > 0 %}
-                                {% for field, value in suggestion.proposedChanges %}
-                                    {% if field == 'title' %}
-                                        Titre : {{ suggestion.assignment.title|default('Aucun') }} → {{ value|default('Aucun') }}<br>
-                                    {% elseif field == 'description' %}
-                                        Description : {{ suggestion.assignment.description|default('Aucune') }} → {{ value|default('Aucune') }}<br>
-                                    {% elseif field == 'due_date' %}
-                                        Date limite : {{ suggestion.assignment.dueDate ? suggestion.assignment.dueDate|date('d/m/Y H:i') : 'Non défini' }} → {{ value ? (value|date('d/m/Y H:i')) : 'Non défini' }}<br>
-                                    {% elseif field == 'type' %}
-                                        Type : {{ suggestion.assignment.type|default('Aucun') }} → {{ value|default('Aucun') }}<br>
-                                    {% elseif field == 'submission_type' %}
-                                        Mode de rendu : {{ suggestion.assignment.submissionType|default('Aucun') }} → {{ value|default('Aucun') }}<br>
-                                    {% elseif field == 'submission_url' %}
-                                        URL de rendu : {{ suggestion.assignment.submissionUrl|default('Aucune') }} → {{ value|default('Aucune') }}<br>
-                                    {% elseif field == 'submission_other' %}
-                                        Autres instructions : {{ suggestion.assignment.submissionOther|default('Aucune') }} → {{ value|default('Aucune') }}<br>
-                                    {% elseif field == 'course_location' %}
-                                        Lieu du cours : {{ suggestion.assignment.courseLocation|default('Aucun') }} → {{ value|default('Aucun') }}<br>
-                                    {% elseif field == 'subject_id' %}
-                                        Matière : {{ suggestion.assignment.subject.name|default('Non défini') }} → {{ data.proposedSubject ? data.proposedSubject.name : 'Non défini' }}<br>
-                                    {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                Aucun changement proposé.
-                            {% endif %}
-                        </td>
-                        <td>{{ suggestion.createdAt|date('d/m/Y H:i') }}</td>
-                        <td>
-                            {% if suggestion.status == 'ACCEPTED' %}
-                                <span class="status-accepted">Acceptée</span>
-                            {% elseif suggestion.status == 'REJECTED' %}
-                                <span class="status-rejected">Refusée</span>
-                            {% else %}
-                                <span class="status-pending">En attente</span>
-                            {% endif %}
-                        </td>
-                        <td class="action">
-                            {% if suggestion.status == 'PENDING' %}
-                                <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}" class="btn btn-primary">Traiter</a>
-                            {% endif %}
-                        </td>
+                        <th class="suggested-by">Suggéré par</th>
+                        <th>Devoir</th>
+                        <th>Message</th>
+                        <th>Date</th>
+                        <th class="statut">Statut</th>
+                        <th class="action">Action</th>
                     </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {% for data in suggestionsData %}
+                        {% set suggestion = data.suggestion %}
+
+                        <!-- Première ligne : infos principales -->
+                        <tr>
+                            <th lang="fr" class="suggested-by" scope="row">{{ suggestion.suggestedBy.userIdentifier }}</th>
+                            <td class="assignment-info">[{{ suggestion.assignment.subject.code }}] {{ suggestion.assignment.title }}</td>
+                            <td class="message">{{ suggestion.message|default('Aucun message') }}</td>
+                            <td class="date">{{ suggestion.createdAt|date('d/m/Y H:i') }}</td>
+                            <td class="statut">
+                                {% if suggestion.status == 'ACCEPTED' %}
+                                    <span class="status-accepted" aria-label="Suggestion acceptée">
+                            <i class="fa-solid fa-circle-check ontime" aria-hidden="true"></i>
+                            <span class="sr-only">Acceptée</span>
+                        </span>
+                                {% elseif suggestion.status == 'REJECTED' %}
+                                    <span class="status-rejected" aria-label="Suggestion rejetée">
+                            <i class="fa-solid fa-circle-xmark urgent" aria-hidden="true"></i>
+                            <span class="sr-only">Rejetée</span>
+                        </span>
+                                {% else %}
+                                    <span class="status-pending" aria-label="Suggestion en attente">
+                            <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                            <span class="sr-only">En attente</span>
+                        </span>
+                                {% endif %}
+                            </td>
+                            <td class="action">
+                                {% if suggestion.status == 'PENDING' %}
+                                    <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}" class="btn">Traiter</a>
+                                {% else %}
+                                    <i class="fa-solid fa-minus"></i>
+                                {% endif %}
+
+                            </td>
+                        </tr>
+
+                        <!-- Deuxième ligne : changements proposés -->
+                        <tr class="sub-row">
+                            <th scope="row">
+                                <div class="row-start">
+                                    <i class="fa-solid fa-arrow-turn-up"></i> <span>Changements proposés</span>
+                                </div></th>
+                            <td colspan="5" class="changes">
+                                {% if suggestion.proposedChanges|length > 0 %}
+                                    <ul>
+                                        {% for field, value in suggestion.proposedChanges %}
+                                            <li>
+                                                {% if field == 'title' %}
+                                                    <span class="change-icon change-icon-title"><i class="fa-solid fa-heading"></i></span>
+                                                    <strong>Titre :</strong> {{ suggestion.assignment.title|default('Aucun') }} → {{ value|default('Aucun') }}
+                                                {% elseif field == 'description' %}
+                                                    <span class="change-icon change-icon-description"><i class="fa-solid fa-file-lines"></i></span>
+                                                    <strong>Description :</strong> {{ suggestion.assignment.description|default('Aucune') }} → {{ value|default('Aucune') }}
+                                                {% elseif field == 'due_date' %}
+                                                    <span class="change-icon change-icon-due-date"><i class="fa-solid fa-calendar-day"></i></span>
+                                                    <strong>Date limite :</strong> {{ suggestion.assignment.dueDate ? suggestion.assignment.dueDate|date('d/m/Y H:i') : 'Non défini' }} → {{ value ? (value|date('d/m/Y H:i')) : 'Non défini' }}
+                                                {% elseif field == 'type' %}
+                                                    <span class="change-icon change-icon-type"><i class="fa-solid fa-cogs"></i></span>
+                                                    <strong>Type :</strong> {{ suggestion.assignment.type|default('Aucun') }} → {{ value|default('Aucun') }}
+                                                {% elseif field == 'submission_type' %}
+                                                    <span class="change-icon change-icon-submission"><i class="fa-solid fa-layer-group"></i></span>
+                                                    <strong>Mode de rendu :</strong> {{ suggestion.assignment.submissionType|default('Aucun') }} → {{ value|default('Aucun') }}
+                                                {% elseif field == 'submission_url' %}
+                                                    <span class="change-icon change-icon-url"><i class="fa-solid fa-layer-group"></i></span>
+                                                    <strong>URL de rendu :</strong> {{ suggestion.assignment.submissionUrl|default('Aucune') }} → {{ value|default('Aucune') }}
+                                                {% elseif field == 'submission_other' %}
+                                                    <span class="change-icon change-icon-other"><i class="fa-solid fa-layer-group"></i></span>
+                                                    <strong>Autres instructions :</strong> {{ suggestion.assignment.submissionOther|default('Aucune') }} → {{ value|default('Aucune') }}
+                                                {% elseif field == 'course_location' %}
+                                                    <span class="change-icon change-icon-location"><i class="fa-solid fa-map-marker-alt"></i></span>
+                                                    <strong>Lieu du cours :</strong> {{ suggestion.assignment.courseLocation|default('Aucun') }} → {{ value|default('Aucun') }}
+                                                {% elseif field == 'subject_id' %}
+                                                    <span class="change-icon change-icon-subject"><i class="fa-solid fa-bookmark"></i></span>
+                                                    <strong>Matière :</strong> {{ suggestion.assignment.subject.name|default('Non défini') }} → {{ data.proposedSubject ? data.proposedSubject.name : 'Non défini' }}
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    Aucun changement proposé.
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% else %}
             <p class="no-suggestions">Aucune suggestion à afficher.</p>
         {% endif %}
 
-        {% if total_pages > 1 %}
-            <nav class="pagination">
-                <a href="{{ path('app_suggestions', {'page': current_page - 1}) }}"
-                   class="btn btn-sec {{ current_page == 1 ? 'disabled' : '' }}">Précédent</a>
+        {# Pagination #}
+        <div id="pagination" class="row-center"></div>
 
-                {% set startPage = max(1, current_page - 2) %}
-                {% set endPage = min(total_pages, current_page + 2) %}
-                {% for i in startPage..endPage %}
-                    <a href="{{ path('app_suggestions', {'page': i}) }}"
-                       class="btn btn-primary {{ current_page == i ? 'active' : '' }}">{{ i }}</a>
-                {% endfor %}
+        <a class="button back-btn" href="/"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
 
-                <a href="{{ path('app_suggestions', {'page': current_page + 1}) }}"
-                   class="btn btn-sec {{ current_page == total_pages ? 'disabled' : '' }}">Suivant</a>
-            </nav>
-        {% endif %}
-
-        <a href="{{ path('app_home') }}" class="btn btn-sec">Retour à l'accueil</a>
     </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function() {
+            console.log('jQuery chargé:', typeof $);
+
+            const totalPages = {{ total_pages|default(1) }};
+            const currentPage = {{ current_page|default(1) }};
+            const maxVisiblePages = 3;
+            const $pagination = $('#pagination');
+
+            // Masquer la pagination si aucune page
+            if (totalPages === 0) {
+                console.log('Aucune page, masquage de la pagination');
+                $pagination.hide();
+                return;
+            }
+
+            // Fonction pour générer les boutons de pagination
+            function renderPagination() {
+                let paginationHtml = '<ul class="pagination row-center">';
+                paginationHtml += `<li class="page-item"><a class="page-link row-center" href="#" data-page="first"><i class="fa-solid fa-chevron-left"></i><i class="fa-solid fa-chevron-left"></i><i class="fa-solid fa-chevron-left"></i></a></li>`;
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="prev"><i class="fa-solid fa-chevron-left"></i></a></li>`;
+
+                // Calculer les pages à afficher (max 3)
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+                paginationHtml += `<ul class="compteur row-center">`;
+
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHtml += `
+<li class="page-item${i === currentPage ? ' active' : ''} row-center"><a class="page-link" href="#" data-page="${i}" aria-label="Page ${i}">${i}</a></li>
+`;
+                }
+                paginationHtml += `</ul>`;
+
+                paginationHtml += `<li class="page-item">
+    <a class="page-link" href="#" data-page="next" aria-label="Page suivante">
+        <i class="fa-solid fa-chevron-right"></i>
+    </a>
+</li>`;
+
+                paginationHtml += `<li class="page-item">
+    <a class="page-link row-center" href="#" data-page="last" aria-label="Dernière page">
+        <i class="fa-solid fa-chevron-right"></i>
+        <i class="fa-solid fa-chevron-right"></i>
+        <i class="fa-solid fa-chevron-right"></i>
+    </a>
+</li>`;
+
+                paginationHtml += '</ul>';
+
+
+                $pagination.html(paginationHtml);
+
+                // Mettre à jour les états des boutons
+                $pagination.find('.page-link[data-page="first"]').parent().toggleClass('disabled', currentPage === 1);
+                $pagination.find('.page-link[data-page="prev"]').parent().toggleClass('disabled', currentPage === 1);
+                $pagination.find('.page-link[data-page="next"]').parent().toggleClass('disabled', currentPage === totalPages);
+                $pagination.find('.page-link[data-page="last"]').parent().toggleClass('disabled', currentPage === totalPages);
+            }
+
+            // Afficher la pagination
+            renderPagination();
+
+            // Gérer les clics sur les boutons
+            $pagination.on('click', '.page-link', function(e) {
+                e.preventDefault();
+                const $this = $(this);
+                if ($this.parent().hasClass('disabled') || $this.parent().hasClass('active')) return;
+
+                let newPage = $this.attr('data-page');
+
+                // Calculer la nouvelle page
+                if (newPage === 'first') {
+                    newPage = 1;
+                } else if (newPage === 'last') {
+                    newPage = totalPages;
+                } else if (newPage === 'prev') {
+                    newPage = Math.max(1, currentPage - 1);
+                } else if (newPage === 'next') {
+                    newPage = Math.min(totalPages, currentPage + 1);
+                } else {
+                    newPage = parseInt(newPage);
+                }
+
+                console.log('Changement de page:', newPage);
+
+                // Mettre à jour l'URL avec le nouveau paramètre de page
+                const url = new URL(window.location);
+                url.searchParams.set('page', newPage);
+                window.location.href = url.toString();
+            });
+        });
+    </script>
 {% endblock %}

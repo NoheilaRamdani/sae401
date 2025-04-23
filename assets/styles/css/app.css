@@ -53,7 +53,7 @@ main h3, main .h3 {
   font-size: clamp(0.85rem, 0.35vw + 0.65rem, 1.2rem);
 }
 
-.font-small, .all-tasks #assignmentsContainer .task-container .content .description, .notif-container .h4, .notif-container h4, .form label:not(.group label), table:not(#calendar table) tbody tr td, main .filter-section label, .popup, .group-buttons-container .group-buttons .group-btn {
+.font-small, #suggest-history table tr.sub-row th, #suggest-history table tr th, .all-tasks #assignmentsContainer .task-container .content .description, .notif-container .h4, .notif-container h4, .form label:not(.group label), table:not(#calendar table) tbody tr td, main .filter-section label, .popup, .group-buttons-container .group-buttons .group-btn {
   font-size: clamp(0.85rem, 0.45vw + 0.5rem, 1.2rem);
 }
 
@@ -71,7 +71,7 @@ main h3, main .h3 {
   .form select, table:not(#calendar table) thead th, main .task-container .content .countdown p, main p {
     font-size: clamp(0.9rem, 0.35vw + 0.65rem, 1.2rem);
   }
-  .font-small, .all-tasks #assignmentsContainer .task-container .content .description, .notif-container .h4, .notif-container h4, .form label:not(.group label), table:not(#calendar table) tbody tr td, main .filter-section label, .popup, .group-buttons-container .group-buttons .group-btn {
+  .font-small, #suggest-history table tr.sub-row th, #suggest-history table tr th, .all-tasks #assignmentsContainer .task-container .content .description, .notif-container .h4, .notif-container h4, .form label:not(.group label), table:not(#calendar table) tbody tr td, main .filter-section label, .popup, .group-buttons-container .group-buttons .group-btn {
     font-size: clamp(0.85rem, 0.45vw + 0.5rem, 1.2rem);
   }
   .font-extra-small, .login form label, .all-tasks #assignmentsContainer .task-container .content .groupes, .notif-container .link .row-end, .notif-container ul li, main .task-container .content .task .details .subject, main .filter-section select, nav .links li .row-center {
@@ -664,7 +664,7 @@ table:not(#calendar table) tbody tr:hover {
   background-color: rgba(156, 54, 181, 0.07);
 }
 table:not(#calendar table) tbody tr td {
-  padding: 15px 35px;
+  padding: 15px 30px;
 }
 table:not(#calendar table) tbody tr td span {
   padding: 4px 8px;
@@ -749,6 +749,10 @@ table:not(#calendar table) tbody tr td span.delegate {
   width: 100%;
   margin-top: 20px;
 }
+#pagination .pagination .compteur {
+  margin: 0 13px;
+  gap: 18px;
+}
 #pagination .pagination a {
   color: #4D3677;
 }
@@ -765,6 +769,7 @@ table:not(#calendar table) tbody tr td span.delegate {
   color: white;
 }
 #pagination .disabled a {
+  cursor: default;
   color: #595959;
 }
 
@@ -785,7 +790,7 @@ table:not(#calendar table) tbody tr td span.delegate {
 }
 .home .calendar-container {
   width: 100%;
-  padding: 30px 20px 35px 4%;
+  padding: 30px 4% 35px;
   height: 100vh;
 }
 @media (min-width: 576px) {
@@ -868,13 +873,14 @@ table:not(#calendar table) tbody tr td span.delegate {
   width: 100%;
   position: relative;
   background-color: #f5f6fa;
-  padding: 30px 4% 25px 20px;
+  padding: 30px 4% 25px;
   gap: 20px;
   justify-content: space-between;
   align-items: stretch;
 }
 @media (min-width: 1200px) {
   .home .tasks-container {
+    padding: 30px 4% 25px 20px;
     height: 100vh;
     width: 38%;
     position: fixed;
@@ -1086,6 +1092,12 @@ table:not(#calendar table) tbody tr td span.delegate {
 @media (min-width: 1200px) {
   .all-tasks {
     flex-direction: row;
+    gap: 40px;
+  }
+}
+@media (max-width: 1200px) {
+  .all-tasks {
+    margin-bottom: 50px;
   }
 }
 .all-tasks .filter-section {
@@ -1370,6 +1382,66 @@ table:not(#calendar table) tbody tr td span.delegate {
 }
 .suggest-assignment.modal-container .modal .row-start #form_reject {
   background-color: #DC3545;
+}
+
+#suggest-history table {
+  margin-top: 25px;
+  table-layout: auto;
+}
+#suggest-history table tr th {
+  text-align: left;
+  padding: 15px 20px;
+}
+#suggest-history table tr .suggested-by {
+  width: 245px;
+  min-width: 110px;
+  word-break: break-word;
+  hyphens: auto;
+}
+#suggest-history table tr .assignment-info {
+  width: 210px;
+}
+#suggest-history table tr .message {
+  width: 380px;
+}
+#suggest-history table tr .date {
+  width: 145px;
+}
+#suggest-history table tr .statut, #suggest-history table tr .action {
+  text-align: center;
+  vertical-align: middle;
+}
+#suggest-history table tr .statut i:not(.fa-minus), #suggest-history table tr .action i:not(.fa-minus) {
+  font-size: 25px;
+}
+#suggest-history table tr .statut .fa-minus, #suggest-history table tr .action .fa-minus {
+  font-size: 15px;
+}
+#suggest-history table tr.sub-row {
+  background-color: #f9f9f9;
+  font-style: italic;
+  border-top: 2px solid #ddd;
+  height: auto;
+}
+#suggest-history table tr.sub-row th {
+  height: 100%;
+  vertical-align: middle;
+  background-color: #f4f4f4;
+  font-weight: 600;
+  color: #1B1B1B;
+}
+#suggest-history table tr.sub-row th div {
+  gap: 15px;
+}
+#suggest-history table tr.sub-row th i {
+  transform: rotate(90deg);
+}
+#suggest-history table tr.sub-row td {
+  padding: 20px;
+}
+#suggest-history table tr.sub-row .changes {
+  font-size: 0.9em;
+  color: #555;
 }
 
 /*# sourceMappingURL=app.css.map */
