@@ -868,6 +868,7 @@ table:not(#calendar table) tbody tr td span.delegate {
   width: 100%;
   position: relative;
   background-color: #f5f6fa;
+  padding: 30px 4% 25px 20px;
   gap: 20px;
   justify-content: space-between;
   align-items: stretch;
@@ -1043,6 +1044,7 @@ table:not(#calendar table) tbody tr td span.delegate {
   gap: 7px;
   width: fit-content;
   position: relative;
+  color: #4D3677;
 }
 .notif-container .link .row-end::before {
   content: "";

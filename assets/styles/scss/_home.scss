@@ -114,6 +114,7 @@
     width : 100%;
     position : relative;
     background-color: #f5f6fa;
+    padding: 30px 4% 25px 20px;
     gap: 20px;
     @include flex-column(stretch, space-between);
 
@@ -311,6 +312,7 @@ li {
       gap: 7px;
       width: fit-content;
       position: relative;
+      color: $purpledark;
 
       &::before {
         content: "";
