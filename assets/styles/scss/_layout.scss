@@ -194,8 +194,8 @@ input[type="checkbox"] {
 }
 
 
-.completed-task {
-  color: grey;
+.completed-task, .completed-event {
+  color: grey !important;
 
   &:not(i) {
     text-decoration: line-through;
@@ -784,6 +784,41 @@ table:not(#calendar table) {
 
   .buttons {
     gap: 15px;
+  }
+
+}
+
+#pagination {
+  width: 100%;
+  .pagination {
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px;
+
+    a {
+      color: $purpledark;
+
+      &.row-center {
+        letter-spacing: -2px;
+      }
+
+
+    }
+  }
+
+  .active {
+    background-color: $purpledark;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    a {
+      color: white;
+    }
+  }
+  .disabled {
+    a {
+      color: $lightgrey;
+    }
   }
 
 }

@@ -267,10 +267,10 @@ input[type=checkbox]:hover {
   border-color: #888; /* Bordure au survol */
 }
 
-.completed-task {
-  color: grey;
+.completed-task, .completed-event {
+  color: grey !important;
 }
-.completed-task:not(i) {
+.completed-task:not(i), .completed-event:not(i) {
   text-decoration: line-through;
 }
 
@@ -741,6 +741,33 @@ table:not(#calendar table) tbody tr td span.delegate {
   gap: 15px;
 }
 
+#pagination {
+  width: 100%;
+}
+#pagination .pagination {
+  gap: 15px;
+  width: 100%;
+  margin-top: 20px;
+}
+#pagination .pagination a {
+  color: #4D3677;
+}
+#pagination .pagination a.row-center {
+  letter-spacing: -2px;
+}
+#pagination .active {
+  background-color: #4D3677;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+}
+#pagination .active a {
+  color: white;
+}
+#pagination .disabled a {
+  color: #595959;
+}
+
 .home {
   width: 100%;
   padding: 0;
@@ -831,6 +858,9 @@ table:not(#calendar table) tbody tr td span.delegate {
 }
 .home .calendar-container #calendar .fc-event-time {
   display: none;
+}
+.home .calendar-container #calendar .fc-event-past {
+  color: #595959;
 }
 .home .tasks-container {
   flex: 1;

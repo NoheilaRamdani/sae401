@@ -384,8 +384,9 @@ document.addEventListener("DOMContentLoaded", function () {
         navLinks.classList.toggle('active');
         burger.classList.toggle('open');
     });
-});
 
+
+});
 // Exposer initTaskManager et showEventDetails dans la portée globale pour les scripts inline
 window.initTaskManager = initTaskManager;
 window.showEventDetails = showEventDetails;
