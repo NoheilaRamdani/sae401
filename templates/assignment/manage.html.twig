@@ -102,24 +102,20 @@
         $(document).ready(function() {
             console.log('jQuery chargé:', typeof $);
 
-            const $rows = $('table tbody tr');
-            const totalRows = $rows.length;
-            const rowsPerPage = 7;
-            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            const totalPages = {{ total_pages|default(1) }};
+            const currentPage = {{ current_page|default(1) }};
             const maxVisiblePages = 3;
-
-            console.log('Lignes trouvées:', totalRows, 'Pages:', totalPages);
-
-            // Masquer la pagination si aucune ligne
             const $pagination = $('#pagination');
-            if (totalRows === 0) {
-                console.log('Aucune ligne, masquage de la pagination');
+
+            // Masquer la pagination si aucune page
+            if (totalPages === 0) {
+                console.log('Aucune page, masquage de la pagination');
                 $pagination.hide();
                 return;
             }
 
             // Fonction pour générer les boutons de pagination
-            function renderPagination(currentPage) {
+            function renderPagination() {
                 let paginationHtml = '<ul class="pagination row-center">';
                 paginationHtml += `<li class="page-item"><a class="page-link row-center" href="#" data-page="first"><i class="fa-solid fa-chevron-left"></i><i class="fa-solid fa-chevron-left"></i><i class="fa-solid fa-chevron-left"></i></a></li>`;
                 paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="prev"><i class="fa-solid fa-chevron-left"></i></a></li>`;
@@ -148,10 +144,8 @@
                 $pagination.find('.page-link[data-page="last"]').parent().toggleClass('disabled', currentPage === totalPages);
             }
 
-            // Afficher la première page au chargement
-            $rows.hide();
-            $rows.slice(0, rowsPerPage).show();
-            renderPagination(1);
+            // Afficher la pagination
+            renderPagination();
 
             // Gérer les clics sur les boutons
             $pagination.on('click', '.page-link', function(e) {
@@ -159,7 +153,6 @@
                 const $this = $(this);
                 if ($this.parent().hasClass('disabled') || $this.parent().hasClass('active')) return;
 
-                const currentPage = parseInt($pagination.find('.page-item.active .page-link').attr('data-page')) || 1;
                 let newPage = $this.attr('data-page');
 
                 // Calculer la nouvelle page
@@ -177,14 +170,10 @@
 
                 console.log('Changement de page:', newPage);
 
-                // Mettre à jour l'affichage des lignes
-                $rows.hide();
-                const startIndex = (newPage - 1) * rowsPerPage;
-                const endIndex = startIndex + rowsPerPage;
-                $rows.slice(startIndex, endIndex).show();
-
-                // Mettre à jour la pagination
-                renderPagination(newPage);
+                // Mettre à jour l'URL avec le nouveau paramètre de page
+                const url = new URL(window.location);
+                url.searchParams.set('page', newPage);
+                window.location.href = url.toString();
             });
         });
     </script>
