@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -14,11 +13,10 @@ class UserGroup
     private ?User $user = null;
 
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: Group::class)]
+    #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'userGroups')]
     #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id', nullable: false)]
     private ?Group $group = null;
 
-    // Getters et setters
     public function getUser(): ?User
     {
         return $this->user;

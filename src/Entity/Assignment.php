@@ -68,22 +68,14 @@ class Assignment
     #[ORM\Column(type: 'boolean', nullable: false, options: ['default' => false])]
     private bool $is_completed = false;
 
+    #[ORM\OneToMany(targetEntity: Suggestion::class, mappedBy: 'assignment')]
+    private Collection $suggestions;
 
-
-    public function getSubmissionType(): ?string
-    {
-        return $this->submission_type;
-    }
-
-    public function setSubmissionType(?string $submission_type): static
-    {
-        $this->submission_type = $submission_type;
-        return $this;
-    }
     public function __construct()
     {
         $this->created_at = new \DateTime();
         $this->groups = new ArrayCollection();
+        $this->suggestions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -231,6 +223,17 @@ class Assignment
         return $this;
     }
 
+    public function getSubmissionType(): ?string
+    {
+        return $this->submission_type;
+    }
+
+    public function setSubmissionType(?string $submission_type): static
+    {
+        $this->submission_type = $submission_type;
+        return $this;
+    }
+
     public function isCompleted(): bool
     {
         return $this->is_completed;
@@ -239,6 +242,33 @@ class Assignment
     public function setIsCompleted(bool $is_completed): static
     {
         $this->is_completed = $is_completed;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Suggestion>
+     */
+    public function getSuggestions(): Collection
+    {
+        return $this->suggestions;
+    }
+
+    public function addSuggestion(Suggestion $suggestion): static
+    {
+        if (!$this->suggestions->contains($suggestion)) {
+            $this->suggestions->add($suggestion);
+            $suggestion->setAssignment($this);
+        }
+        return $this;
+    }
+
+    public function removeSuggestion(Suggestion $suggestion): static
+    {
+        if ($this->suggestions->removeElement($suggestion)) {
+            if ($suggestion->getAssignment() === $this) {
+                $suggestion->setAssignment(null);
+            }
+        }
         return $this;
     }
 }
