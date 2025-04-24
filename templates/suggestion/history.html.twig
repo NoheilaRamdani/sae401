@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Historique des suggestions{% endblock %}
+{% block title %}Suggestions de modifications{% endblock %}
 {% block description %}Retrouvez ici toutes les suggestions qui vous ont été soumises{% endblock %}
 {% block body %}
     <main id="suggest-history" class="padding">
-        <h1>Historique des suggestions</h1>
+        <h1>Toutes les suggestions de modifications</h1>
 
         {% for label, messages in app.flashes %}
             {% for message in messages %}
