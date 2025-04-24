@@ -3,7 +3,11 @@
   @include flex-column(flex-start, flex-start);
 
   @include media-breakpoint-up(xl) {
-    flex-direction: row
+    flex-direction: row;
+    gap: 40px;
+  }
+  @include media-breakpoint-down(xl) {
+    margin-bottom: 50px;
   }
 
   .filter-section {

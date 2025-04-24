@@ -131,13 +131,31 @@
                     startPage = Math.max(1, endPage - maxVisiblePages + 1);
                 }
 
-                for (let i = startPage; i <= endPage; i++) {
-                    paginationHtml += `<li class="page-item${i === currentPage ? ' active' : ''} row-center"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
-                }
+                paginationHtml += `<ul class="compteur row-center">`;
 
-                paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="next"><i class="fa-solid fa-chevron-right"></i></a></li>`;
-                paginationHtml += `<li class="page-item"><a class="page-link row-center" href="#" data-page="last"><i class="fa-solid fa-chevron-right"></i><i class="fa-solid fa-chevron-right"></i><i class="fa-solid fa-chevron-right"></i></a></li>`;
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHtml += `
+<li class="page-item${i === currentPage ? ' active' : ''} row-center"><a class="page-link" href="#" data-page="${i}" aria-label="Page ${i}">${i}</a></li>
+`;
+                }
+                paginationHtml += `</ul>`;
+
+                paginationHtml += `<li class="page-item">
+    <a class="page-link" href="#" data-page="next" aria-label="Page suivante">
+        <i class="fa-solid fa-chevron-right"></i>
+    </a>
+</li>`;
+
+                paginationHtml += `<li class="page-item">
+    <a class="page-link row-center" href="#" data-page="last" aria-label="Dernière page">
+        <i class="fa-solid fa-chevron-right"></i>
+        <i class="fa-solid fa-chevron-right"></i>
+        <i class="fa-solid fa-chevron-right"></i>
+    </a>
+</li>`;
+
                 paginationHtml += '</ul>';
+
 
                 $pagination.html(paginationHtml);
 

@@ -53,4 +53,79 @@
   }
 }
 
+#suggest-history {
+
+  table {
+    margin-top: 25px;
+    table-layout: auto;
+
+    tr {
+      th {
+        text-align: left;
+        padding: 15px 20px;
+        @extend .font-small;
+      }
+      .suggested-by {
+        width: 245px;
+        min-width: 110px;
+        word-break: break-word;
+        hyphens: auto;
+      }
+      .assignment-info {
+        width: 210px;
+      }
+      .message {
+        width: 380px;
+      }
+      .date {
+        width: 145px;
+      }
+      .statut, .action {
+        text-align: center;
+        vertical-align: middle;
+        i:not(.fa-minus) {
+          font-size: 25px;
+        }
+        .fa-minus {
+          font-size: 15px;
+        }
+      }
+
+      &.sub-row {
+        background-color: #f9f9f9;
+        font-style: italic;
+        border-top: 2px solid #ddd;
+        height: auto;
+
+        th {
+          height: 100%;
+          vertical-align: middle;
+          background-color: #f4f4f4;
+          @extend .font-small;
+          font-weight: 600;
+          color: $titlecolor;
+
+          div {
+            gap: 15px;
+          }
+
+          i {
+            transform: rotate(90deg);
+          }
+        }
+
+        td {
+          padding: 20px;
+        }
+
+        .changes {
+          font-size: 0.9em;
+          color: #555;
+        }
+      }
+    }
+
+  }
+
+}
 

@@ -684,7 +684,7 @@ table:not(#calendar table) {
         background-color: transparentize($purplemedium, 0.93);      }
 
       td {
-        padding: 15px 35px;
+        padding: 15px 30px;
         @extend .font-small;
       }
 
@@ -795,6 +795,11 @@ table:not(#calendar table) {
     width: 100%;
     margin-top: 20px;
 
+    .compteur {
+      margin: 0 13px;
+      gap: 18px;
+    }
+
     a {
       color: $purpledark;
 
@@ -817,6 +822,7 @@ table:not(#calendar table) {
   }
   .disabled {
     a {
+      cursor: default;
       color: $lightgrey;
     }
   }
