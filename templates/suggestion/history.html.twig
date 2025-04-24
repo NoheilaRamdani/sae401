@@ -29,7 +29,7 @@
                 {% for data in suggestionsData %}
                     {% set suggestion = data.suggestion %}
                     <tr>
-                        <td class="suggested-by">{{ suggestion.suggestedBy.userIdentifier }}</td>
+                        <td class="suggested-by"> {{ suggestion.suggestedBy.firstName }} {{ suggestion.suggestedBy.lastName }}</td>
                         <td class="assignment-info">[{{ suggestion.assignment.subject.code }}] {{ suggestion.assignment.title }}</td>
                         <td class="message">{{ suggestion.message|default('Aucun message') }}</td>
                         <td class="changes">

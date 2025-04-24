@@ -39,7 +39,6 @@ class AssignmentController extends AbstractController
             $entityManager->persist($assignment);
             $entityManager->flush();
 
-            // Envoyer les notifications par email
             try {
                 $notificationService->sendAssignmentNotification($assignment);
             } catch (\Exception $e) {
@@ -166,10 +165,6 @@ class AssignmentController extends AbstractController
         }
 
         try {
-            // Récupérer le numéro de page depuis la requête (par défaut, page 1)
-            $page = max(1, $request->query->getInt('page', 1));
-            $limit = 10; // Nombre de tâches par page
-
             // Construire la requête de base
             $queryBuilder = $entityManager->getRepository(Assignment::class)
                 ->createQueryBuilder('a')
@@ -193,28 +188,16 @@ class AssignmentController extends AbstractController
                 $userGroups = $user->getGroups();
                 if (!$userGroups) {
                     $assignments = [];
-                    $totalAssignments = 0;
                 } else {
                     $queryBuilder->andWhere('g IN (:userGroups)')
                         ->setParameter('userGroups', $userGroups);
                 }
             }
 
-            // Cloner la requête pour compter le total
-            $countQueryBuilder = clone $queryBuilder;
-            $totalAssignments = $countQueryBuilder->select('COUNT(DISTINCT a.id)')
-                ->getQuery()
-                ->getSingleScalarResult();
-
-            // Appliquer la pagination
+            // Récupérer toutes les tâches sans pagination
             $assignments = $queryBuilder->orderBy('a.due_date', 'ASC')
-                ->setFirstResult(($page - 1) * $limit)
-                ->setMaxResults($limit)
                 ->getQuery()
                 ->getResult();
-
-            // Calculer le nombre total de pages
-            $totalPages = ceil($totalAssignments / $limit);
 
             $subjects = $entityManager->getRepository('App\Entity\Subject')->findAll();
             $groups = $this->isGranted('ROLE_ADMIN')
@@ -229,9 +212,6 @@ class AssignmentController extends AbstractController
                 'current_group' => $groupId,
                 'is_delegate_or_admin' => $this->isGranted('ROLE_DELEGATE') || $this->isGranted('ROLE_ADMIN'),
                 'entity_manager' => $entityManager,
-                'current_page' => $page,
-                'total_pages' => $totalPages,
-                'total_assignments' => $totalAssignments,
             ]);
         } catch (\Exception $e) {
             throw $this->createNotFoundException('Erreur lors du chargement des devoirs : ' . $e->getMessage());

@@ -15,7 +15,7 @@
             {% endfor %}
             <ul>
                 <li class="title">Suggéré par :</li>
-                <li>{{ suggestion.suggestedBy.userIdentifier }}</li>
+                <li>{{ suggestion.suggestedBy.firstName }} {{ suggestion.suggestedBy.lastName }}</li>
                 <li class="title">Message :</li>
                 <li>{{ suggestion.message|default('Aucun message fourni.') }}</li>
             </ul>
@@ -102,7 +102,7 @@
                 <p class="no-changes">Aucune modification détectée. Cette suggestion ne propose aucun changement par rapport aux valeurs actuelles.</p>
             {% endif %}
 
-            {% if suggestion.status == 'PENDING' %} {# Changement ici : isProcessed remplacé par status == 'PENDING' #}
+            {% if suggestion.status == 'PENDING' %}
                 {{ form_start(form) }}
                 <div class="row-start">
                     {{ form_widget(form.approve) }}
