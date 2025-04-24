@@ -423,10 +423,16 @@ nav .links li.separator {
     padding: 0 2%;
     height: 100%;
   }
+  nav .links li:last-of-type {
+    padding-right: 0;
+  }
   nav .links li .row-center {
     height: 100%;
     width: 100%;
     flex-shrink: 0;
+  }
+  nav .links li .row-center .logout-text {
+    display: none;
   }
   nav .links li.separator {
     display: block;

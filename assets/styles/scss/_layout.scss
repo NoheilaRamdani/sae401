@@ -381,10 +381,20 @@ nav {
           height: 100%;
         }
 
+        &:last-of-type
+        {
+          padding-right: 0;
+        }
+
+
         .row-center {
           height: 100%;
           width: 100%;
           flex-shrink: 0;
+
+          .logout-text {
+            display: none;
+          }
         }
 
         &.separator {
