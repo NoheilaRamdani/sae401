@@ -213,7 +213,7 @@ function showEventDetails(event) {
         modalTitle.classList.remove('completed-task');
     }
 
-    // Gérer la date avec robustesse
+    // Gérer la date
     const dueDate = event.start ? new Date(event.start) : null;
     document.getElementById('modalDate').textContent = dueDate ?
         `${String(dueDate.getUTCDate()).padStart(2, '0')}/${String(dueDate.getUTCMonth() + 1).padStart(2, '0')}/${dueDate.getUTCFullYear()} - ${String(dueDate.getUTCHours()).padStart(2, '0')}:${String(dueDate.getUTCMinutes()).padStart(2, '0')}` :
@@ -378,7 +378,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 setTimeout(() => {
                     popup.style.display = "none";
                 }, 500); // Temps pour que le fade-out se termine
-            }, 4000); // 4 secondes d'affichage avant de commencer le fade-out
+            }, 3500); // 4 secondes d'affichage avant de commencer le fade-out
         }
     });
 

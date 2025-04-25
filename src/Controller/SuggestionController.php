@@ -235,7 +235,7 @@ class SuggestionController extends AbstractController
     {
         $user = $this->getUser();
         $page = max(1, $request->query->getInt('page', 1));
-        $limit = 10;
+        $limit = 4;
 
         $queryBuilder = $entityManager->getRepository(Suggestion::class)
             ->createQueryBuilder('s')

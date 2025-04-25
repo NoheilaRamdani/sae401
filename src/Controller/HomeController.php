@@ -52,8 +52,8 @@ class HomeController extends AbstractController
         $notifications = [];
         foreach ($assignments as $assignment) {
             $dueDate = $assignment->getDueDate();
-            $hoursUntilDue = (int) (($dueDate->getTimestamp() - $now->getTimestamp()) / 3600); // Calcul en heures
-            $daysUntilDue = (int) ($hoursUntilDue / 24); // Pour l'affichage en jours
+            $hoursUntilDue = (int)(($dueDate->getTimestamp() - $now->getTimestamp()) / 3600); // Calcul en heures
+            $daysUntilDue = (int)($hoursUntilDue / 24); // Pour l'affichage en jours
             $color = $assignment->getSubject()->getColor() ?? '#3788d8';
 
             $assignmentsData[] = [
@@ -166,91 +166,78 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/assignments/history', name: 'app_assignments_history', methods: ['GET'])]
+    #[Route('/assignments/history', name: 'app_assignments_history')]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function assignmentsHistory(Request $request, EntityManagerInterface $entityManager): Response
     {
         /** @var User $user */
         $user = $this->getUser();
         if (!$user) {
-            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
         }
 
-        try {
-            // Récupérer le numéro de page depuis la requête (par défaut, page 1)
-            $page = max(1, $request->query->getInt('page', 1));
-            $limit = 10; // Nombre de tâches par page
+        $queryBuilder = $entityManager->getRepository(Assignment::class)
+            ->createQueryBuilder('a')
+            ->leftJoin('a.groups', 'g')
+            ->orderBy('a.due_date', 'DESC');
 
-            // Construire la requête de base
-            $queryBuilder = $entityManager->getRepository(Assignment::class)
-                ->createQueryBuilder('a')
-                ->leftJoin('a.groups', 'g')
-                ->orderBy('a.due_date', 'DESC');
+        $subjectId = $request->query->get('subject');
+        $groupId = $request->query->get('group');
 
-            // Appliquer les filtres
-            $subjectId = $request->query->get('subject');
-            $groupId = $request->query->get('group');
 
-            if ($subjectId) {
-                $queryBuilder->andWhere('a.subject = :subject')
-                    ->setParameter('subject', $subjectId);
-            }
-
-            if (!$this->isGranted('ROLE_ADMIN')) {
-                $groups = $user->getGroups();
-                if ($groups->count() > 0) {
-                    $queryBuilder
-                        ->andWhere('g IN (:groups)')
-                        ->setParameter('groups', $groups);
-                }
-                if ($groupId) {
-                    $queryBuilder->andWhere('g.id = :group')
-                        ->setParameter('group', $groupId);
-                }
-            } else {
-                if ($groupId) {
-                    $queryBuilder->andWhere('g.id = :group')
-                        ->setParameter('group', $groupId);
-                }
-            }
-
-            // Cloner la requête pour compter le total
-            $countQueryBuilder = clone $queryBuilder;
-            $totalAssignments = $countQueryBuilder->select('COUNT(DISTINCT a.id)')
-                ->getQuery()
-                ->getSingleScalarResult();
-
-            // Appliquer la pagination
-            $assignments = $queryBuilder
-                ->setFirstResult(($page - 1) * $limit)
-                ->setMaxResults($limit)
-                ->getQuery()
-                ->getResult();
-
-            // Calculer le nombre total de pages
-            $totalPages = ceil($totalAssignments / $limit);
-
-            // Récupérer les matières et groupes pour les filtres
-            $subjects = $entityManager->getRepository('App\Entity\Subject')->findAll();
-            $groups = $this->isGranted('ROLE_ADMIN')
-                ? $entityManager->getRepository('App\Entity\Group')->findAll()
-                : $user->getGroups();
-
-            $isDelegateOrAdmin = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DELEGATE');
-
-            return $this->render('assignment/assignments_history.html.twig', [
-                'user' => $user,
-                'assignments' => $assignments,
-                'subjects' => $subjects,
-                'groups' => $isDelegateOrAdmin ? $groups : [],
-                'is_delegate_or_admin' => $isDelegateOrAdmin,
-                'current_subject' => $subjectId,
-                'current_group' => $groupId,
-                'current_page' => $page,
-                'total_pages' => $totalPages,
-            ]);
-        } catch (\Exception $e) {
-            throw $this->createNotFoundException('Erreur lors du chargement des devoirs : ' . $e->getMessage());
+        if ($subjectId) {
+            $queryBuilder->andWhere('a.subject = :subject')
+                ->setParameter('subject', $subjectId);
         }
+
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $groups = $user->getGroups();
+            if ($groups->count() > 0) {
+                $queryBuilder
+                    ->andWhere('g IN (:groups)')
+                    ->setParameter('groups', $groups);
+            }
+            if ($groupId) {
+                $queryBuilder->andWhere('g.id = :group')
+                    ->setParameter('group', $groupId);
+            }
+        } else {
+            if ($groupId) {
+                $queryBuilder->andWhere('g.id = :group')
+                    ->setParameter('group', $groupId);
+            }
+        }
+
+        $assignments = $queryBuilder->getQuery()->getResult();
+
+        $subjects = [];
+        $groups = [];
+        foreach ($assignments as $assignment) {
+            $subject = $assignment->getSubject();
+            if ($subject && !in_array($subject, $subjects, true)) {
+                $subjects[] = $subject;
+            }
+            foreach ($assignment->getGroups() as $group) {
+                if (!in_array($group, $groups, true)) {
+                    $groups[] = $group;
+
+
+                }
+            }
+        }
+
+        $isDelegateOrAdmin = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DELEGATE');
+
+
+        return $this->render('assignment/assignments_history.html.twig', [
+            'user' => $user,
+            'assignments' => $assignments,
+            'subjects' => $subjects,
+            'groups' => $isDelegateOrAdmin ? $groups : [],
+            'is_delegate_or_admin' => $isDelegateOrAdmin,
+            'current_subject' => $subjectId,
+            'current_group' => $groupId,
+        ]);
+
     }
 }
