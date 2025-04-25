@@ -83,6 +83,10 @@
       .statut, .action {
         text-align: center;
         vertical-align: middle;
+
+        .button {
+          display: inline;
+        }
         i:not(.fa-minus) {
           font-size: 25px;
         }

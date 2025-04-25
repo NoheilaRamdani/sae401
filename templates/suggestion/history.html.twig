@@ -55,7 +55,7 @@
                             </td>
                             <td class="action">
                                 {% if suggestion.status == 'PENDING' %}
-                                    <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}" class="btn">Traiter</a>
+                                    <a href="{{ path('review_suggestion', {'id': suggestion.id}) }}" class="button">Traiter</a>
                                 {% else %}
                                     <i class="fa-solid fa-minus"></i>
                                 {% endif %}

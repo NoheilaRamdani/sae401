@@ -1417,6 +1417,9 @@ table:not(#calendar table) tbody tr td span.delegate {
   text-align: center;
   vertical-align: middle;
 }
+#suggest-history table tr .statut .button, #suggest-history table tr .action .button {
+  display: inline;
+}
 #suggest-history table tr .statut i:not(.fa-minus), #suggest-history table tr .action i:not(.fa-minus) {
   font-size: 25px;
 }
