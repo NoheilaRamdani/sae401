@@ -95,9 +95,6 @@
                                                 {% elseif field == 'submission_other' %}
                                                     <span class="change-icon change-icon-other"><i class="fa-solid fa-layer-group"></i></span>
                                                     <strong>Autres instructions :</strong> {{ suggestion.assignment.submissionOther|default('Aucune') }} → {{ value|default('Aucune') }}
-                                                {% elseif field == 'course_location' %}
-                                                    <span class="change-icon change-icon-location"><i class="fa-solid fa-map-marker-alt"></i></span>
-                                                    <strong>Lieu du cours :</strong> {{ suggestion.assignment.courseLocation|default('Aucun') }} → {{ value|default('Aucun') }}
                                                 {% elseif field == 'subject_id' %}
                                                     <span class="change-icon change-icon-subject"><i class="fa-solid fa-bookmark"></i></span>
                                                     <strong>Matière :</strong> {{ suggestion.assignment.subject.name|default('Non défini') }} → {{ data.proposedSubject ? data.proposedSubject.name : 'Non défini' }}

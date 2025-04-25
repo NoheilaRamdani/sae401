@@ -92,6 +92,14 @@ class SuggestionController extends AbstractController
                 $originalValues['type'] = $currentType;
             }
 
+            // Mode de rendu
+            $submittedSubmissionType = $normalize($data['submission_type']);
+            $currentSubmissionType = $normalize($assignment->getSubmissionType());
+            if ($submittedSubmissionType !== $currentSubmissionType) {
+                $proposedChanges['submission_type'] = $submittedSubmissionType;
+                $originalValues['submission_type'] = $currentSubmissionType;
+            }
+
             // URL de rendu
             $submittedSubmissionUrl = $normalize($data['submission_url']);
             $currentSubmissionUrl = $normalize($assignment->getSubmissionUrl());
@@ -100,20 +108,12 @@ class SuggestionController extends AbstractController
                 $originalValues['submission_url'] = $currentSubmissionUrl;
             }
 
-            // Autres instructions de rendu
+            // Précisions sur le rendu
             $submittedSubmissionOther = $normalize($data['submission_other']);
             $currentSubmissionOther = $normalize($assignment->getSubmissionOther());
             if ($submittedSubmissionOther !== $currentSubmissionOther) {
                 $proposedChanges['submission_other'] = $submittedSubmissionOther;
                 $originalValues['submission_other'] = $currentSubmissionOther;
-            }
-
-            // Lieu du cours
-            $submittedCourseLocation = $normalize($data['course_location']);
-            $currentCourseLocation = $normalize($assignment->getCourseLocation());
-            if ($submittedCourseLocation !== $currentCourseLocation) {
-                $proposedChanges['course_location'] = $submittedCourseLocation;
-                $originalValues['course_location'] = $currentCourseLocation;
             }
 
             // Matière
@@ -138,7 +138,7 @@ class SuggestionController extends AbstractController
             $suggestion->setMessage($normalize($data['message']));
             $suggestion->setProposedChanges($proposedChanges);
             $suggestion->setOriginalValues($originalValues);
-            $suggestion->setStatus('PENDING'); // Changement ici : setIsProcessed(false) remplacé par setStatus('PENDING')
+            $suggestion->setStatus('PENDING');
             $suggestion->setCreatedAt(new \DateTime());
 
             // Journalisation pour déboguer
@@ -201,14 +201,14 @@ class SuggestionController extends AbstractController
                     case 'type':
                         $assignment->setType($value);
                         break;
+                    case 'submission_type':
+                        $assignment->setSubmissionType($value);
+                        break;
                     case 'submission_url':
                         $assignment->setSubmissionUrl($value);
                         break;
                     case 'submission_other':
                         $assignment->setSubmissionOther($value);
-                        break;
-                    case 'course_location':
-                        $assignment->setCourseLocation($value);
                         break;
                     case 'subject_id':
                         $subject = $entityManager->getRepository(Subject::class)->find($value);
@@ -356,14 +356,14 @@ class SuggestionController extends AbstractController
                         case 'type':
                             $assignment->setType($value);
                             break;
+                        case 'submission_type':
+                            $assignment->setSubmissionType($value);
+                            break;
                         case 'submission_url':
                             $assignment->setSubmissionUrl($value);
                             break;
                         case 'submission_other':
                             $assignment->setSubmissionOther($value);
-                            break;
-                        case 'course_location':
-                            $assignment->setCourseLocation($value);
                             break;
                         case 'subject_id':
                             $subject = $entityManager->getRepository(Subject::class)->find($value);

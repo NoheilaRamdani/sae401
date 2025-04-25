@@ -356,6 +356,9 @@ class AssignmentController extends AbstractController
                     'createdAt' => $assignment->getCreatedAt()->format('d/m/Y H:i'),
                     'description' => $assignment->getDescription() ?? 'Lorem ipsum...',
                     'submissionUrl' => $assignment->getSubmissionUrl() ?? null,
+                    'submissionType' => $assignment->getSubmissionType() ?? null,
+                    'submissionOther' => $assignment->getSubmissionOther() ?? null,
+                    'courseLocation' => $assignment->getCourseLocation() ?? null,
                     'isCompleted' => $assignment->isCompleted(),
                     'type' => $assignment->getType() ?? 'devoir',
                 ]

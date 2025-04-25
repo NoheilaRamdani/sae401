@@ -53,6 +53,12 @@
         </div>
 
         <div>
+            {{ form_label(form.submission_type) }}
+            {{ form_widget(form.submission_type, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.submission_type) }}
+        </div>
+
+        <div>
             {{ form_label(form.submission_url) }}
             {{ form_widget(form.submission_url, {'attr': {'class': 'form-input'}}) }}
             {{ form_errors(form.submission_url) }}
@@ -64,12 +70,6 @@
             {{ form_errors(form.submission_other) }}
         </div>
 
-        <div>
-            {{ form_label(form.course_location) }}
-            {{ form_widget(form.course_location, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.course_location) }}
-        </div>
-
         <div class="row-start">
             <button class="button" type="submit">Ajouter la tâche</button>
         </div>
@@ -79,13 +79,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const typeSelect = document.querySelector('#assignment_form_type');
+            const submissionTypeSelect = document.querySelector('#assignment_form_submission_type');
             const submissionOtherContainer = document.querySelector('#submission_other_container');
             const submissionOtherInput = document.querySelector('#assignment_form_submission_other');
 
             // Vérifie si les éléments existent
-            if (!typeSelect) {
-                console.error("Erreur : l'élément #assignment_form_type n'a pas été trouvé !");
+            if (!submissionTypeSelect) {
+                console.error("Erreur : l'élément #assignment_form_submission_type n'a pas été trouvé !");
                 return;
             }
             if (!submissionOtherContainer) {
@@ -98,8 +98,8 @@
             }
 
             function toggleSubmissionOther() {
-                console.log("Valeur actuelle de type :", typeSelect.value);
-                if (typeSelect.value === 'devoir') {
+                console.log("Valeur actuelle de submission_type :", submissionTypeSelect.value);
+                if (submissionTypeSelect.value === 'other') {
                     submissionOtherContainer.style.display = 'block';
                 } else {
                     submissionOtherContainer.style.display = 'none';
@@ -108,7 +108,7 @@
             }
 
             toggleSubmissionOther(); // Vérifie l'état initial
-            typeSelect.addEventListener('change', toggleSubmissionOther); // Écoute les changements
+            submissionTypeSelect.addEventListener('change', toggleSubmissionOther); // Écoute les changements
         });
     </script>
 {% endblock %}

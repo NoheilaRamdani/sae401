@@ -191,8 +191,17 @@ function initTaskManager(config) {
  * Affiche les détails d'un événement dans le modal.
  * @param {Object} event - Données de l'événement (title, start, description, etc.).
  */
+/**
+ * Affiche les détails d'un événement dans le modal.
+ * @param {Object} event - Données de l'événement (title, start, description, etc.).
+ */
+/**
+ * Affiche les détails d'un événement dans le modal.
+ * @param {Object} event - Données de l'événement (title, start, description, etc.).
+ */
 function showEventDetails(event) {
     console.log('Event passé à showEventDetails:', event);
+    console.log('Valeur de courseLocation:', event.course_location);
 
     const modalTitle = document.getElementById('modalTitle');
     modalTitle.textContent = event.title || 'Sans titre';
@@ -222,18 +231,15 @@ function showEventDetails(event) {
         submissionUrlEl.textContent = 'Aucune URL de rendu';
     }
 
-    // Gérer le type de soumission
+    // Gérer le mode de rendu
     const submissionTypeEl = document.getElementById('modalSubmissionType');
-    if (submissionTypeEl) {
-        const submissionTypeDisplay = (event.submissionType && event.submissionType.toLowerCase() === 'other') ? 'Autre' : event.submissionType || 'Non spécifié';
-        submissionTypeEl.textContent = submissionTypeDisplay;
-    }
-
-    // Gérer les instructions de rendu
-    const submissionInstructionEl = document.getElementById('modalSubmissionInstruction');
-    if (submissionInstructionEl) {
-        submissionInstructionEl.textContent = event.submissionInstruction || 'Non spécifié';
-    }
+    const submissionTypeDisplay = event.submissionType ? {
+        'moodle': 'Moodle',
+        'vps': 'VPS',
+        'email': 'Email',
+        'other': 'Autre'
+    }[event.submissionType.toLowerCase()] || 'Non spécifié' : 'Non spécifié';
+    submissionTypeEl.textContent = submissionTypeDisplay;
 
     // Gérer les précisions supplémentaires
     const submissionOtherContainer = document.getElementById('modalSubmissionOtherContainer');
@@ -248,6 +254,7 @@ function showEventDetails(event) {
     document.getElementById('modalType').textContent = event.type ?
         event.type.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') :
         'Non spécifié';
+
 
     // Gérer la checkbox du modal
     document.getElementById('modalCompleted').checked = event.isCompleted || false;
@@ -268,7 +275,6 @@ function showEventDetails(event) {
     // Afficher le modal
     document.getElementById('eventModal').style.display = 'flex';
 }
-
 /**
  * Initialise les écouteurs pour le modal (fermeture et suggestion de modification).
  */

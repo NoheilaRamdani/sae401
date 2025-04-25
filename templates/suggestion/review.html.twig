@@ -55,11 +55,6 @@
                     'current': suggestion.originalValues.submission_other|default(assignment.submissionOther|default('')),
                     'proposed': suggestion.proposedChanges.submission_other|default(assignment.submissionOther|default(''))
                 },
-                'course_location': {
-                    'label': 'Lieu du cours',
-                    'current': suggestion.originalValues.course_location|default(assignment.courseLocation|default('')),
-                    'proposed': suggestion.proposedChanges.course_location|default(assignment.courseLocation|default(''))
-                },
                 'subject_id': {
                     'label': 'Matière',
                     'current': originalSubject ? originalSubject.name : (assignment.subject ? assignment.subject.name : 'Non défini'),

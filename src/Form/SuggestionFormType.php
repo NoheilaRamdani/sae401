@@ -49,19 +49,25 @@ class SuggestionFormType extends AbstractType
                 'data' => $assignment->getType() ?? 'devoir',
                 'required' => true,
             ])
+            ->add('submission_type', ChoiceType::class, [
+                'label' => 'Mode de rendu',
+                'choices' => [
+                    'Moodle' => 'moodle',
+                    'VPS' => 'vps',
+                    'Email' => 'email',
+                    'Autre' => 'other',
+                ],
+                'data' => $assignment->getSubmissionType(),
+                'required' => false,
+            ])
             ->add('submission_url', UrlType::class, [
                 'label' => 'URL de rendu',
                 'data' => $assignment->getSubmissionUrl(),
                 'required' => false,
             ])
             ->add('submission_other', TextType::class, [
-                'label' => 'Autres instructions de rendu',
+                'label' => 'Précisions sur le rendu',
                 'data' => $assignment->getSubmissionOther(),
-                'required' => false,
-            ])
-            ->add('course_location', TextType::class, [
-                'label' => 'Lieu du cours',
-                'data' => $assignment->getCourseLocation(),
                 'required' => false,
             ])
             ->add('subject', EntityType::class, [

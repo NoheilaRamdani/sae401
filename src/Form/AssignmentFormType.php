@@ -42,16 +42,22 @@ class AssignmentFormType extends AbstractType
                 ],
                 'required' => true,
             ])
+            ->add('submission_type', ChoiceType::class, [
+                'label' => 'Mode de rendu',
+                'choices' => [
+                    'Moodle' => 'moodle',
+                    'VPS' => 'vps',
+                    'Email' => 'email',
+                    'Autre' => 'other',
+                ],
+                'required' => false,
+            ])
             ->add('submission_url', UrlType::class, [
                 'label' => 'URL de rendu',
                 'required' => false,
             ])
             ->add('submission_other', TextType::class, [
-                'label' => 'Autres instructions de rendu',
-                'required' => false,
-            ])
-            ->add('course_location', TextType::class, [
-                'label' => 'Support du cours',
+                'label' => 'Précisions sur le rendu',
                 'required' => false,
             ])
             ->add('subject', EntityType::class, [
