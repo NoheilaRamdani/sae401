@@ -38,19 +38,19 @@
                             <td class="statut">
                                 {% if suggestion.status == 'ACCEPTED' %}
                                     <span class="status-accepted" aria-label="Suggestion acceptée">
-                            <i class="fa-solid fa-circle-check ontime" aria-hidden="true"></i>
-                            <span class="sr-only">Acceptée</span>
-                        </span>
+                                        <i class="fa-solid fa-circle-check ontime" aria-hidden="true"></i>
+                                        <span class="sr-only">Acceptée</span>
+                                    </span>
                                 {% elseif suggestion.status == 'REJECTED' %}
                                     <span class="status-rejected" aria-label="Suggestion rejetée">
-                            <i class="fa-solid fa-circle-xmark urgent" aria-hidden="true"></i>
-                            <span class="sr-only">Rejetée</span>
-                        </span>
+                                        <i class="fa-solid fa-circle-xmark urgent" aria-hidden="true"></i>
+                                        <span class="sr-only">Rejetée</span>
+                                    </span>
                                 {% else %}
                                     <span class="status-pending" aria-label="Suggestion en attente">
-                            <i class="fa-regular fa-clock" aria-hidden="true"></i>
-                            <span class="sr-only">En attente</span>
-                        </span>
+                                        <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                                        <span class="sr-only">En attente</span>
+                                    </span>
                                 {% endif %}
                             </td>
                             <td class="action">
@@ -59,54 +59,56 @@
                                 {% else %}
                                     <i class="fa-solid fa-minus"></i>
                                 {% endif %}
-
                             </td>
                         </tr>
 
-                        <!-- Deuxième ligne : changements proposés -->
-                        <tr class="sub-row">
-                            <th scope="row">
-                                <div class="row-start">
-                                    <i class="fa-solid fa-arrow-turn-up"></i> <span>Changements proposés</span>
-                                </div></th>
-                            <td colspan="5" class="changes">
-                                {% if suggestion.proposedChanges|length > 0 %}
-                                    <ul>
-                                        {% for field, value in suggestion.proposedChanges %}
-                                            <li>
-                                                {% if field == 'title' %}
-                                                    <span class="change-icon change-icon-title"><i class="fa-solid fa-heading"></i></span>
-                                                    <strong>Titre :</strong> {{ suggestion.assignment.title|default('Aucun') }} → {{ value|default('Aucun') }}
-                                                {% elseif field == 'description' %}
-                                                    <span class="change-icon change-icon-description"><i class="fa-solid fa-file-lines"></i></span>
-                                                    <strong>Description :</strong> {{ suggestion.assignment.description|default('Aucune') }} → {{ value|default('Aucune') }}
-                                                {% elseif field == 'due_date' %}
-                                                    <span class="change-icon change-icon-due-date"><i class="fa-solid fa-calendar-day"></i></span>
-                                                    <strong>Date limite :</strong> {{ suggestion.assignment.dueDate ? suggestion.assignment.dueDate|date('d/m/Y H:i') : 'Non défini' }} → {{ value ? (value|date('d/m/Y H:i')) : 'Non défini' }}
-                                                {% elseif field == 'type' %}
-                                                    <span class="change-icon change-icon-type"><i class="fa-solid fa-cogs"></i></span>
-                                                    <strong>Type :</strong> {{ suggestion.assignment.type|default('Aucun') }} → {{ value|default('Aucun') }}
-                                                {% elseif field == 'submission_type' %}
-                                                    <span class="change-icon change-icon-submission"><i class="fa-solid fa-layer-group"></i></span>
-                                                    <strong>Mode de rendu :</strong> {{ suggestion.assignment.submissionType|default('Aucun') }} → {{ value|default('Aucun') }}
-                                                {% elseif field == 'submission_url' %}
-                                                    <span class="change-icon change-icon-url"><i class="fa-solid fa-layer-group"></i></span>
-                                                    <strong>URL de rendu :</strong> {{ suggestion.assignment.submissionUrl|default('Aucune') }} → {{ value|default('Aucune') }}
-                                                {% elseif field == 'submission_other' %}
-                                                    <span class="change-icon change-icon-other"><i class="fa-solid fa-layer-group"></i></span>
-                                                    <strong>Autres instructions :</strong> {{ suggestion.assignment.submissionOther|default('Aucune') }} → {{ value|default('Aucune') }}
-                                                {% elseif field == 'subject_id' %}
-                                                    <span class="change-icon change-icon-subject"><i class="fa-solid fa-bookmark"></i></span>
-                                                    <strong>Matière :</strong> {{ suggestion.assignment.subject.name|default('Non défini') }} → {{ data.proposedSubject ? data.proposedSubject.name : 'Non défini' }}
-                                                {% endif %}
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                {% else %}
-                                    Aucun changement proposé.
-                                {% endif %}
-                            </td>
-                        </tr>
+                        <!-- Deuxième ligne : changements proposés (affichée uniquement si PENDING) -->
+                        {% if suggestion.status == 'PENDING' %}
+                            <tr class="sub-row">
+                                <th scope="row">
+                                    <div class="row-start">
+                                        <i class="fa-solid fa-arrow-turn-up"></i> <span>Changements proposés</span>
+                                    </div>
+                                </th>
+                                <td colspan="5" class="changes">
+                                    {% if suggestion.proposedChanges|length > 0 %}
+                                        <ul>
+                                            {% for field, value in suggestion.proposedChanges %}
+                                                <li>
+                                                    {% if field == 'title' %}
+                                                        <span class="change-icon change-icon-title"><i class="fa-solid fa-heading"></i></span>
+                                                        <strong>Titre :</strong> {{ suggestion.assignment.title|default('Aucun') }} → {{ value|default('Aucun') }}
+                                                    {% elseif field == 'description' %}
+                                                        <span class="change-icon change-icon-description"><i class="fa-solid fa-file-lines"></i></span>
+                                                        <strong>Description :</strong> {{ suggestion.assignment.description|default('Aucune') }} → {{ value|default('Aucune') }}
+                                                    {% elseif field == 'due_date' %}
+                                                        <span class="change-icon change-icon-due-date"><i class="fa-solid fa-calendar-day"></i></span>
+                                                        <strong>Date limite :</strong> {{ suggestion.assignment.dueDate ? suggestion.assignment.dueDate|date('d/m/Y H:i') : 'Non défini' }} → {{ value ? (value|date('d/m/Y H:i')) : 'Non défini' }}
+                                                    {% elseif field == 'type' %}
+                                                        <span class="change-icon change-icon-type"><i class="fa-solid fa-cogs"></i></span>
+                                                        <strong>Type :</strong> {{ suggestion.assignment.type|default('Aucun') }} → {{ value|default('Aucun') }}
+                                                    {% elseif field == 'submission_type' %}
+                                                        <span class="change-icon change-icon-submission"><i class="fa-solid fa-layer-group"></i></span>
+                                                        <strong>Mode de rendu :</strong> {{ suggestion.assignment.submissionType|default('Aucun') }} → {{ value|default('Aucun') }}
+                                                    {% elseif field == 'submission_url' %}
+                                                        <span class="change-icon change-icon-url"><i class="fa-solid fa-layer-group"></i></span>
+                                                        <strong>URL de rendu :</strong> {{ suggestion.assignment.submissionUrl|default('Aucune') }} → {{ value|default('Aucune') }}
+                                                    {% elseif field == 'submission_other' %}
+                                                        <span class="change-icon change-icon-other"><i class="fa-solid fa-layer-group"></i></span>
+                                                        <strong>Autres instructions :</strong> {{ suggestion.assignment.submissionOther|default('Aucune') }} → {{ value|default('Aucune') }}
+                                                    {% elseif field == 'subject_id' %}
+                                                        <span class="change-icon change-icon-subject"><i class="fa-solid fa-bookmark"></i></span>
+                                                        <strong>Matière :</strong> {{ suggestion.assignment.subject.name|default('Non défini') }} → {{ data.proposedSubject ? data.proposedSubject.name : 'Non défini' }}
+                                                    {% endif %}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        Aucun changement proposé.
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
                     {% endfor %}
                     </tbody>
                 </table>
@@ -119,7 +121,6 @@
         <div id="pagination" class="row-center"></div>
 
         <a class="button back-btn" href="/"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
-
     </main>
 {% endblock %}
 
@@ -178,7 +179,6 @@
 
                 paginationHtml += '</ul>';
 
-
                 $pagination.html(paginationHtml);
 
                 // Mettre à jour les états des boutons
@@ -214,7 +214,7 @@
 
                 console.log('Changement de page:', newPage);
 
-                // Mettre à jour l'URL avec le nouveau paramètre de page
+                // Mettre/mysqli_real_escape_string à jour l'URL avec le nouveau paramètre de page
                 const url = new URL(window.location);
                 url.searchParams.set('page', newPage);
                 window.location.href = url.toString();
